@@ -28,6 +28,7 @@ namespace OpenEMR\Modules\UdsReport\Repository;
 use DateTimeImmutable;
 use OpenEMR\Common\Database\QueryUtils;
 use OpenEMR\Modules\UdsReport\Enum\AgriculturalWorker;
+use OpenEMR\Modules\UdsReport\Enum\DataGap;
 use OpenEMR\Modules\UdsReport\Enum\HousingStatus;
 use OpenEMR\Modules\UdsReport\Enum\InsuranceCategory;
 use OpenEMR\Modules\UdsReport\Enum\SexAtBirth;
@@ -101,6 +102,12 @@ final readonly class UdsPatientRepository
                     veteranStatus: VeteranStatus::tryFrom(Row::text($row, 'uds_veteran_status')),
                     visitSiteIds: array_keys($visit['sites']),
                     lastVisit: $visit['last'],
+                    incomeGaps: self::incomeGaps(
+                        Row::text($row, 'monthly_income'),
+                        Row::text($row, 'family_size'),
+                        Row::text($row, 'financial_review'),
+                        $visit['last'],
+                    ),
                 );
             }
         }
@@ -161,10 +168,50 @@ final readonly class UdsPatientRepository
     }
 
     /** Monthly income as entered (it may carry "$" and ","), times 12; null when it isn't a number. */
+    /**
+     * One monthly amount, optionally with a dollar sign and thousands
+     * separators, as yearly income. Anything else is not guessed at: stripping
+     * every non-digit once read "$2,000 - $2,500" as 20002500 a month and
+     * "1.5k" as $1.50, and both landed on a real poverty line.
+     */
     public static function annualIncome(string $monthly): ?int
     {
-        $clean = preg_replace('/[^\d.]/', '', $monthly) ?? '';
-        return is_numeric($clean) ? (int)floor((float)$clean * 12) : null;
+        if (preg_match('/^\s*\$?\s*(\d{1,3}(?:,\d{3})+|\d+)(\.\d{1,2})?\s*$/D', $monthly, $m) !== 1) {
+            return null;
+        }
+        return (int)floor((float)(str_replace(',', '', $m[1]) . ($m[2] ?? '')) * 12);
+    }
+
+    /**
+     * Why the income can't be used, one reason per input, in DataGap order.
+     * OpenEMR's Financial Review Date is a text box on a datetime column, and
+     * OpenEMR saves with strict mode off, so a date typed any way other than
+     * YYYY-MM-DD is stored as 0000-00-00: a date that was not saved, not one
+     * that was never entered, and staff need to be told which.
+     *
+     * @return list<DataGap>
+     */
+    public static function incomeGaps(string $monthly, string $familySize, string $reviewDate, DateTimeImmutable $lastVisit): array
+    {
+        $gaps = [];
+        if (trim($monthly) === '') {
+            $gaps[] = DataGap::IncomeNotRecorded;
+        } elseif (self::annualIncome($monthly) === null) {
+            $gaps[] = DataGap::IncomeNotUnderstood;
+        }
+        if (trim($familySize) === '') {
+            $gaps[] = DataGap::FamilySizeNotRecorded;
+        } elseif (self::positiveInt($familySize) === null) {
+            $gaps[] = DataGap::FamilySizeNotUnderstood;
+        }
+        if (trim($reviewDate) === '') {
+            $gaps[] = DataGap::ReviewDateMissing;
+        } elseif (self::date($reviewDate) === null) {
+            $gaps[] = DataGap::ReviewDateNotSaved;
+        } elseif (!self::incomeVerified($reviewDate, $lastVisit)) {
+            $gaps[] = DataGap::ReviewDateOutsideWindow;
+        }
+        return $gaps;
     }
 
     /**

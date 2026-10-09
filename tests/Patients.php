@@ -41,6 +41,7 @@ final class Patients
         ?AgriculturalWorker $agriculture = AgriculturalWorker::NotAgricultural,
         ?VeteranStatus $veteran = VeteranStatus::NotVeteran,
         array $sites = [3],
+        array $incomeGaps = [],
     ): UdsPatient {
         return new UdsPatient(
             pid: $pid,
@@ -62,6 +63,7 @@ final class Patients
             veteranStatus: $veteran,
             visitSiteIds: $sites,
             lastVisit: new \DateTimeImmutable('2026-09-01'),
+            incomeGaps: $incomeGaps,
         );
     }
 }

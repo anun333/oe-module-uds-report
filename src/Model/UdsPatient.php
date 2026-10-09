@@ -21,6 +21,7 @@ namespace OpenEMR\Modules\UdsReport\Model;
 
 use DateTimeImmutable;
 use OpenEMR\Modules\UdsReport\Enum\AgriculturalWorker;
+use OpenEMR\Modules\UdsReport\Enum\DataGap;
 use OpenEMR\Modules\UdsReport\Enum\HousingStatus;
 use OpenEMR\Modules\UdsReport\Enum\InsuranceCategory;
 use OpenEMR\Modules\UdsReport\Enum\SexAtBirth;
@@ -36,6 +37,8 @@ final readonly class UdsPatient
      * @param bool         $limitedEnglish     best served in a language other than English
      * @param ?int         $annualIncome       household income per year
      * @param bool         $incomeVerified     income recorded at or within 12 months before the last visit
+     * @param list<DataGap> $incomeGaps        why the income can't be used, when the raw values are known;
+     *                                         empty for patients built without them (tests, conformance cases)
      * @param InsuranceCategory $insurance     primary medical insurance at the last visit
      * @param bool         $dualEligible       Medicare primary with Medicaid also active at the last visit
      * @param bool         $insuranceRecorded  false when no insurance at all was on file for the last visit
@@ -64,6 +67,7 @@ final readonly class UdsPatient
         public ?VeteranStatus $veteranStatus,
         public array $visitSiteIds,
         public DateTimeImmutable $lastVisit,
+        public array $incomeGaps = [],
     ) {
     }
 

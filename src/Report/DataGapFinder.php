@@ -42,7 +42,10 @@ final readonly class DataGapFinder
         if ($this->raceEthnicity->raceLine($p->raceCodes) === '7') {
             $gaps[] = DataGap::RaceUnreported;
         }
-        if (!$p->incomeVerified || $p->annualIncome === null || $p->familySize === null) {
+        if ($p->incomeGaps !== []) {
+            array_push($gaps, ...$p->incomeGaps);
+        } elseif (!$p->incomeVerified || $p->annualIncome === null || $p->familySize === null) {
+            // Built without the raw values (tests, conformance cases): the reason is unknown.
             $gaps[] = DataGap::IncomeUnverified;
         }
         if (!$p->insuranceRecorded) {

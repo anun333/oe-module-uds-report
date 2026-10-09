@@ -78,12 +78,12 @@ ALTER TABLE `patient_data` ADD `uds_veteran_status` VARCHAR(31) NOT NULL DEFAULT
 -- Demographics layout, "Stats" group (5), after the stock Homeless and Migrant/Seasonal fields.
 #IfNotRow2D layout_options form_id DEM field_id uds_housing_status
 INSERT INTO `layout_options` (`form_id`, `field_id`, `group_id`, `title`, `seq`, `data_type`, `uor`, `fld_length`, `max_length`, `list_id`, `titlecols`, `datacols`, `default_value`, `edit_options`, `description`, `fld_rows`)
-VALUES ('DEM', 'uds_housing_status', '5', 'Housing Status (UDS)', 15, 1, 1, 0, 0, 'uds_housing_status', 1, 1, '', '', 'Where the patient stayed last night; homeless arrangements are reported on UDS Table 4, Lines 17-23', 0);
+VALUES ('DEM', 'uds_housing_status', '5', 'Housing Status (UDS)', 15, 1, 1, 0, 0, 'uds_housing_status', 1, 1, '', '', 'Where the patient stayed last night; homeless arrangements are reported on UDS Table 4, Lines 17-23. The UDS report reads this field, not the free-text Homeless field.', 0);
 #EndIf
 
 #IfNotRow2D layout_options form_id DEM field_id uds_agricultural_worker
 INSERT INTO `layout_options` (`form_id`, `field_id`, `group_id`, `title`, `seq`, `data_type`, `uor`, `fld_length`, `max_length`, `list_id`, `titlecols`, `datacols`, `default_value`, `edit_options`, `description`, `fld_rows`)
-VALUES ('DEM', 'uds_agricultural_worker', '5', 'Agricultural Worker (UDS)', 16, 1, 1, 0, 0, 'uds_agricultural_worker', 1, 1, '', '', 'Principal employment in agriculture within 24 months of the last visit; UDS Table 4, Lines 14-16', 0);
+VALUES ('DEM', 'uds_agricultural_worker', '5', 'Agricultural Worker (UDS)', 16, 1, 1, 0, 0, 'uds_agricultural_worker', 1, 1, '', '', 'Principal employment in agriculture within 24 months of the last visit; UDS Table 4, Lines 14-16. The UDS report reads this field, not the free-text Migrant/Seasonal field.', 0);
 #EndIf
 
 #IfNotRow2D layout_options form_id DEM field_id uds_veteran_status

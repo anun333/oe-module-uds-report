@@ -36,11 +36,15 @@ What installing it changes in your database, what it reads and writes, and what 
 | Sex as listed on the birth certificate, with no unknown column (3A) | OpenEMR's `sex` field. Anyone not recorded as Male or Female is listed as a blocking problem. |
 | Race lines 1a–7, ethnicity columns A1–C (3B) | CDC codes from the race and ethnicity lists, rolled up to UDS lines ([data/race-ethnicity.json](data/race-ethnicity.json)). Several Asian subgroups go to 1g, several Pacific Islander subgroups to 2b, two or more race groups to 6. A race without an ethnicity answer is presumed not Hispanic. The stock ethnicity list has only Hispanic yes/no, so Hispanic patients go to A5 unless the list carries detailed CDC codes. |
 | Limited English proficiency (3B, Line 12) | Preferred language isn't English (or blank or declined), or an interpreter is needed |
-| Income recorded at or within 12 months before the last visit, compared with the HHS poverty guidelines for the health center's location | `monthly_income` × 12 and `family_size`, counted only when the Financial Review Date falls in that window. Guidelines are in [data/poverty-guidelines.json](data/poverty-guidelines.json): 2026 for all regions, 2025 for the 48 contiguous states only. |
+| Income recorded at or within 12 months before the last visit, compared with the HHS poverty guidelines for the health center's location | `monthly_income` × 12 and `family_size`, counted only when the Financial Review Date falls in that window. Monthly income must be **one amount** (`2000`, `$2,000`, `2,000.50`); a range, a unit or words is counted as Unknown, never guessed. Guidelines are in [data/poverty-guidelines.json](data/poverty-guidelines.json): 2026 for all regions, 2025 for the 48 contiguous states only. |
 | Primary medical insurance at the last visit, by age 0–17 / 18+ | The primary policy in effect on the last visit date. Medicare primary with Medicaid also active counts as dually eligible (Line 9a). The category comes from the clinic's setting, then the payer typology group, then the claim type ([data/insurance-categories.json](data/insurance-categories.json)). An insurer that can't be decided is a blocking problem; nothing is guessed. |
 | ZIP codes with 10 or fewer patients combine into "Other ZIP Codes"; people experiencing homelessness without a ZIP use the site's ZIP | As stated |
 | Lines 24 (school-based) and 26 (public housing) depend on the visit site | Sites marked in Settings |
 | Line 25 counts only an affirmative answer, never active duty | "Served" only |
+
+## The Financial Review Date pitfall
+
+OpenEMR's **Financial Review Date** is a plain text box on a date column, and OpenEMR saves with the database's strict checking off. A date typed as `2026-09-15` is kept; typed any other way (`9/15/2026`, `Sept 15`) it is **silently stored as no date at all**, with no message on screen. The patient's income then can't be used and counts as Unknown on Table 4. The Records to fix list names this case on its own ("Financial Review Date was not saved"), so staff can re-enter those dates.
 
 ## Reference data
 

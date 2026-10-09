@@ -32,7 +32,10 @@
     "autoload-dev": {
         "psr-4": {
             "OpenEMR\\Modules\\UdsReport\\Tests\\": "tests/"
-        }
+        },
+        "files": [
+            "tests/stubs.php"
+        ]
     },
     "config": {
         "allow-plugins": {
