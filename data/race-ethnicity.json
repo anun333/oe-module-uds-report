@@ -1,0 +1,193 @@
+{
+    "about": "How CDC Race & Ethnicity codes roll up to the lines and columns of UDS Table 3B. OpenEMR keeps each race and ethnicity list entry's CDC code in the entry's notes. codeRanges compare the first four digits of a code (2034 for 2034-7). A code in no range, such as 2131-1 Other Race, counts as race not reported. Rules that stay in the program: races from two or more groups go to Line 6, and no race to Line 7. Within a group, one listed subgroup goes to its line, and anything else to the group's own line. A race with no ethnicity answer goes to Column B. General Hispanic, or more than one origin, goes to Column A5.",
+    "basis": "2026 UDS Manual, Table 3B instructions. Code ranges checked against the 921 coded entries of OpenEMR's race list. Names are the CDC display names.",
+    "raceGroups": [
+        {
+            "group": "asian",
+            "name": "Asian",
+            "codeRanges": [
+                {
+                    "from": "2028",
+                    "to": "2053"
+                }
+            ],
+            "line": "1g",
+            "lineNote": "Other Asian: an unlisted subgroup, Asian with no subgroup, or several Asian subgroups",
+            "subgroups": [
+                {
+                    "code": "2029-7",
+                    "name": "Asian Indian",
+                    "line": "1a"
+                },
+                {
+                    "code": "2034-7",
+                    "name": "Chinese",
+                    "line": "1b"
+                },
+                {
+                    "code": "2036-2",
+                    "name": "Filipino",
+                    "line": "1c"
+                },
+                {
+                    "code": "2039-6",
+                    "name": "Japanese",
+                    "line": "1d"
+                },
+                {
+                    "code": "2040-4",
+                    "name": "Korean",
+                    "line": "1e"
+                },
+                {
+                    "code": "2047-9",
+                    "name": "Vietnamese",
+                    "line": "1f"
+                }
+            ]
+        },
+        {
+            "group": "pacific",
+            "name": "Native Hawaiian or Other Pacific Islander",
+            "codeRanges": [
+                {
+                    "from": "2076",
+                    "to": "2105"
+                },
+                {
+                    "from": "2500",
+                    "to": "2500"
+                }
+            ],
+            "line": "2b",
+            "lineNote": "Other Pacific Islander: an unlisted subgroup, no subgroup, or several subgroups",
+            "subgroups": [
+                {
+                    "code": "2079-2",
+                    "name": "Native Hawaiian",
+                    "line": "2a"
+                },
+                {
+                    "code": "2086-7",
+                    "name": "Guamanian or Chamorro",
+                    "line": "2c"
+                },
+                {
+                    "code": "2087-5",
+                    "name": "Guamanian",
+                    "line": "2c"
+                },
+                {
+                    "code": "2088-3",
+                    "name": "Chamorro",
+                    "line": "2c"
+                },
+                {
+                    "code": "2089-1",
+                    "name": "Mariana Islander",
+                    "line": "2c"
+                },
+                {
+                    "code": "2095-8",
+                    "name": "Saipanese",
+                    "line": "2c"
+                },
+                {
+                    "code": "2080-0",
+                    "name": "Samoan",
+                    "line": "2d"
+                }
+            ]
+        },
+        {
+            "group": "black",
+            "name": "Black or African American",
+            "codeRanges": [
+                {
+                    "from": "2054",
+                    "to": "2075"
+                }
+            ],
+            "line": "3"
+        },
+        {
+            "group": "aian",
+            "name": "American Indian or Alaska Native",
+            "codeRanges": [
+                {
+                    "from": "1002",
+                    "to": "2027"
+                }
+            ],
+            "line": "4"
+        },
+        {
+            "group": "white",
+            "name": "White",
+            "codeRanges": [
+                {
+                    "from": "2106",
+                    "to": "2130"
+                }
+            ],
+            "line": "5"
+        }
+    ],
+    "ethnicity": {
+        "hispanic": {
+            "code": "2135-2",
+            "name": "Hispanic or Latino"
+        },
+        "notHispanic": {
+            "code": "2186-5",
+            "name": "Not Hispanic or Latino"
+        },
+        "originCodes": {
+            "from": "2136",
+            "to": "2185"
+        },
+        "otherOriginColumn": "A4",
+        "origins": [
+            {
+                "code": "2148-5",
+                "name": "Mexican",
+                "column": "A1"
+            },
+            {
+                "code": "2149-3",
+                "name": "Mexican American",
+                "column": "A1"
+            },
+            {
+                "code": "2150-1",
+                "name": "Mexicano",
+                "column": "A1"
+            },
+            {
+                "code": "2151-9",
+                "name": "Chicano",
+                "column": "A1"
+            },
+            {
+                "code": "2152-7",
+                "name": "La Raza",
+                "column": "A1"
+            },
+            {
+                "code": "2153-5",
+                "name": "Mexican American Indian",
+                "column": "A1"
+            },
+            {
+                "code": "2180-8",
+                "name": "Puerto Rican",
+                "column": "A2"
+            },
+            {
+                "code": "2182-4",
+                "name": "Cuban",
+                "column": "A3"
+            }
+        ]
+    }
+}

@@ -1,0 +1,159 @@
+{
+    "about": "Expected UDS insurance category for an insurance company, from the clinic's choice in Settings (clinicChoice), its Source of Payment Typology code (paymentTypology) and its OpenEMR claim type id (claimType). unmapped means the clinic has to choose a category. Any program that uses insurance-categories.json must give these results.",
+    "cases": [
+        {
+            "name": "clinic choice wins",
+            "clinicChoice": "chip_medicaid",
+            "paymentTypology": "5",
+            "claimType": 17,
+            "category": "chip_medicaid"
+        },
+        {
+            "name": "unknown clinic choice ignored",
+            "clinicChoice": "bogus",
+            "paymentTypology": null,
+            "claimType": null,
+            "category": "unmapped"
+        },
+        {
+            "name": "typology group 1 beats claim type",
+            "clinicChoice": null,
+            "paymentTypology": "121",
+            "claimType": 17,
+            "category": "medicare"
+        },
+        {
+            "name": "typology medicaid",
+            "clinicChoice": null,
+            "paymentTypology": "21",
+            "claimType": null,
+            "category": "medicaid"
+        },
+        {
+            "name": "typology blue cross/blue shield",
+            "clinicChoice": null,
+            "paymentTypology": "6",
+            "claimType": null,
+            "category": "private"
+        },
+        {
+            "name": "typology self-pay",
+            "clinicChoice": null,
+            "paymentTypology": "81",
+            "claimType": null,
+            "category": "none"
+        },
+        {
+            "name": "other government falls through to claim type",
+            "clinicChoice": null,
+            "paymentTypology": "3",
+            "claimType": 17,
+            "category": "private"
+        },
+        {
+            "name": "miscellaneous needs a decision",
+            "clinicChoice": null,
+            "paymentTypology": "9",
+            "claimType": null,
+            "category": "unmapped"
+        },
+        {
+            "name": "managed care, unspecified falls through to claim type",
+            "clinicChoice": null,
+            "paymentTypology": "7",
+            "claimType": 15,
+            "category": "medicare"
+        },
+        {
+            "name": "managed care, unspecified with no claim type needs a decision",
+            "clinicChoice": null,
+            "paymentTypology": "7",
+            "claimType": null,
+            "category": "unmapped"
+        },
+        {
+            "name": "typology that is not a number is ignored",
+            "clinicChoice": null,
+            "paymentTypology": "x1",
+            "claimType": 2,
+            "category": "medicare"
+        },
+        {
+            "name": "medicare part b",
+            "clinicChoice": null,
+            "paymentTypology": null,
+            "claimType": 2,
+            "category": "medicare"
+        },
+        {
+            "name": "medicare advantage hmo",
+            "clinicChoice": null,
+            "paymentTypology": null,
+            "claimType": 15,
+            "category": "medicare"
+        },
+        {
+            "name": "medicaid",
+            "clinicChoice": null,
+            "paymentTypology": null,
+            "claimType": 3,
+            "category": "medicaid"
+        },
+        {
+            "name": "tricare is private per the manual",
+            "clinicChoice": null,
+            "paymentTypology": null,
+            "claimType": 5,
+            "category": "private"
+        },
+        {
+            "name": "champva is other public",
+            "clinicChoice": null,
+            "paymentTypology": null,
+            "claimType": 4,
+            "category": "other_public"
+        },
+        {
+            "name": "self pay",
+            "clinicChoice": null,
+            "paymentTypology": null,
+            "claimType": 8,
+            "category": "none"
+        },
+        {
+            "name": "workers comp is not health insurance",
+            "clinicChoice": null,
+            "paymentTypology": null,
+            "claimType": 25,
+            "category": "none"
+        },
+        {
+            "name": "other hcfa is ambiguous",
+            "clinicChoice": null,
+            "paymentTypology": null,
+            "claimType": 1,
+            "category": "unmapped"
+        },
+        {
+            "name": "va plan needs a decision",
+            "clinicChoice": null,
+            "paymentTypology": null,
+            "claimType": 24,
+            "category": "unmapped"
+        },
+        {
+            "name": "claim type not in the table",
+            "clinicChoice": null,
+            "paymentTypology": null,
+            "claimType": 99,
+            "category": "unmapped"
+        },
+        {
+            "name": "nothing on file",
+            "clinicChoice": null,
+            "paymentTypology": null,
+            "claimType": null,
+            "category": "unmapped"
+        }
+    ]
+}

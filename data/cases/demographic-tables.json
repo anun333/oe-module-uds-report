@@ -1,0 +1,462 @@
+{
+    "about": "Synthetic UDS patients and the table cells they must produce, worked out by hand from the 2026 UDS Manual. Each patient starts from patientDefaults and lists only what differs; fields not listed keep the default. Patients are what an EHR connector hands to the counting rules: one per person with a countable visit in the year. pid defaults to the patient's position in the list. Each expectation names a cell by path (table, then keys) and gives its value (is), or says the row must not appear (absent). Any program that builds these tables must give these results.",
+    "patientDefaults": {
+        "dob": "1980-06-15",
+        "sexAtBirth": "female",
+        "raceCodes": [
+            "2106-3"
+        ],
+        "ethnicityCodes": [
+            "2186-5"
+        ],
+        "limitedEnglish": false,
+        "zip": "12345",
+        "visitSiteZip": "99999",
+        "annualIncome": 30000,
+        "familySize": 2,
+        "incomeVerified": true,
+        "insurance": "private",
+        "dualEligible": false,
+        "insuranceRecorded": true,
+        "housingStatus": "housed",
+        "agriculturalWorker": "not_agricultural",
+        "veteranStatus": "not_veteran",
+        "visitSiteIds": [
+            3
+        ],
+        "lastVisit": "2026-09-01"
+    },
+    "cases": [
+        {
+            "name": "ZIP table folds small ZIP codes and uses the site ZIP for people experiencing homelessness",
+            "year": 2026,
+            "settings": {},
+            "patients": [
+                {
+                    "zip": "10001",
+                    "insurance": "none"
+                },
+                {
+                    "zip": "10001",
+                    "insurance": "none"
+                },
+                {
+                    "zip": "10001",
+                    "insurance": "none"
+                },
+                {
+                    "zip": "10001",
+                    "insurance": "medicaid"
+                },
+                {
+                    "zip": "10001",
+                    "insurance": "medicaid"
+                },
+                {
+                    "zip": "10001",
+                    "insurance": "medicaid"
+                },
+                {
+                    "zip": "10001",
+                    "insurance": "medicaid"
+                },
+                {
+                    "zip": "10001",
+                    "insurance": "medicaid"
+                },
+                {
+                    "zip": "10001",
+                    "insurance": "medicaid"
+                },
+                {
+                    "zip": "10001",
+                    "insurance": "medicaid"
+                },
+                {
+                    "zip": "10001",
+                    "insurance": "medicaid"
+                },
+                {
+                    "zip": "10002",
+                    "insurance": "medicare"
+                },
+                {
+                    "zip": null,
+                    "visitSiteZip": "10001",
+                    "housingStatus": "street"
+                },
+                {
+                    "zip": null,
+                    "housingStatus": "housed"
+                }
+            ],
+            "expect": [
+                {
+                    "at": "zipTable.rows.10001",
+                    "is": {
+                        "none": 3,
+                        "public": 8,
+                        "medicare": 0,
+                        "private": 1,
+                        "total": 12
+                    },
+                    "why": "a homeless patient with no ZIP is counted at the visit site ZIP"
+                },
+                {
+                    "at": "zipTable.rows.10002",
+                    "absent": true,
+                    "why": "10 or fewer patients"
+                },
+                {
+                    "at": "zipTable.rows.Other ZIP Codes.medicare",
+                    "is": 1,
+                    "why": "10002 folds into Other ZIP Codes"
+                },
+                {
+                    "at": "zipTable.rows.Unknown Residence.total",
+                    "is": 1,
+                    "why": "no ZIP and not homeless"
+                },
+                {
+                    "at": "zipTable.total",
+                    "is": 14
+                }
+            ]
+        },
+        {
+            "name": "Table 3A uses age on December 31 and has no unknown column",
+            "year": 2026,
+            "settings": {},
+            "patients": [
+                {
+                    "dob": "2026-12-31",
+                    "sexAtBirth": "male"
+                },
+                {
+                    "dob": "2002-12-31",
+                    "sexAtBirth": "female"
+                },
+                {
+                    "dob": "2001-12-31",
+                    "sexAtBirth": "female"
+                },
+                {
+                    "dob": "1942-01-01",
+                    "sexAtBirth": "male"
+                },
+                {
+                    "dob": "1941-12-31",
+                    "sexAtBirth": "male"
+                },
+                {
+                    "sexAtBirth": null
+                },
+                {
+                    "dob": null
+                }
+            ],
+            "expect": [
+                {
+                    "at": "table3A.lines.1.male",
+                    "is": 1,
+                    "why": "born on December 31 of the year: under age 1"
+                },
+                {
+                    "at": "table3A.lines.25.female",
+                    "is": 1,
+                    "why": "turns 24 on December 31"
+                },
+                {
+                    "at": "table3A.lines.26.female",
+                    "is": 1,
+                    "why": "25: first five-year band"
+                },
+                {
+                    "at": "table3A.lines.37.male",
+                    "is": 1,
+                    "why": "84"
+                },
+                {
+                    "at": "table3A.lines.38.male",
+                    "is": 1,
+                    "why": "85 and over"
+                },
+                {
+                    "at": "table3A.unplaced",
+                    "is": 2,
+                    "why": "no birth sex, or no date of birth"
+                },
+                {
+                    "at": "table3A.totalMale",
+                    "is": 3
+                },
+                {
+                    "at": "table3A.totalFemale",
+                    "is": 2
+                }
+            ]
+        },
+        {
+            "name": "Table 3B totals and limited English proficiency",
+            "year": 2026,
+            "settings": {},
+            "patients": [
+                {
+                    "raceCodes": [
+                        "2034-7"
+                    ],
+                    "ethnicityCodes": [
+                        "2186-5"
+                    ],
+                    "limitedEnglish": true
+                },
+                {
+                    "raceCodes": [
+                        "2036-2"
+                    ],
+                    "ethnicityCodes": [
+                        "2135-2"
+                    ]
+                },
+                {
+                    "raceCodes": [],
+                    "ethnicityCodes": []
+                },
+                {
+                    "raceCodes": [
+                        "2106-3",
+                        "2054-5"
+                    ],
+                    "ethnicityCodes": [
+                        "2148-5"
+                    ]
+                }
+            ],
+            "expect": [
+                {
+                    "at": "table3B.cells.1b.B",
+                    "is": 1
+                },
+                {
+                    "at": "table3B.cells.1c.A5",
+                    "is": 1
+                },
+                {
+                    "at": "table3B.cells.1.D",
+                    "is": 2,
+                    "why": "Line 1 totals the Asian subgroups"
+                },
+                {
+                    "at": "table3B.cells.7.C",
+                    "is": 1
+                },
+                {
+                    "at": "table3B.cells.6.A1",
+                    "is": 1
+                },
+                {
+                    "at": "table3B.cells.8.A",
+                    "is": 2,
+                    "why": "Column A totals A1-A5"
+                },
+                {
+                    "at": "table3B.cells.8.D",
+                    "is": 4
+                },
+                {
+                    "at": "table3B.line12",
+                    "is": 1
+                }
+            ]
+        },
+        {
+            "name": "Table 4 income, insurance and special populations",
+            "year": 2026,
+            "settings": {
+                "schoolBasedFacilityIds": [
+                    7
+                ],
+                "publicHousingFacilityIds": [
+                    8
+                ]
+            },
+            "patients": [
+                {
+                    "annualIncome": 20000,
+                    "familySize": 2
+                },
+                {
+                    "annualIncome": 50000,
+                    "familySize": 2,
+                    "incomeVerified": false
+                },
+                {
+                    "dob": "2015-01-01",
+                    "insurance": "medicaid",
+                    "visitSiteIds": [
+                        7
+                    ]
+                },
+                {
+                    "dob": "1950-01-01",
+                    "insurance": "medicare",
+                    "dualEligible": true,
+                    "veteranStatus": "veteran"
+                },
+                {
+                    "dob": "1950-01-01",
+                    "insurance": "medicare",
+                    "veteranStatus": "active_duty"
+                },
+                {
+                    "insurance": "none",
+                    "housingStatus": "shelter",
+                    "agriculturalWorker": "seasonal",
+                    "visitSiteIds": [
+                        3,
+                        8
+                    ]
+                },
+                {
+                    "insurance": "unmapped",
+                    "housingStatus": "homeless_unknown",
+                    "agriculturalWorker": "former_migratory"
+                }
+            ],
+            "expect": [
+                {
+                    "at": "table4.income.1",
+                    "is": 1,
+                    "why": "92% of the guideline"
+                },
+                {
+                    "at": "table4.income.5",
+                    "is": 1,
+                    "why": "income not verified for the period"
+                },
+                {
+                    "at": "table4.income.6",
+                    "is": 7
+                },
+                {
+                    "at": "table4.insurance.8a",
+                    "is": {
+                        "child": 1,
+                        "adult": 0
+                    }
+                },
+                {
+                    "at": "table4.insurance.9",
+                    "is": {
+                        "child": 0,
+                        "adult": 2
+                    }
+                },
+                {
+                    "at": "table4.insurance.9a",
+                    "is": {
+                        "child": 0,
+                        "adult": 1
+                    },
+                    "why": "dually eligible is a subset of Line 9"
+                },
+                {
+                    "at": "table4.insurance.7.adult",
+                    "is": 1
+                },
+                {
+                    "at": "table4.insurance.12",
+                    "is": {
+                        "child": 1,
+                        "adult": 5
+                    },
+                    "why": "the unmapped insurer is left out until fixed"
+                },
+                {
+                    "at": "table4.insuranceUnmapped",
+                    "is": 1
+                },
+                {
+                    "at": "table4.special.14",
+                    "is": 1,
+                    "why": "former migratory workers count as migratory"
+                },
+                {
+                    "at": "table4.special.15",
+                    "is": 1
+                },
+                {
+                    "at": "table4.special.16",
+                    "is": 2
+                },
+                {
+                    "at": "table4.special.17",
+                    "is": 1
+                },
+                {
+                    "at": "table4.special.22",
+                    "is": 1
+                },
+                {
+                    "at": "table4.special.23",
+                    "is": 2
+                },
+                {
+                    "at": "table4.special.24",
+                    "is": 1,
+                    "why": "school-based is by visit site"
+                },
+                {
+                    "at": "table4.special.25",
+                    "is": 1,
+                    "why": "active duty is not a veteran"
+                },
+                {
+                    "at": "table4.special.26",
+                    "is": 1,
+                    "why": "public housing is by visit site"
+                }
+            ]
+        },
+        {
+            "name": "Cross-table check agrees when every patient is placed",
+            "year": 2026,
+            "settings": {},
+            "patients": [
+                {},
+                {}
+            ],
+            "expect": [
+                {
+                    "at": "crossCheck.consistent",
+                    "is": true
+                }
+            ]
+        },
+        {
+            "name": "Cross-table check flags a patient who cannot be placed",
+            "year": 2026,
+            "settings": {},
+            "patients": [
+                {},
+                {
+                    "sexAtBirth": null
+                }
+            ],
+            "expect": [
+                {
+                    "at": "crossCheck.consistent",
+                    "is": false
+                },
+                {
+                    "at": "crossCheck.table3A",
+                    "is": 1
+                },
+                {
+                    "at": "crossCheck.zip",
+                    "is": 2
+                }
+            ]
+        }
+    ]
+}

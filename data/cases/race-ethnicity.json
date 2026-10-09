@@ -1,0 +1,432 @@
+{
+    "about": "Expected UDS Table 3B line and column for a patient's CDC race and ethnicity codes. Any program that uses race-ethnicity.json must give these results.",
+    "cases": [
+        {
+            "name": "white",
+            "race": [
+                "2106-3"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "5",
+            "column": "B"
+        },
+        {
+            "name": "european ancestry rolls up to white",
+            "race": [
+                "2108-9"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "5",
+            "column": "B"
+        },
+        {
+            "name": "black",
+            "race": [
+                "2054-5"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "3",
+            "column": "B"
+        },
+        {
+            "name": "african american detail",
+            "race": [
+                "2058-6"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "3",
+            "column": "B"
+        },
+        {
+            "name": "american indian tribe",
+            "race": [
+                "1072-8"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "4",
+            "column": "B"
+        },
+        {
+            "name": "asian indian",
+            "race": [
+                "2029-7"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "1a",
+            "column": "B"
+        },
+        {
+            "name": "chinese",
+            "race": [
+                "2034-7"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "1b",
+            "column": "B"
+        },
+        {
+            "name": "filipino",
+            "race": [
+                "2036-2"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "1c",
+            "column": "B"
+        },
+        {
+            "name": "japanese",
+            "race": [
+                "2039-6"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "1d",
+            "column": "B"
+        },
+        {
+            "name": "korean",
+            "race": [
+                "2040-4"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "1e",
+            "column": "B"
+        },
+        {
+            "name": "vietnamese",
+            "race": [
+                "2047-9"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "1f",
+            "column": "B"
+        },
+        {
+            "name": "bangladeshi is other asian",
+            "race": [
+                "2030-5"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "1g",
+            "column": "B"
+        },
+        {
+            "name": "asian unspecified is other asian",
+            "race": [
+                "2028-9"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "1g",
+            "column": "B"
+        },
+        {
+            "name": "two asian subgroups is other asian",
+            "race": [
+                "2034-7",
+                "2036-2"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "1g",
+            "column": "B"
+        },
+        {
+            "name": "native hawaiian",
+            "race": [
+                "2079-2"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "2a",
+            "column": "B"
+        },
+        {
+            "name": "tongan is other pacific islander",
+            "race": [
+                "2082-6"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "2b",
+            "column": "B"
+        },
+        {
+            "name": "chamorro",
+            "race": [
+                "2088-3"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "2c",
+            "column": "B"
+        },
+        {
+            "name": "mariana islander counts with guamanian",
+            "race": [
+                "2089-1"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "2c",
+            "column": "B"
+        },
+        {
+            "name": "samoan",
+            "race": [
+                "2080-0"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "2d",
+            "column": "B"
+        },
+        {
+            "name": "other pacific islander code 2500",
+            "race": [
+                "2500-7"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "2b",
+            "column": "B"
+        },
+        {
+            "name": "two pacific subgroups is other pacific islander",
+            "race": [
+                "2079-2",
+                "2080-0"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "2b",
+            "column": "B"
+        },
+        {
+            "name": "white and black is more than one race",
+            "race": [
+                "2106-3",
+                "2054-5"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "6",
+            "column": "B"
+        },
+        {
+            "name": "asian and white is more than one race",
+            "race": [
+                "2034-7",
+                "2106-3"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "6",
+            "column": "B"
+        },
+        {
+            "name": "the same code twice is one race",
+            "race": [
+                "2034-7",
+                "2034-7"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "1b",
+            "column": "B"
+        },
+        {
+            "name": "other race has no UDS line",
+            "race": [
+                "2131-1"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "7",
+            "column": "B"
+        },
+        {
+            "name": "junk code ignored",
+            "race": [
+                "abc"
+            ],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "7",
+            "column": "B"
+        },
+        {
+            "name": "hispanic, origin unknown",
+            "race": [
+                "2106-3"
+            ],
+            "ethnicity": [
+                "2135-2"
+            ],
+            "line": "5",
+            "column": "A5"
+        },
+        {
+            "name": "mexican",
+            "race": [
+                "2106-3"
+            ],
+            "ethnicity": [
+                "2148-5"
+            ],
+            "line": "5",
+            "column": "A1"
+        },
+        {
+            "name": "chicano counts as mexican",
+            "race": [
+                "2106-3"
+            ],
+            "ethnicity": [
+                "2151-9"
+            ],
+            "line": "5",
+            "column": "A1"
+        },
+        {
+            "name": "puerto rican",
+            "race": [
+                "2106-3"
+            ],
+            "ethnicity": [
+                "2180-8"
+            ],
+            "line": "5",
+            "column": "A2"
+        },
+        {
+            "name": "cuban",
+            "race": [
+                "2106-3"
+            ],
+            "ethnicity": [
+                "2182-4"
+            ],
+            "line": "5",
+            "column": "A3"
+        },
+        {
+            "name": "dominican is another origin",
+            "race": [
+                "2106-3"
+            ],
+            "ethnicity": [
+                "2184-0"
+            ],
+            "line": "5",
+            "column": "A4"
+        },
+        {
+            "name": "two origins",
+            "race": [
+                "2106-3"
+            ],
+            "ethnicity": [
+                "2148-5",
+                "2182-4"
+            ],
+            "line": "5",
+            "column": "A5"
+        },
+        {
+            "name": "mexican and chicano are both column A1",
+            "race": [
+                "2106-3"
+            ],
+            "ethnicity": [
+                "2148-5",
+                "2151-9"
+            ],
+            "line": "5",
+            "column": "A1"
+        },
+        {
+            "name": "general plus specific",
+            "race": [
+                "2106-3"
+            ],
+            "ethnicity": [
+                "2135-2",
+                "2148-5"
+            ],
+            "line": "5",
+            "column": "A5"
+        },
+        {
+            "name": "race given, no ethnicity: presumed not hispanic",
+            "race": [
+                "2106-3"
+            ],
+            "ethnicity": [],
+            "line": "5",
+            "column": "B"
+        },
+        {
+            "name": "hispanic with no race goes on line 7",
+            "race": [],
+            "ethnicity": [
+                "2135-2"
+            ],
+            "line": "7",
+            "column": "A5"
+        },
+        {
+            "name": "neither answered",
+            "race": [],
+            "ethnicity": [],
+            "line": "7",
+            "column": "C"
+        },
+        {
+            "name": "not hispanic, race unreported",
+            "race": [],
+            "ethnicity": [
+                "2186-5"
+            ],
+            "line": "7",
+            "column": "B"
+        }
+    ]
+}

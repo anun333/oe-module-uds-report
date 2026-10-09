@@ -1,0 +1,204 @@
+{
+    "about": "How OpenEMR insurance companies get their UDS insurance category (Table 4 Lines 7-12, and the Patients by ZIP Code table). The order is: the clinic's own choice in Settings, then the company's Source of Payment Typology group (the first digit of its code), then its claim type. A null category means undecided: the next step is tried, and a company still undecided is listed as a record to fix until the clinic chooses, because the UDS has no unknown-insurance line. Every null needs a note saying why. Categories: none, medicaid, chip_medicaid, medicare, other_public, other_public_chip, private.",
+    "basis": "2026 UDS Manual, Table 4 instructions. Typology group names are PHDSC Source of Payment Typology level 1. Claim types are OpenEMR's insurance_type_codes table.",
+    "paymentTypologyGroups": [
+        {
+            "group": "1",
+            "name": "MEDICARE",
+            "category": "medicare"
+        },
+        {
+            "group": "2",
+            "name": "MEDICAID",
+            "category": "medicaid",
+            "note": "Medicaid and CHIP can't be told apart at this level. The manual says to report them as Medicaid; a CHIP plan can be set to CHIP Medicaid in Settings."
+        },
+        {
+            "group": "3",
+            "name": "OTHER GOVERNMENT (Federal/State/Local) (excluding Department of Corrections)",
+            "category": null,
+            "note": "Too varied (VA, Indian Health Service, indigent care programs). Falls through to the claim type."
+        },
+        {
+            "group": "4",
+            "name": "DEPARTMENTS OF CORRECTIONS",
+            "category": "none"
+        },
+        {
+            "group": "5",
+            "name": "PRIVATE HEALTH INSURANCE",
+            "category": "private"
+        },
+        {
+            "group": "6",
+            "name": "BLUE CROSS/BLUE SHIELD",
+            "category": "private"
+        },
+        {
+            "group": "7",
+            "name": "MANAGED CARE, UNSPECIFIED (to be used only if one can't distinguish public from private)",
+            "category": null,
+            "note": "By its own definition this group can't tell public from private plans, so it can't decide a UDS line. Falls through to the claim type."
+        },
+        {
+            "group": "8",
+            "name": "NO PAYMENT from an Organization/Agency/Program/Private Payer Listed",
+            "category": "none"
+        },
+        {
+            "group": "9",
+            "name": "MISCELLANEOUS/OTHER",
+            "category": null,
+            "note": "Too varied. Falls through to the claim type."
+        }
+    ],
+    "claimTypes": [
+        {
+            "id": 1,
+            "name": "Other HCFA",
+            "category": null,
+            "note": "Too general to decide."
+        },
+        {
+            "id": 2,
+            "name": "Medicare Part B",
+            "category": "medicare"
+        },
+        {
+            "id": 3,
+            "name": "Medicaid",
+            "category": "medicaid",
+            "note": "A CHIP plan billed as Medicaid can be set to CHIP Medicaid in Settings."
+        },
+        {
+            "id": 4,
+            "name": "ChampUSVA",
+            "category": "other_public",
+            "note": "CHAMPVA"
+        },
+        {
+            "id": 5,
+            "name": "ChampUS",
+            "category": "private",
+            "note": "TRICARE: the manual lists it as private insurance."
+        },
+        {
+            "id": 6,
+            "name": "Blue Cross Blue Shield",
+            "category": "private"
+        },
+        {
+            "id": 7,
+            "name": "FECA",
+            "category": "none",
+            "note": "Federal workers' compensation: not health insurance for the patient."
+        },
+        {
+            "id": 8,
+            "name": "Self Pay",
+            "category": "none"
+        },
+        {
+            "id": 9,
+            "name": "Central Certification",
+            "category": null,
+            "note": "Ambiguous: needs the clinic's decision."
+        },
+        {
+            "id": 10,
+            "name": "Other Non-Federal Programs",
+            "category": null,
+            "note": "Ambiguous: needs the clinic's decision."
+        },
+        {
+            "id": 11,
+            "name": "Preferred Provider Organization (PPO)",
+            "category": "private"
+        },
+        {
+            "id": 12,
+            "name": "Point of Service (POS)",
+            "category": "private"
+        },
+        {
+            "id": 13,
+            "name": "Exclusive Provider Organization (EPO)",
+            "category": "private"
+        },
+        {
+            "id": 14,
+            "name": "Indemnity Insurance",
+            "category": "private"
+        },
+        {
+            "id": 15,
+            "name": "Health Maintenance Organization (HMO) Medicare Risk",
+            "category": "medicare",
+            "note": "Medicare Advantage counts as Medicare."
+        },
+        {
+            "id": 16,
+            "name": "Automobile Medical",
+            "category": "none",
+            "note": "Not health insurance for the patient."
+        },
+        {
+            "id": 17,
+            "name": "Commercial Insurance Co.",
+            "category": "private"
+        },
+        {
+            "id": 18,
+            "name": "Disability",
+            "category": "none",
+            "note": "Not health insurance for the patient."
+        },
+        {
+            "id": 19,
+            "name": "Health Maintenance Organization",
+            "category": "private"
+        },
+        {
+            "id": 20,
+            "name": "Liability",
+            "category": "none",
+            "note": "Not health insurance for the patient."
+        },
+        {
+            "id": 21,
+            "name": "Liability Medical",
+            "category": "none",
+            "note": "Not health insurance for the patient."
+        },
+        {
+            "id": 22,
+            "name": "Other Federal Program",
+            "category": null,
+            "note": "Ambiguous: needs the clinic's decision."
+        },
+        {
+            "id": 23,
+            "name": "Title V",
+            "category": null,
+            "note": "Ambiguous: needs the clinic's decision."
+        },
+        {
+            "id": 24,
+            "name": "Veterans Administration Plan",
+            "category": null,
+            "note": "VA coverage varies: needs the clinic's decision."
+        },
+        {
+            "id": 25,
+            "name": "Workers Compensation Health Plan",
+            "category": "none",
+            "note": "Not health insurance for the patient."
+        },
+        {
+            "id": 26,
+            "name": "Mutually Defined",
+            "category": null,
+            "note": "Ambiguous: needs the clinic's decision."
+        }
+    ]
+}

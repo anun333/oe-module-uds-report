@@ -1,0 +1,47 @@
+{
+    "about": "HHS poverty guidelines, used for UDS Table 4 income Lines 1-5. A family's guideline is firstPerson, plus eachAdditional for every person after the first. region is contiguous (the 48 contiguous states and DC), alaska or hawaii. Copy each year's figures from the HHS/ASPE publication and cite it in source. A row whose figures are null is still to be filled in: the report shows that year and region as not loaded, and never estimates.",
+    "guidelines": [
+        {
+            "year": 2026,
+            "region": "contiguous",
+            "firstPerson": 15960,
+            "eachAdditional": 5680,
+            "source": "HHS poverty guidelines, Federal Register, January 15, 2026"
+        },
+        {
+            "year": 2026,
+            "region": "alaska",
+            "firstPerson": 19950,
+            "eachAdditional": 7100,
+            "source": "HHS poverty guidelines, Federal Register, January 15, 2026"
+        },
+        {
+            "year": 2026,
+            "region": "hawaii",
+            "firstPerson": 18360,
+            "eachAdditional": 6530,
+            "source": "HHS poverty guidelines, Federal Register, January 15, 2026"
+        },
+        {
+            "year": 2025,
+            "region": "contiguous",
+            "firstPerson": 15650,
+            "eachAdditional": 5500,
+            "source": "HHS/ASPE 2025 poverty guidelines"
+        },
+        {
+            "year": 2025,
+            "region": "alaska",
+            "firstPerson": null,
+            "eachAdditional": null,
+            "source": null
+        },
+        {
+            "year": 2025,
+            "region": "hawaii",
+            "firstPerson": null,
+            "eachAdditional": null,
+            "source": null
+        }
+    ]
+}

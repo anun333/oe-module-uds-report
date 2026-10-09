@@ -1,0 +1,151 @@
+{
+    "about": "Expected poverty guidelines (thresholds) and UDS Table 4 income lines (incomeLines). Line 1 is 100% of the guideline and below, 2 is 101-150%, 3 is 151-200%, 4 is over 200%, and 5 is unknown. A threshold of null means no guideline is available. Any program that uses poverty-guidelines.json must give these results.",
+    "thresholds": [
+        {
+            "name": "2026, one person",
+            "year": 2026,
+            "region": "contiguous",
+            "familySize": 1,
+            "threshold": 15960
+        },
+        {
+            "name": "2026, family of 4",
+            "year": 2026,
+            "region": "contiguous",
+            "familySize": 4,
+            "threshold": 33000
+        },
+        {
+            "name": "2026, family of 8",
+            "year": 2026,
+            "region": "contiguous",
+            "familySize": 8,
+            "threshold": 55720
+        },
+        {
+            "name": "2026 Alaska, family of 4",
+            "year": 2026,
+            "region": "alaska",
+            "familySize": 4,
+            "threshold": 41250
+        },
+        {
+            "name": "2026 Hawaii, family of 4",
+            "year": 2026,
+            "region": "hawaii",
+            "familySize": 4,
+            "threshold": 37950
+        },
+        {
+            "name": "2025, one person",
+            "year": 2025,
+            "region": "contiguous",
+            "familySize": 1,
+            "threshold": 15650
+        },
+        {
+            "name": "2025 Alaska is not verified, so not guessed",
+            "year": 2025,
+            "region": "alaska",
+            "familySize": 1,
+            "threshold": null
+        },
+        {
+            "name": "family size 0 has no guideline",
+            "year": 2026,
+            "region": "contiguous",
+            "familySize": 0,
+            "threshold": null
+        }
+    ],
+    "incomeLines": [
+        {
+            "name": "no income",
+            "year": 2026,
+            "region": "contiguous",
+            "familySize": 2,
+            "annualIncome": 0,
+            "line": "1"
+        },
+        {
+            "name": "exactly 100% (family of 2: 21,640)",
+            "year": 2026,
+            "region": "contiguous",
+            "familySize": 2,
+            "annualIncome": 21640,
+            "line": "1"
+        },
+        {
+            "name": "just over 100%",
+            "year": 2026,
+            "region": "contiguous",
+            "familySize": 2,
+            "annualIncome": 21641,
+            "line": "2"
+        },
+        {
+            "name": "exactly 150%",
+            "year": 2026,
+            "region": "contiguous",
+            "familySize": 2,
+            "annualIncome": 32460,
+            "line": "2"
+        },
+        {
+            "name": "just over 150%",
+            "year": 2026,
+            "region": "contiguous",
+            "familySize": 2,
+            "annualIncome": 32461,
+            "line": "3"
+        },
+        {
+            "name": "exactly 200%",
+            "year": 2026,
+            "region": "contiguous",
+            "familySize": 2,
+            "annualIncome": 43280,
+            "line": "3"
+        },
+        {
+            "name": "just over 200%",
+            "year": 2026,
+            "region": "contiguous",
+            "familySize": 2,
+            "annualIncome": 43281,
+            "line": "4"
+        },
+        {
+            "name": "income not recorded",
+            "year": 2026,
+            "region": "contiguous",
+            "familySize": 2,
+            "annualIncome": null,
+            "line": "5"
+        },
+        {
+            "name": "family size not recorded",
+            "year": 2026,
+            "region": "contiguous",
+            "familySize": null,
+            "annualIncome": 20000,
+            "line": "5"
+        },
+        {
+            "name": "no guidelines for the year",
+            "year": 2024,
+            "region": "contiguous",
+            "familySize": 2,
+            "annualIncome": 20000,
+            "line": "5"
+        },
+        {
+            "name": "no guidelines for the region",
+            "year": 2025,
+            "region": "hawaii",
+            "familySize": 2,
+            "annualIncome": 20000,
+            "line": "5"
+        }
+    ]
+}

@@ -1,0 +1,252 @@
+<?php
+
+/**
+ * UDS Report: Patients by ZIP Code and Tables 3A, 3B and 4.
+ *
+ * @package   OpenEMR
+ * @link      https://www.open-emr.org
+ * @author    anun333 <anun333@posteo.net>
+ * @copyright Copyright (c) 2026 anun333 <anun333@posteo.net>
+ * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
+ */
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/../../../../globals.php';
+
+use OpenEMR\BC\ServiceContainer;
+use OpenEMR\Common\Acl\AccessDeniedHelper;
+use OpenEMR\Common\Acl\AclMain;
+use OpenEMR\Common\Http\CurrentRequest;
+use OpenEMR\Core\Header;
+use OpenEMR\Core\OEGlobalsBag;
+use OpenEMR\Modules\UdsReport\Bootstrap;
+use OpenEMR\Modules\UdsReport\Enum\DataGap;
+use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataGuard;
+use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataLoader;
+use OpenEMR\Modules\UdsReport\Report\DemographicTables;
+use OpenEMR\Modules\UdsReport\Report\Labels;
+use OpenEMR\Modules\UdsReport\Report\ReportYear;
+use OpenEMR\Modules\UdsReport\Report\UdsReportService;
+use OpenEMR\Modules\UdsReport\Repository\SettingsRepository;
+use OpenEMR\Modules\UdsReport\Repository\UdsPatientRepository;
+
+if (!AclMain::aclCheckCore('patients', 'demo')) {
+    AccessDeniedHelper::denyWithTemplate('ACL check failed for patients/demo: UDS Report', xl('UDS Report'));
+}
+$isAdmin = AclMain::aclCheckCore('admin', 'super');
+$reference = (new ReferenceDataGuard(new ReferenceDataLoader(), ServiceContainer::getLogger()))->loadOrStop($isAdmin);
+
+$now = ServiceContainer::getClock()->now();
+$year = ReportYear::fromQuery(CurrentRequest::get()->query->getString('year'), $now);
+$report = new UdsReportService($year, (new SettingsRepository())->load(), $reference, new UdsPatientRepository($reference->insuranceCategories));
+$tables = $report->tables();
+$zip = $tables->zipTable();
+$t3a = $tables->table3A();
+$t3b = $tables->table3B();
+$t4 = $tables->table4();
+$check = $tables->crossCheck();
+$gaps = $report->gaps();
+$region = $report->settings->povertyRegion;
+$onePerson = $reference->povertyGuidelines->annualThreshold($year, $region, 1);
+$moduleUrl = OEGlobalsBag::getInstance()->getWebRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
+$n = static fn(int $v): string => number_format($v);
+$patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('patients');
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title><?php echo xlt('UDS Report'); ?></title>
+    <?php Header::setupHeader(['common']); ?>
+    <style>
+        .uds-table td.num, .uds-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+        .uds-table .subtotal td { font-weight: 600; background: var(--light, #f8f9fa); }
+        .uds-table .grant-only td { color: var(--gray, #6c757d); }
+        .uds-section { margin-top: 2rem; }
+    </style>
+</head>
+<body class="body_top">
+<div class="container-fluid py-3">
+    <div class="d-flex flex-wrap align-items-center justify-content-between">
+        <h1 class="h4 mb-2"><?php echo xlt('UDS Report'); ?>: <?php echo text((string)$year); ?></h1>
+        <form method="get" class="form-inline mb-2">
+            <label class="mr-2" for="uds-year"><?php echo xlt('Calendar year'); ?></label>
+            <select class="form-control form-control-sm mr-2" id="uds-year" name="year" onchange="this.form.submit()">
+                <?php for ($y = (int)$now->format('Y'); $y >= ReportYear::EARLIEST; $y--) { ?>
+                    <option value="<?php echo attr((string)$y); ?>" <?php echo $y === $year ? 'selected' : ''; ?>><?php echo text((string)$y); ?></option>
+                <?php } ?>
+            </select>
+            <a class="btn btn-sm btn-outline-secondary mr-2" href="<?php echo attr($moduleUrl . '/public/export.php?year=' . $year); ?>"><?php echo xlt('Download CSV'); ?></a>
+            <?php if ($isAdmin) { ?>
+                <a class="btn btn-sm btn-outline-secondary" href="<?php echo attr($moduleUrl . '/public/settings.php'); ?>"><?php echo xlt('Settings'); ?></a>
+            <?php } ?>
+        </form>
+    </div>
+    <p class="text-muted small mb-3">
+        <?php echo xlt('Patients with at least one countable visit in the year, counted by the 2026 UDS Manual rules. Check every figure against your own records before entering it in the EHBs.'); ?>
+    </p>
+
+    <?php if (!$check['consistent']) { ?>
+        <div class="alert alert-warning">
+            <strong><?php echo xlt('The table totals do not agree yet.'); ?></strong>
+            <?php echo xlt('The UDS requires the same patient total on every table. Fix the blocking record problems below, then reload.'); ?>
+            <div class="small mt-1">
+                <?php echo xlt('Patients'); ?> <?php echo text($n($check['patients'])); ?> ·
+                <?php echo xlt('ZIP table'); ?> <?php echo text($n($check['zip'])); ?> ·
+                <?php echo xlt('Table 3A'); ?> <?php echo text($n($check['table3A'])); ?> ·
+                <?php echo xlt('Table 3B'); ?> <?php echo text($n($check['table3B'])); ?> ·
+                <?php echo xlt('Table 4 income'); ?> <?php echo text($n($check['table4Income'])); ?> ·
+                <?php echo xlt('Table 4 insurance'); ?> <?php echo text($n($check['table4Insurance'])); ?>
+            </div>
+        </div>
+    <?php } else { ?>
+        <div class="alert alert-success py-2"><?php echo xlt('Table totals agree'); ?>: <?php echo text($n($check['patients'])); ?> <?php echo text($patients($check['patients'])); ?>.</div>
+    <?php } ?>
+    <?php if (!$t4['povertyTableAvailable']) { ?>
+        <div class="alert alert-warning py-2"><?php echo xlt('Poverty guidelines for this year and region are not loaded, so every patient is shown under Unknown income.'); ?></div>
+    <?php } ?>
+
+    <h2 class="h5 uds-section"><?php echo xlt('Records to fix before submitting'); ?></h2>
+    <table class="table table-sm uds-table mb-1">
+        <tbody>
+        <?php foreach (DataGap::cases() as $gap) {
+            $count = count($gaps[$gap->value] ?? []);
+            if ($count === 0) {
+                continue;
+            } ?>
+            <tr>
+                <td><?php echo $gap->isBlocking() ? '<span class="badge badge-danger">' . xlt('Blocking') . '</span>' : '<span class="badge badge-light border">' . xlt('Quality') . '</span>'; ?></td>
+                <td><?php echo text(Labels::gap($gap)); ?></td>
+                <td class="num"><a href="<?php echo attr($moduleUrl . '/public/gaps.php?year=' . $year . '&gap=' . urlencode($gap->value)); ?>"><?php echo text($n($count)); ?> <?php echo text($patients($count)); ?></a></td>
+            </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+    <?php if (array_sum(array_map(count(...), $gaps)) === 0) { ?>
+        <p class="text-muted"><?php echo xlt('No record problems found.'); ?></p>
+    <?php } ?>
+
+    <h2 class="h5 uds-section"><?php echo xlt('Patients by ZIP Code'); ?></h2>
+    <div class="table-responsive">
+        <table class="table table-sm table-bordered uds-table">
+            <thead class="thead-light"><tr>
+                <th><?php echo xlt('ZIP Code'); ?> (A)</th>
+                <th class="num"><?php echo xlt('None/Uninsured'); ?> (B)</th>
+                <th class="num"><?php echo xlt('Medicaid/CHIP/Other Public'); ?> (C)</th>
+                <th class="num"><?php echo xlt('Medicare'); ?> (D)</th>
+                <th class="num"><?php echo xlt('Private'); ?> (E)</th>
+                <th class="num"><?php echo xlt('Total Patients'); ?> (F)</th>
+            </tr></thead>
+            <tbody>
+            <?php foreach ($zip['rows'] as $label => $row) { ?>
+                <tr>
+                    <td><?php echo text(match ($label) {
+                        DemographicTables::OTHER_ZIPS => xl('Other ZIP Codes'),
+                        DemographicTables::UNKNOWN_RESIDENCE => xl('Unknown Residence'),
+                        default => (string)$label,
+                        }); ?></td>
+                    <?php foreach ([...DemographicTables::ZIP_COLUMNS, 'total'] as $c) { ?>
+                        <td class="num"><?php echo text($n($row[$c])); ?></td>
+                    <?php } ?>
+                </tr>
+            <?php } ?>
+            <tr class="subtotal"><td><?php echo xlt('Total'); ?></td>
+                <?php foreach ([...DemographicTables::ZIP_COLUMNS, 'total'] as $c) { ?>
+                    <td class="num"><?php echo text($n(array_sum(array_column($zip['rows'], $c)))); ?></td>
+                <?php } ?>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2 class="h5 uds-section"><?php echo xlt('Table 3A: Patients by Age and by Sex'); ?></h2>
+    <div class="table-responsive">
+        <table class="table table-sm table-bordered uds-table" style="max-width: 36rem">
+            <thead class="thead-light"><tr>
+                <th><?php echo xlt('Line'); ?></th><th><?php echo xlt('Age Groups'); ?></th>
+                <th class="num"><?php echo xlt('Male Patients'); ?> (A)</th><th class="num"><?php echo xlt('Female Patients'); ?> (B)</th>
+            </tr></thead>
+            <tbody>
+            <?php foreach ($t3a['lines'] as $line => $r) { ?>
+                <tr><td><?php echo text((string)$line); ?></td><td><?php echo text($r['label']); ?></td>
+                    <td class="num"><?php echo text($n($r['male'])); ?></td><td class="num"><?php echo text($n($r['female'])); ?></td></tr>
+            <?php } ?>
+            <tr class="subtotal"><td>39</td><td><?php echo xlt('Total Patients'); ?></td>
+                <td class="num"><?php echo text($n($t3a['totalMale'])); ?></td><td class="num"><?php echo text($n($t3a['totalFemale'])); ?></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2 class="h5 uds-section"><?php echo xlt('Table 3B: Demographic Characteristics'); ?></h2>
+    <div class="table-responsive">
+        <table class="table table-sm table-bordered uds-table">
+            <thead class="thead-light"><tr>
+                <th><?php echo xlt('Line'); ?></th><th><?php echo xlt('Race'); ?></th>
+                <?php foreach (Labels::ethnicityColumns() as $col => $label) { ?>
+                    <th class="num" title="<?php echo attr($label); ?>"><?php echo text($col); ?></th>
+                <?php } ?>
+            </tr></thead>
+            <tbody>
+            <?php foreach (Labels::raceLines() as $key => $lineLabel) {
+                $line = (string)$key; ?>
+                <tr class="<?php echo in_array($line, ['1', '2', '8'], true) ? 'subtotal' : ''; ?>">
+                    <td><?php echo text($line); ?></td><td><?php echo text($lineLabel); ?></td>
+                    <?php foreach (array_keys(Labels::ethnicityColumns()) as $col) { ?>
+                        <td class="num"><?php echo ($col === 'C' && !in_array($line, ['7', '8'], true)) ? '' : text($n($t3b['cells'][$line][$col] ?? 0)); ?></td>
+                    <?php } ?>
+                </tr>
+            <?php } ?>
+            </tbody>
+        </table>
+    </div>
+    <p class="small text-muted"><?php foreach (Labels::ethnicityColumns() as $col => $label) {
+        echo text($col . ': ' . $label) . ' · ';
+                                } ?></p>
+    <table class="table table-sm table-bordered uds-table" style="max-width: 36rem">
+        <tbody><tr><td>12</td><td><?php echo xlt('Patients Best Served in a Language Other Than English'); ?></td><td class="num"><?php echo text($n($t3b['line12'])); ?></td></tr></tbody>
+    </table>
+
+    <h2 class="h5 uds-section"><?php echo xlt('Table 4: Selected Patient Characteristics'); ?></h2>
+    <div class="row">
+        <div class="col-lg-5">
+            <table class="table table-sm table-bordered uds-table">
+                <thead class="thead-light"><tr><th><?php echo xlt('Line'); ?></th><th><?php echo xlt('Income as Percentage of Poverty Guideline'); ?></th><th class="num">(A)</th></tr></thead>
+                <tbody>
+                <?php foreach (Labels::table4Income() as $key => $label) {
+                    $line = (string)$key; ?>
+                    <tr class="<?php echo $line === '6' ? 'subtotal' : ''; ?>"><td><?php echo text($line); ?></td><td><?php echo text($label); ?></td><td class="num"><?php echo text($n($t4['income'][$line] ?? 0)); ?></td></tr>
+                <?php } ?>
+                </tbody>
+            </table>
+            <p class="small text-muted"><?php echo xlt('Poverty guidelines'); ?>: <?php echo text((string)$year); ?>, <?php echo text(Labels::povertyRegion($region)); ?>
+                (<?php echo $onePerson === null ? xlt('not loaded') : text($n($onePerson)) . ' ' . xlt('for one person'); ?>)</p>
+        </div>
+        <div class="col-lg-7">
+            <table class="table table-sm table-bordered uds-table">
+                <thead class="thead-light"><tr><th><?php echo xlt('Line'); ?></th><th><?php echo xlt('Primary Third-Party Medical Insurance'); ?></th>
+                    <th class="num"><?php echo xlt('0–17 Years Old'); ?> (A)</th><th class="num"><?php echo xlt('18 and Older'); ?> (B)</th></tr></thead>
+                <tbody>
+                <?php foreach (Labels::table4Insurance() as $key => $label) {
+                    $line = (string)$key;
+                    $cell = $t4['insurance'][$line] ?? ['child' => 0, 'adult' => 0]; ?>
+                    <tr class="<?php echo in_array($line, ['8', '10', '12'], true) ? 'subtotal' : ''; ?>"><td><?php echo text($line); ?></td><td><?php echo text($label); ?></td>
+                        <td class="num"><?php echo text($n($cell['child'])); ?></td><td class="num"><?php echo text($n($cell['adult'])); ?></td></tr>
+                <?php } ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <table class="table table-sm table-bordered uds-table" style="max-width: 52rem">
+        <thead class="thead-light"><tr><th><?php echo xlt('Line'); ?></th><th><?php echo xlt('Special Medically Underserved Populations'); ?></th><th class="num">(A)</th></tr></thead>
+        <tbody>
+        <?php foreach (Labels::table4Special() as $key => $label) {
+            $line = (string)$key; ?>
+            <tr class="<?php echo in_array($line, ['14', '15', '17', '18', '19', '20', '21a', '21', '22'], true) ? 'grant-only' : ''; ?>">
+                <td><?php echo text($line); ?></td><td><?php echo text($label); ?></td><td class="num"><?php echo text($n($t4['special'][$line] ?? 0)); ?></td></tr>
+        <?php } ?>
+        </tbody>
+    </table>
+    <p class="small text-muted"><?php echo xlt('Lines 14-15 and 17-22 are entered only by health centers with 330(g) or 330(h) funding; everyone enters the totals on Lines 16 and 23.'); ?></p>
+</div>
+</body>
+</html>
