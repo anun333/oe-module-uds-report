@@ -26,15 +26,21 @@ declare(strict_types=1);
 $root = dirname(__DIR__);
 $out = $root . '/FOOTPRINT.md';
 
-/** @return list<string> every string literal in a PHP source, interpolations replaced by `?` */
+/**
+ * Every string literal in a PHP source, with interpolations replaced by `?`.
+ * Literals joined by `.` come back as one string, the operands between them
+ * replaced by `?`, so `"SELECT …" . Cols::SQL . " FROM t"` is one query.
+ *
+ * @return list<string>
+ */
 function stringLiterals(string $php): array
 {
-    $strings = [];
+    $items = [];
     $current = null;
     foreach (token_get_all($php) as $tok) {
         if ($current !== null) {
             if ($tok === '"' || (is_array($tok) && $tok[0] === T_END_HEREDOC)) {
-                $strings[] = $current;
+                $items[] = ['lit', $current];
                 $current = null;
             } elseif (is_array($tok) && $tok[0] === T_ENCAPSED_AND_WHITESPACE) {
                 $current .= $tok[1];
@@ -43,13 +49,54 @@ function stringLiterals(string $php): array
             }
             continue;
         }
+        if (is_array($tok) && in_array($tok[0], [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true)) {
+            continue;
+        }
         if ($tok === '"' || (is_array($tok) && $tok[0] === T_START_HEREDOC)) {
             $current = '';
         } elseif (is_array($tok) && $tok[0] === T_CONSTANT_ENCAPSED_STRING) {
-            $strings[] = substr($tok[1], 1, -1);
-        } elseif (is_array($tok) && $tok[0] === T_ENCAPSED_AND_WHITESPACE) {
-            $strings[] = $tok[1];
+            $items[] = ['lit', substr($tok[1], 1, -1)];
+        } else {
+            $items[] = ['tok', is_array($tok) ? $tok[1] : $tok];
         }
+    }
+    $strings = [];
+    $n = count($items);
+    for ($i = 0; $i < $n; $i++) {
+        if ($items[$i][0] !== 'lit') {
+            continue;
+        }
+        $s = $items[$i][1];
+        $j = $i + 1;
+        while ($j < $n && $items[$j] === ['tok', '.']) {
+            $j++;
+            if ($j < $n && $items[$j][0] === 'lit') {
+                $s .= $items[$j][1];
+                $j++;
+                continue;
+            }
+            // A non-literal operand: skip to the next `.` or the end of the expression.
+            $s .= '?';
+            $depth = 0;
+            for (; $j < $n; $j++) {
+                [$kind, $v] = $items[$j];
+                if ($kind !== 'tok') {
+                    continue;
+                }
+                if (in_array($v, ['(', '[', '{'], true)) {
+                    $depth++;
+                } elseif (in_array($v, [')', ']', '}'], true)) {
+                    if ($depth === 0) {
+                        break;
+                    }
+                    $depth--;
+                } elseif ($depth === 0 && in_array($v, ['.', ';', ',', '?', ':', '=>'], true)) {
+                    break;
+                }
+            }
+        }
+        $strings[] = $s;
+        $i = $j - 1;
     }
     return $strings;
 }
@@ -58,8 +105,15 @@ function stringLiterals(string $php): array
 function sqlTables(string $s): ?array
 {
     $s = trim($s);
-    if (!preg_match('/^(SELECT|INSERT|UPDATE|DELETE|REPLACE)\b/i', $s, $m)) {
-        return null;
+    // Upper case only, as every query in this module is written, so a sentence
+    // that starts "Select a site from the list" is not read as one.
+    if (!preg_match('/^(SELECT|INSERT|UPDATE|DELETE|REPLACE)\b/', $s, $m)) {
+        // A fragment such as a shared column list can carry a subquery. Only an
+        // upper-case SELECT … FROM counts here, so prose and `<select>` don't.
+        if (!preg_match('/\bSELECT\b[\s\S]*?\bFROM\s+`?[A-Za-z_]/', $s)) {
+            return null;
+        }
+        $m = [1 => 'SELECT'];
     }
     $id = '`?([A-Za-z_][A-Za-z0-9_]*)`?';
     $verb = strtoupper($m[1]);
@@ -88,13 +142,17 @@ function selfTest(): void
     $q = "SELECT a FROM t1 JOIN t2 ON t1.id = t2.id WHERE x IN ($in)";
     $w = 'INSERT INTO `t3` (a) VALUES (?) ON DUPLICATE KEY UPDATE a = VALUES(a)';
     $d = 'DELETE FROM `t4` WHERE id = ?';
+    $c = "SELECT a, " . Cols::SQL . "
+          FROM t5 JOIN t6 ON t5.id = t6.id WHERE " . implode(' AND ', $w) . " ORDER BY a";
+    const COLS = "x.a, (x.b = 1 AND EXISTS (SELECT 1 FROM t7 WHERE t7.id = x.id)) AS c";
+    $prose = 'Select a site from the list';
     PHP;
     $found = array_values(array_filter(array_map('sqlTables', stringLiterals($sample))));
     $reads = array_merge(...array_column($found, 'reads'));
     $writes = array_merge(...array_column($found, 'writes'));
     sort($reads);
     sort($writes);
-    if ($reads !== ['t1', 't2'] || $writes !== ['t3', 't4']) {
+    if ($reads !== ['t1', 't2', 't5', 't6', 't7'] || $writes !== ['t3', 't4']) {
         fwrite(STDERR, "SQL extractor self-test failed: reads=" . json_encode($reads) . " writes=" . json_encode($writes) . "\n");
         exit(2);
     }
