@@ -43,7 +43,7 @@ if ($out === false) {
     throw new RuntimeException('Cannot open the output stream');
 }
 header('Content-Type: text/csv; charset=utf-8');
-header('Content-Disposition: attachment; filename="uds-' . $year . '-demographics.csv"');
+header('Content-Disposition: attachment; filename="uds-' . $year . '-tables.csv"');
 header('Cache-Control: no-store');
 
 CsvRow::write($out, ['UDS demographic tables', (string)$year, 'generated ' . $now->format('Y-m-d H:i')]);
@@ -80,6 +80,18 @@ foreach (Labels::table4Insurance() as $line => $label) {
 CsvRow::write($out, ['', 'Line', 'Special Medically Underserved Populations', 'Patients (A)']);
 foreach (Labels::table4Special() as $line => $label) {
     CsvRow::write($out, ['', $line, $label, $t4['special'][$line] ?? 0]);
+}
+CsvRow::write($out, []);
+CsvRow::write($out, ['Table 6A', 'Line', 'Diagnosis or Service', 'Visits (A)', 'Patients (B)', 'Counted']);
+foreach ($report->table6A()->rows() as $row) {
+    CsvRow::write($out, [
+        '',
+        $row['line']->line,
+        $row['line']->label,
+        $row['visits'] ?? '',
+        $row['patients'] ?? '',
+        $row['line']->computed . ($row['line']->limit === null ? '' : ': ' . $row['line']->limit),
+    ]);
 }
 $check = $tables->crossCheck();
 CsvRow::write($out, []);

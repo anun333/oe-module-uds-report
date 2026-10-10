@@ -16,6 +16,7 @@ namespace OpenEMR\Modules\UdsReport\Report;
 
 use OpenEMR\Modules\UdsReport\Model\UdsPatient;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceData;
+use OpenEMR\Modules\UdsReport\Repository\EncounterCodeRepository;
 use OpenEMR\Modules\UdsReport\Repository\UdsPatientRepository;
 
 final class UdsReportService
@@ -40,6 +41,17 @@ final class UdsReportService
     public function tables(): DemographicTables
     {
         return new DemographicTables($this->patients(), $this->year, $this->settings, $this->reference);
+    }
+
+    /** Table 6A, from the billing codes on the year's encounters. */
+    public function table6A(): Table6A
+    {
+        $pids = [];
+        foreach ($this->patients() as $patient) {
+            $pids[$patient->pid] = true;
+        }
+        $encounters = (new EncounterCodeRepository($this->patientRepository))->forYear($this->year, $this->settings);
+        return new Table6A($this->reference->table6a, $encounters, $pids);
     }
 
     /** @return array<string, list<int>> DataGap value => pids */

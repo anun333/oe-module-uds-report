@@ -36,6 +36,7 @@ final readonly class ReferenceDataLoader
             PovertyGuidelines::fromData($this->read(PovertyGuidelines::FILE)),
             RaceEthnicity::fromData($this->read(RaceEthnicity::FILE)),
             InsuranceCategoryMap::fromData($this->read(InsuranceCategoryMap::FILE)),
+            Table6a::fromData($this->read(Table6a::FILE)),
         );
     }
 

@@ -46,6 +46,7 @@ $t3a = $tables->table3A();
 $t3b = $tables->table3B();
 $t4 = $tables->table4();
 $check = $tables->crossCheck();
+$t6a = $report->table6A()->rows();
 $gaps = $report->gaps();
 $region = $report->settings->povertyRegion;
 $onePerson = $reference->povertyGuidelines->annualThreshold($year, $region, 1);
@@ -247,6 +248,38 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
         </tbody>
     </table>
     <p class="small text-muted"><?php echo xlt('Lines 14-15 and 17-22 are entered only by health centers with 330(g) or 330(h) funding; everyone enters the totals on Lines 16 and 23.'); ?></p>
+
+    <h2 class="h5 uds-section"><?php echo xlt('Table 6A: Selected Diagnoses and Services Rendered'); ?></h2>
+    <p class="small text-muted"><?php echo xlt('From the billing codes on each encounter (the fee sheet). Diagnoses count at countable visits; tests, screenings, dental and support services at any encounter in the year at an in-scope site, for UDS patients. * counts only the codes the manual lists; a dash is a line defined only by value sets, not counted yet.'); ?></p>
+    <table class="table table-sm table-bordered uds-table" style="max-width: 60rem">
+        <thead class="thead-light"><tr><th><?php echo xlt('Line'); ?></th><th><?php echo xlt('Diagnosis or Service'); ?></th><th class="num"><?php echo xlt('Visits'); ?> (A)</th><th class="num"><?php echo xlt('Patients'); ?> (B)</th></tr></thead>
+        <tbody>
+        <?php $group = null;
+        foreach ($t6a as $row) {
+            $l = $row['line'];
+            if ($l->group !== $group) {
+                $group = $l->group; ?>
+            <tr class="subtotal"><td colspan="4"><?php echo text(xl($group)); ?></td></tr>
+            <?php } ?>
+            <tr class="<?php echo $l->isCounted() ? '' : 'grant-only'; ?>">
+                <td><?php echo text($l->line); ?></td>
+                <td><?php echo text(xl($l->label)); ?><?php if ($l->limit !== null) { ?> <span title="<?php echo attr(xl($l->limit)); ?>">*</span><?php } ?></td>
+                <td class="num"><?php echo $row['visits'] === null ? '&mdash;' : text($n($row['visits'])); ?></td>
+                <td class="num"><?php echo $row['patients'] === null ? '&mdash;' : text($n($row['patients'])); ?></td>
+            </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+    <details class="small text-muted mb-4">
+        <summary><?php echo xlt('What * and the dashes leave out, line by line'); ?></summary>
+        <ul class="mt-2">
+        <?php foreach ($t6a as $row) {
+            if ($row['line']->limit !== null) { ?>
+            <li><?php echo xlt('Line'); ?> <?php echo text($row['line']->line); ?>: <?php echo text(xl($row['line']->limit)); ?></li>
+            <?php }
+        } ?>
+        </ul>
+    </details>
 </div>
 </body>
 </html>

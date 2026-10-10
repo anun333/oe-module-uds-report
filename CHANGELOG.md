@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.0 — 2026-10-10
+
+- **Table 6A: Selected Diagnoses and Services Rendered**, from the billing codes on each encounter.
+  - Diagnoses count at countable visits; services at any in-scope encounter in the year for UDS patients.
+  - One visit per line, a patient once per line, and age limits by age at the visit.
+  - Codes are in `data/table-6a.json`, copied from the 2026 UDS Manual in its own notation (all 326 code tokens and 21 value set OIDs checked against the manual).
+  - 7 lines defined only by value sets are left blank, and 11 lines count only the listed codes. The report marks each, with the reason.
+  - On the report page and in the CSV download, now named `uds-YEAR-tables.csv`.
+- Hand-worked Table 6A cases in `data/cases/table-6a.json`, including exclusions, the J40-with-U07.1 rule, age boundaries, and services at visits that aren't countable.
+- Checked end to end on OpenEMR 8.4.1, with codes saved through OpenEMR's own `BillingUtilities::addBilling()`.
+- The footprint generator now reads SQL built by concatenation, and SQL inside shared column lists.
+
 ## 0.1.1 — 2026-10-09
 
 Found by entering data through OpenEMR's own Demographics form and reading the

@@ -21,6 +21,7 @@ final readonly class ReferenceData
         public PovertyGuidelines $povertyGuidelines,
         public RaceEthnicity $raceEthnicity,
         public InsuranceCategoryMap $insuranceCategories,
+        public Table6a $table6a,
     ) {
     }
 }

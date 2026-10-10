@@ -1,16 +1,16 @@
 # UDS Report for OpenEMR
 
-This module produces the demographic part of the HRSA **Uniform Data System (UDS)** report, which every Health Center Program awardee and look-alike files each year. It covers the **Patients by ZIP Code** table and **Tables 3A, 3B and 4**, following the **2026 UDS Manual** (calendar year 2026, due February 15, 2027). It also lists the patient records that would make the tables wrong, so staff can fix them before submission.
+This module produces the demographic part of the HRSA **Uniform Data System (UDS)** report, which every Health Center Program awardee and look-alike files each year. It covers the **Patients by ZIP Code** table, **Tables 3A, 3B and 4**, and **Table 6A** (selected diagnoses and services), following the **2026 UDS Manual** (calendar year 2026, due February 15, 2027). It also lists the patient records that would make the tables wrong, so staff can fix them before submission.
 
 It doesn't submit anything. Health centers still enter the figures in HRSA's Electronic Handbooks (EHBs), and should check them against their own records first.
 
-> **Status: 0.1.0, pre-release.** The counting rules are tested against hand-worked synthetic cases only. They have not yet been compared with a health center's real UDS submission. If your health center uses OpenEMR and would compare this module's table totals with a report you have already filed (totals only, no patient data shared), please open an issue.
+> **Status: 0.2.0, pre-release.** The counting rules are tested against hand-worked synthetic cases only. They have not yet been compared with a health center's real UDS submission. If your health center uses OpenEMR and would compare this module's table totals with a report you have already filed (totals only, no patient data shared), please open an issue.
 
 What installing it changes in your database, what it reads and writes, and what it hooks into are listed in [FOOTPRINT.md](FOOTPRINT.md), generated from the source.
 
 ## What it gives you
 
-- **Reports › UDS Report:** the four tables for a chosen year, in the manual's layout and line numbering. Also:
+- **Reports › UDS Report:** the tables for a chosen year, in the manual's layout and line numbering. Also:
   - a cross-table check (the manual requires the same patient total on every table),
   - a CSV download, and
   - a "Records to fix" list. **Blocking** problems keep a patient off a table entirely. **Quality** problems push a patient into an "unknown" line.
@@ -42,19 +42,40 @@ What installing it changes in your database, what it reads and writes, and what 
 | Lines 24 (school-based) and 26 (public housing) depend on the visit site | Sites marked in Settings |
 | Line 25 counts only an affirmative answer, never active duty | "Served" only |
 
+## Table 6A: Selected Diagnoses and Services Rendered
+
+Counted from the billing codes on each encounter (the fee sheet's codes). The manual names billing systems and health records as the sources, and its FAQ asks health centers to code a service even when there's no charge, rather than leave it out.
+
+| Rule (2026 UDS Manual) | Implementation |
+|---|---|
+| Diagnoses (Lines 1–20g) count at countable visits | ICD-10 codes on countable visits (same test as above) |
+| Tests, screenings, dental and support services (Lines 21–42) count when provided at any point in the year to a health center patient | Codes on any encounter in the year at an in-scope site, for patients with at least one countable visit. A flu shot at a nurse-only visit counts; one given to someone with no countable visit doesn't |
+| Column A: one visit per line, however many of its codes match; a visit counts on every line it matches | As stated |
+| Column B: a patient once per line | As stated |
+| Age limits use the age at the visit (Lines 15–17, 26, 26a, 26e) | `DOB`; an unknown birth date can't satisfy an age limit |
+| The codes for each line | [data/table-6a.json](data/table-6a.json), copied in the manual's own notation and checked against the manual code by code |
+
+What it can't count yet (each line is marked on the report, with the reason):
+
+- **7 lines defined only by value sets** (26c2, 26c3, 38, 39, 40, 41, 42: tobacco cessation drugs, opioid use disorder medications, language assistance, and the upstream drivers of health lines) are left blank. Counting them needs the Value Set Authority Center's expansions.
+- **11 lines count the codes the manual lists but not their value sets.** On Line 21e (PrEP) the manual also requires a prescription for specific drugs, which isn't checked; on Line 26f (dementia screening) only CPT 99483 counts, not the screeners.
+- **Codes outside the fee sheet aren't seen:** a lab result returned without a billing code, or an immunization recorded only in the Immunizations screen. The manual's preferred fix is to put the code on the encounter with a zero charge.
+- **Dental Lines 27–32** count the codes whoever recorded them; the manual limits them to dental providers (except fluoride).
+- **Dental codes** are recognised by their shape (D plus four digits) under any code type except ICD, since OpenEMR has no CDT code type.
+
 ## The Financial Review Date pitfall
 
 OpenEMR's **Financial Review Date** is a plain text box on a date column, and OpenEMR saves with the database's strict checking off. A date typed as `2026-09-15` is kept; typed any other way (`9/15/2026`, `Sept 15`) it is **silently stored as no date at all**, with no message on screen. The patient's income then can't be used and counts as Unknown on Table 4. The Records to fix list names this case on its own ("Financial Review Date was not saved"), so staff can re-enter those dates.
 
 ## Reference data
 
-The published figures and code mappings are in [data/](data/README.md), in plain files that people who prepare UDS submissions can check without reading PHP: the poverty guidelines, the race and ethnicity roll-up, and the insurance categories. The counting rules stay in the code. A broken data file stops the report with a message naming the file and entry; it never runs on a bad edit.
+The published figures and code mappings are in [data/](data/README.md), in plain files that people who prepare UDS submissions can check without reading PHP: the poverty guidelines, the race and ethnicity roll-up, the insurance categories, and the Table 6A codes. The counting rules stay in the code. A broken data file stops the report with a message naming the file and entry; it never runs on a bad edit.
 
 The expected results are data too ([data/cases/](data/cases/)): line and column placements, insurance categories, poverty thresholds, and whole tables built from synthetic patients worked out by hand from the manual. Any program implementing the same rules can be held to them. The tests run every case (`tests/ConformanceTest.php`). The full report has also been checked end to end against a running OpenEMR with synthetic patients whose every cell was worked out by hand first.
 
 ## Not done yet, or approximated
 
-- **Other tables:** 5, 6A, 6B, 7, 8A, 9D and 9E, the two forms, and the per-grant reports (330(g), (h) and (i) subsets) aren't produced yet. Tables 6B and 7 can build on OpenEMR's existing eCQM engine once its measure package covers the 2026 versions.
+- **Other tables:** 5, 6B, 7, 8A, 9D and 9E, the two forms, and the per-grant reports (330(g), (h) and (i) subsets) aren't produced yet. Tables 6B and 7 can build on OpenEMR's existing eCQM engine once its measure package covers the 2026 versions.
 - **Countable visits:** whether a visit is truly countable (independent judgment, a credentialed provider, not a nurse-only or ancillary service) is approximated by visit category and provider. Each health center has to set the categories.
 - **Homelessness and farmworker look-back:** the manual counts someone as homeless for 12 months after homelessness was last documented, and as a farmworker if that was their work within 24 months. The module uses the current value of each field; it has no history of past values.
 - **Medicaid versus CHIP:** the two can't be told apart automatically. They're reported as Medicaid unless a plan is set to CHIP in Settings, which is what the manual says to do when they can't be distinguished.
@@ -74,7 +95,7 @@ Viewing needs `patients/demo`; Settings needs `admin/super`.
 
 ## Compatibility
 
-Checked end to end on OpenEMR 8.4.1 (PHP 8.3 and later). The package declares no Composer constraint on `openemr/openemr`: OpenEMR reports itself to Composer as version `1.0.0+no-version-set`, so any minimum version written there would block every install.
+Checked end to end on OpenEMR 8.4.1 (PHP 8.3 and later), including Table 6A from codes saved through OpenEMR's own billing functions. The package declares no Composer constraint on `openemr/openemr`: OpenEMR reports itself to Composer as version `1.0.0+no-version-set`, so any minimum version written there would block every install.
 
 ## Development
 

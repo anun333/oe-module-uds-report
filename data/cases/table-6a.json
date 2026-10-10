@@ -1,0 +1,78 @@
+{
+    "about": "Table 6A results for synthetic encounters, worked out by hand from the 2026 UDS Manual (Table 6A and its instructions). Each encounter has the patient, the date, whether it is a countable visit, whether it is at an in-scope site, the patient's birth date (null: unknown) and its billing codes by code system, written as OpenEMR stores them. patients lists the UDS patients (at least one countable visit in the year). expected gives [visits (A), patients (B)] for the lines it names; null means the line is left blank. Every other counted line must come out [0, 0].",
+    "cases": [
+        {
+            "name": "A visit counts once on a line however many of its codes match, and once on every line it matches",
+            "patients": [1],
+            "encounters": [
+                {"pid": 1, "encounter": 101, "date": "2026-03-02", "countable": true, "inScope": true, "birthDate": "1970-05-01", "codes": {"icd10": ["I10", "E11.9", "E11.65"]}},
+                {"pid": 1, "encounter": 102, "date": "2026-06-10", "countable": true, "inScope": true, "birthDate": "1970-05-01", "codes": {"icd10": ["E11.9"]}}
+            ],
+            "expected": {"9": [2, 1], "11": [1, 1]}
+        },
+        {
+            "name": "Exclusions, and J40 only when U07.1 isn't on the same visit",
+            "patients": [2, 3, 4],
+            "encounters": [
+                {"pid": 2, "encounter": 201, "date": "2026-02-01", "countable": true, "inScope": true, "birthDate": "1990-01-01", "codes": {"icd10": ["O24.410"]}},
+                {"pid": 2, "encounter": 202, "date": "2026-04-01", "countable": true, "inScope": true, "birthDate": "1990-01-01", "codes": {"icd10": ["O24.011"]}},
+                {"pid": 3, "encounter": 301, "date": "2026-02-01", "countable": true, "inScope": true, "birthDate": "1960-01-01", "codes": {"icd10": ["J40", "U07.1"]}},
+                {"pid": 3, "encounter": 302, "date": "2026-03-01", "countable": true, "inScope": true, "birthDate": "1960-01-01", "codes": {"icd10": ["J40"]}},
+                {"pid": 3, "encounter": 303, "date": "2026-04-01", "countable": true, "inScope": true, "birthDate": "1960-01-01", "codes": {"icd10": ["I02.9"]}},
+                {"pid": 3, "encounter": 304, "date": "2026-05-01", "countable": true, "inScope": true, "birthDate": "1960-01-01", "codes": {"icd10": ["I02.0"]}},
+                {"pid": 4, "encounter": 401, "date": "2026-02-01", "countable": true, "inScope": true, "birthDate": "1985-01-01", "codes": {"icd10": ["Z68.24"]}},
+                {"pid": 4, "encounter": 402, "date": "2026-03-01", "countable": true, "inScope": true, "birthDate": "1985-01-01", "codes": {"icd10": ["Z68.30"]}},
+                {"pid": 4, "encounter": 403, "date": "2026-04-01", "countable": true, "inScope": true, "birthDate": "1985-01-01", "codes": {"icd10": ["Z68.54"]}},
+                {"pid": 4, "encounter": 404, "date": "2026-05-01", "countable": true, "inScope": true, "birthDate": "1985-01-01", "codes": {"icd10": ["Z68.51"]}}
+            ],
+            "expected": {"9": [1, 1], "6": [1, 1], "4c": [1, 1], "10": [1, 1], "14a": [2, 1]}
+        },
+        {
+            "name": "Diagnoses count only at countable visits; services at any in-scope encounter, for UDS patients only",
+            "patients": [5],
+            "encounters": [
+                {"pid": 5, "encounter": 501, "date": "2026-01-15", "countable": false, "inScope": true, "birthDate": "1950-01-01", "codes": {"icd10": ["I10"], "cpt": ["90686"]}},
+                {"pid": 5, "encounter": 502, "date": "2026-02-15", "countable": true, "inScope": true, "birthDate": "1950-01-01", "codes": {"icd10": ["I10"]}},
+                {"pid": 5, "encounter": 503, "date": "2026-03-15", "countable": false, "inScope": false, "birthDate": "1950-01-01", "codes": {"cpt": ["90686"]}},
+                {"pid": 6, "encounter": 601, "date": "2026-01-15", "countable": false, "inScope": true, "birthDate": "1950-01-01", "codes": {"cpt": ["90686"]}}
+            ],
+            "expected": {"11": [1, 1], "24a": [1, 1]}
+        },
+        {
+            "name": "Age limits use the age at each visit; an unknown age can't satisfy one",
+            "patients": [7, 8, 9, 10, 11],
+            "encounters": [
+                {"pid": 7, "encounter": 701, "date": "2026-07-14", "countable": true, "inScope": true, "birthDate": "2008-07-15", "codes": {"icd10": ["H66.90"]}},
+                {"pid": 7, "encounter": 702, "date": "2026-07-15", "countable": true, "inScope": true, "birthDate": "2008-07-15", "codes": {"icd10": ["H66.90"]}},
+                {"pid": 8, "encounter": 801, "date": "2026-07-31", "countable": false, "inScope": true, "birthDate": "2025-11-01", "codes": {"cpt": ["83655"]}},
+                {"pid": 8, "encounter": 802, "date": "2026-08-01", "countable": false, "inScope": true, "birthDate": "2025-11-01", "codes": {"cpt": ["83655"]}},
+                {"pid": 9, "encounter": 901, "date": "2026-02-01", "countable": true, "inScope": true, "birthDate": null, "codes": {"icd10": ["H66.90"]}},
+                {"pid": 10, "encounter": 1001, "date": "2026-03-01", "countable": true, "inScope": true, "birthDate": "2014-01-01", "codes": {"cpt": ["99393"]}},
+                {"pid": 11, "encounter": 1101, "date": "2026-03-01", "countable": true, "inScope": true, "birthDate": "2014-06-01", "codes": {"cpt": ["99393"]}}
+            ],
+            "expected": {"15": [1, 1], "26a": [1, 1], "26": [1, 1]}
+        },
+        {
+            "name": "Ranges, prefixes, the x wildcard, code systems, case and dots",
+            "patients": [12],
+            "encounters": [
+                {"pid": 12, "encounter": 1201, "date": "2026-01-10", "countable": false, "inScope": true, "birthDate": "2000-01-01", "codes": {"cdt": ["D2391", "D1206"]}},
+                {"pid": 12, "encounter": 1202, "date": "2026-02-10", "countable": false, "inScope": true, "birthDate": "2000-01-01", "codes": {"cpt": ["99188"]}},
+                {"pid": 12, "encounter": 1203, "date": "2026-03-10", "countable": false, "inScope": true, "birthDate": "2000-01-01", "codes": {"hcpcs": ["G0475"], "cpt": ["86701"]}},
+                {"pid": 12, "encounter": 1204, "date": "2026-04-10", "countable": false, "inScope": true, "birthDate": "2000-01-01", "codes": {"cpt": ["80074"]}},
+                {"pid": 12, "encounter": 1205, "date": "2026-05-10", "countable": true, "inScope": true, "birthDate": "2000-01-01", "codes": {"icd10": ["g80.1", "F84.0"]}},
+                {"pid": 12, "encounter": 1206, "date": "2026-06-10", "countable": true, "inScope": true, "birthDate": "2000-01-01", "codes": {"icd10": ["X30.XXXA"]}},
+                {"pid": 12, "encounter": 1207, "date": "2026-07-10", "countable": false, "inScope": true, "birthDate": "2000-01-01", "codes": {"snomed": ["661901000124106"]}}
+            ],
+            "expected": {"32": [1, 1], "31": [2, 1], "21": [1, 1], "21a": [1, 1], "21b": [1, 1], "20g": [1, 1], "20d": [1, 1], "14": [1, 1], "36": [1, 1]}
+        },
+        {
+            "name": "Lines defined only by value sets are left blank",
+            "patients": [13],
+            "encounters": [
+                {"pid": 13, "encounter": 1301, "date": "2026-01-10", "countable": true, "inScope": true, "birthDate": "2000-01-01", "codes": {"icd10": ["Z59.41"]}}
+            ],
+            "expected": {"26c2": null, "26c3": null, "38": null, "39": null, "40": null, "41": null, "42": null}
+        }
+    ]
+}
