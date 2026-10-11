@@ -92,6 +92,9 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
                 <?php } ?>
             </select>
             <a class="btn btn-sm btn-outline-secondary mr-2" href="<?php echo attr($moduleUrl . '/public/export.php?' . $query); ?>"><?php echo xlt('Download CSV'); ?></a>
+            <?php if ($grant === null) { ?>
+                <a class="btn btn-sm btn-outline-secondary mr-2" href="<?php echo attr($moduleUrl . '/public/ecqm.php?year=' . $year); ?>"><?php echo xlt('eCQM readiness'); ?></a>
+            <?php } ?>
             <?php if ($grant === null && $canSeeRevenue) { ?>
                 <a class="btn btn-sm btn-outline-secondary mr-2" href="<?php echo attr($moduleUrl . '/public/table9d.php?year=' . $year); ?>"><?php echo xlt('Table 9D worksheet'); ?></a>
             <?php } ?>

@@ -11,6 +11,7 @@ These files hold the published figures and code mappings the UDS Report uses. Th
 | [table-5-taxonomy.json](table-5-taxonomy.json) | The Table 5 line suggested for each NUCC taxonomy code (from the manual's Appendix A) | NUCC publishes a new taxonomy (twice a year), or HRSA changes Appendix A |
 | [table-6a.json](table-6a.json) | The lines of Table 6A and the codes that put a visit on each, in the manual's notation | HRSA publishes a new manual (codes change every year) |
 | [table-9d-adjustments.json](table-9d-adjustments.json) | Where the Table 9D worksheet suggests each adjustment reason goes: Column D, Line 15 (bad debt), or review | A clinic adds its own adjustment reasons, or a suggestion turns out to be wrong |
+| [ecqm-measures.json](ecqm-measures.json) | The eCQMs UDS Tables 6B and 7 use each year, with the line and the version the manual names | HRSA publishes a new manual (measure versions change every year) |
 
 Each file begins with an `about` that explains its fields.
 

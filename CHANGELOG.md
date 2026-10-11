@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0 — 2026-10-11
+
+- **eCQM readiness for Tables 6B and 7**, on its own page from the UDS Report. The module doesn't produce Tables 6B and 7 yet; this shows what to fix before it can.
+  - The 16 eCQMs UDS 2026 uses (`data/ecqm-measures.json`, each line and version checked against the manual), and whether each is installed at that version.
+  - Counts of the records OpenEMR's eCQM calculation can't see, with how to fix each: visits with no coded Encounter Type (and the Encounter Types with no code), problems not classified as Diagnosis or with no code, and blood pressures recorded only in the Vitals form.
+  - Ongoing problems and visits with no end time, which OpenEMR currently doesn't count ([openemr/openemr#14526](https://github.com/openemr/openemr/issues/14526)). The page asks OpenEMR's own QDM builder, so the warning goes away once OpenEMR is fixed.
+- Checked end to end on OpenEMR 8.4.1 with hand-worked counts, and on OpenEMR master, where the builder check was shown to change with a local fix for #14526.
+
 ## 0.5.0 — 2026-10-11
 
 - **Table 9D worksheet**, for whoever prepares Table 9D (Accrued Patient Service Revenue). Table 9D follows the audited financial statements and partly comes from the general ledger, so this is an input to it, not the table.

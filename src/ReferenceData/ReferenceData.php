@@ -25,6 +25,7 @@ final readonly class ReferenceData
         public Table5 $table5,
         public ProviderTaxonomy $providerTaxonomy,
         public AdjustmentReasons $adjustmentReasons,
+        public EcqmMeasures $ecqmMeasures,
     ) {
     }
 }

@@ -45,6 +45,7 @@ final readonly class ReferenceDataLoader
             $table5,
             ProviderTaxonomy::fromData($this->read(ProviderTaxonomy::FILE), $table5),
             AdjustmentReasons::fromData($this->read(AdjustmentReasons::FILE)),
+            EcqmMeasures::fromData($this->read(EcqmMeasures::FILE)),
         );
     }
 

@@ -1,0 +1,120 @@
+{
+    "about": "The electronic clinical quality measures (eCQMs) that UDS Tables 6B and 7 use, by reporting year, with the measure version the manual names. OpenEMR calculates an eCQM only from that exact version's files, so a measure installed at another version can't stand in for it.",
+    "basis": "2026 UDS Manual, Instructions for Table 6B (pages 92-116) and Table 7 (pages 131-133): each measure's heading names its line and version. For CMS164 the manual says the electronic specifications have not been updated and to follow CMS164v7 (page 105).",
+    "years": {
+        "2026": [
+            {
+                "table": "6B",
+                "line": "10",
+                "title": "Childhood Immunization Status",
+                "measure": "CMS117v14",
+                "page": 92
+            },
+            {
+                "table": "6B",
+                "line": "11",
+                "title": "Cervical Cancer Screening",
+                "measure": "CMS124v14",
+                "page": 95
+            },
+            {
+                "table": "6B",
+                "line": "11a",
+                "title": "Breast Cancer Screening",
+                "measure": "CMS125v14",
+                "page": 97
+            },
+            {
+                "table": "6B",
+                "line": "12",
+                "title": "Weight Assessment and Counseling for Nutrition and Physical Activity for Children/Adolescents",
+                "measure": "CMS155v14",
+                "page": 98
+            },
+            {
+                "table": "6B",
+                "line": "13",
+                "title": "Preventive Care and Screening: Body Mass Index (BMI) Screening and Follow-Up Plan",
+                "measure": "CMS69v14",
+                "page": 99
+            },
+            {
+                "table": "6B",
+                "line": "14a",
+                "title": "Preventive Care and Screening: Tobacco Use: Screening and Cessation Intervention",
+                "measure": "CMS138v14",
+                "page": 101
+            },
+            {
+                "table": "6B",
+                "line": "17a",
+                "title": "Statin Therapy for the Prevention and Treatment of Cardiovascular Disease",
+                "measure": "CMS347v9",
+                "page": 103
+            },
+            {
+                "table": "6B",
+                "line": "18",
+                "title": "Ischemic Vascular Disease (IVD): Use of Aspirin or Another Antiplatelet",
+                "measure": "CMS164v7",
+                "page": 105
+            },
+            {
+                "table": "6B",
+                "line": "19",
+                "title": "Colorectal Cancer Screening",
+                "measure": "CMS130v14",
+                "page": 106
+            },
+            {
+                "table": "6B",
+                "line": "20a",
+                "title": "HIV Screening",
+                "measure": "CMS349v8",
+                "page": 109
+            },
+            {
+                "table": "6B",
+                "line": "21",
+                "title": "Preventive Care and Screening: Screening for Depression and Follow-Up Plan",
+                "measure": "CMS2v15",
+                "page": 110
+            },
+            {
+                "table": "6B",
+                "line": "21a",
+                "title": "Depression Remission at Twelve Months",
+                "measure": "CMS159v14",
+                "page": 112
+            },
+            {
+                "table": "6B",
+                "line": "23a-23b",
+                "title": "Initiation and Engagement of Substance Use Disorder Treatment",
+                "measure": "CMS137v14",
+                "page": 114
+            },
+            {
+                "table": "6B",
+                "line": "24",
+                "title": "Falls: Screening for Future Fall Risk",
+                "measure": "CMS139v14",
+                "page": 116
+            },
+            {
+                "table": "7",
+                "line": "Columns 2A-2C",
+                "title": "Controlling High Blood Pressure",
+                "measure": "CMS165v14",
+                "page": 131
+            },
+            {
+                "table": "7",
+                "line": "Columns 3A-3F",
+                "title": "Diabetes: Glycemic Status Assessment Greater Than 9%",
+                "measure": "CMS122v14",
+                "page": 133
+            }
+        ]
+    }
+}

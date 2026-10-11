@@ -4,7 +4,7 @@ This module produces the demographic part of the HRSA **Uniform Data System (UDS
 
 It doesn't submit anything. Health centers still enter the figures in HRSA's Electronic Handbooks (EHBs), and should check them against their own records first.
 
-> **Status: 0.5.0, pre-release.** The counting rules are tested against hand-worked synthetic cases only. They have not yet been compared with a health center's real UDS submission. If your health center uses OpenEMR and would compare this module's table totals with a report you have already filed (totals only, no patient data shared), please open an issue.
+> **Status: 0.6.0, pre-release.** The counting rules are tested against hand-worked synthetic cases only. They have not yet been compared with a health center's real UDS submission. If your health center uses OpenEMR and would compare this module's table totals with a report you have already filed (totals only, no patient data shared), please open an issue.
 
 What installing it changes in your database, what it reads and writes, and what it hooks into are listed in [FOOTPRINT.md](FOOTPRINT.md), generated from the source.
 
@@ -16,6 +16,7 @@ What installing it changes in your database, what it reads and writes, and what 
   - a "Records to fix" list. **Blocking** problems keep a patient off a table entirely. **Quality** problems push a patient into an "unknown" line.
 - **Grant Reports:** choose 330(g), 330(h) or 330(i) instead of the Universal Report, on the page and in the CSV. See [Grant Reports](#grant-reports).
 - **Table 9D worksheet:** charges, collections and adjustments by payer line, reclassified as the manual asks, with each adjustment reason and where it suggests it goes. For staff who can open OpenEMR's Collections report. See [Table 9D worksheet](#table-9d-worksheet).
+- **eCQM readiness** (Tables 6B and 7): whether this OpenEMR can calculate the year's measures, and which records the calculation can't see, with how to fix each. See [eCQM readiness](#ecqm-readiness).
 - **Records to fix › patient list:** the patients behind each problem, each opening the chart. Viewing the list is written to OpenEMR's audit log.
 - **Settings** (administrators only):
   - which visit categories count as UDS visits,
@@ -110,6 +111,19 @@ Table 9D follows the health center's audited financial statements, and part of i
 
 Lines 17 and 18, capitation, settlements and wrap payments are left to the general ledger. Insurers not mapped to a UDS category, and insurers mapped to None/Uninsured (a program such as Title X is uninsured on Table 4 but Other Public on Table 9D), get their own rows so the total stays whole. The worksheet also reports payments not yet applied to any visit, and visits paid more than was charged.
 
+## eCQM readiness
+
+Most of Tables 6B and 7 are eCQMs, which OpenEMR calculates itself. The module doesn't produce those tables yet: the 2026 measure files aren't in OpenEMR, and OpenEMR currently drops open-ended records (below). Until then, **Reports › UDS Report › eCQM readiness** shows what to fix first.
+
+It lists the 16 measures UDS 2026 uses ([data/ecqm-measures.json](data/ecqm-measures.json)), the version the manual names, and whether that version is installed. It also counts, for the year's countable visits and the patients seen at them, the records OpenEMR's eCQM calculation can't see:
+
+| Records | Why (measured on OpenEMR master c11dd1b15c with CMS165) |
+|---|---|
+| Visits with no coded Encounter Type | Visits are found only by the code of their Encounter Type, not by billing codes. OpenEMR's stock Encounter Types have no codes; the page lists those that don't |
+| Problems not classified as Diagnosis, or with no code | Problems are read only when their Classification Type is Diagnosis, which a new problem doesn't have |
+| Blood pressures only in the Vitals form | Blood pressure is read only from Observations of type Physical Exam Performed, a type the stock list has turned off |
+| Ongoing problems, and visits with no end time | OpenEMR treats a missing end date as unknown, so these never count ([openemr/openemr#14526](https://github.com/openemr/openemr/issues/14526)). The page asks OpenEMR's own builder, so the row goes away once OpenEMR is fixed. Adding end dates to ongoing problems isn't a fix: an end date marks a problem resolved |
+
 ## The Financial Review Date pitfall
 
 OpenEMR's **Financial Review Date** is a plain text box on a date column, and OpenEMR saves with the database's strict checking off. A date typed as `2026-09-15` is kept; typed any other way (`9/15/2026`, `Sept 15`) it is **silently stored as no date at all**, with no message on screen. The patient's income then can't be used and counts as Unknown on Table 4. The Records to fix list names this case on its own ("Financial Review Date was not saved"), so staff can re-enter those dates.
@@ -122,7 +136,7 @@ The expected results are data too ([data/cases/](data/cases/)): line and column 
 
 ## Not done yet, or approximated
 
-- **Other tables:** 6B, 7, 8A and 9E and the two forms aren't produced yet; Grant Reports don't include them either. Table 9D is a worksheet, for the reasons [above](#table-9d-worksheet). Tables 6B and 7 can build on OpenEMR's existing eCQM engine once its measure package covers the 2026 versions.
+- **Other tables:** 6B, 7, 8A and 9E and the two forms aren't produced yet; Grant Reports don't include them either. Table 9D is a worksheet, for the reasons [above](#table-9d-worksheet). For 6B and 7 there is a [readiness page](#ecqm-readiness) instead. Tables 6B and 7 can build on OpenEMR's existing eCQM engine once its measure package covers the 2026 versions.
 - **Table 5 FTEs** (Column A) aren't computed; they come from HR records. A person who holds two roles (a nurse who is also a case manager, say) has one line per person, plus any line set by visit category.
 - **Countable visits:** whether a visit is truly countable (independent judgment, a credentialed provider, not a nurse-only or ancillary service) is approximated by visit category and provider. Each health center has to set the categories.
 - **Homelessness and farmworker look-back:** the manual counts someone as homeless for 12 months after homelessness was last documented, and as a farmworker if that was their work within 24 months. The module uses the current value of each field; it has no history of past values.
@@ -143,7 +157,7 @@ Viewing needs `patients/demo`; the Table 9D worksheet needs `acct/rep_a`, as Ope
 
 ## Compatibility
 
-Checked end to end on OpenEMR 8.4.1 (PHP 8.3 and later), including Tables 5 and 6A from codes saved through OpenEMR's own billing functions, a Table 5 line chosen through the Settings page, and the Table 9D worksheet from payments and adjustments posted through OpenEMR's EOB posting screen. The package declares no Composer constraint on `openemr/openemr`: OpenEMR reports itself to Composer as version `1.0.0+no-version-set`, so any minimum version written there would block every install.
+Checked end to end on OpenEMR 8.4.1 (PHP 8.3 and later), including Tables 5 and 6A from codes saved through OpenEMR's own billing functions, a Table 5 line chosen through the Settings page, and the Table 9D worksheet from payments and adjustments posted through OpenEMR's EOB posting screen. The eCQM readiness page was also checked against OpenEMR master (c11dd1b15c), where eCQMs are calculated in PHP, with and without a local fix for #14526. The package declares no Composer constraint on `openemr/openemr`: OpenEMR reports itself to Composer as version `1.0.0+no-version-set`, so any minimum version written there would block every install.
 
 ## Development
 
