@@ -1,10 +1,10 @@
 # UDS Report for OpenEMR
 
-This module produces the demographic part of the HRSA **Uniform Data System (UDS)** report, which every Health Center Program awardee and look-alike files each year. It covers the **Patients by ZIP Code** table, **Tables 3A, 3B and 4**, **Table 5** (visits and patients by type of service) and **Table 6A** (selected diagnoses and services), following the **2026 UDS Manual** (calendar year 2026, due February 15, 2027), as the Universal Report and as the **Grant Reports** for 330(g), (h) and (i) funding. It also lists the patient records that would make the tables wrong, so staff can fix them before submission.
+This module produces the demographic part of the HRSA **Uniform Data System (UDS)** report, which every Health Center Program awardee and look-alike files each year. It covers the **Patients by ZIP Code** table, **Tables 3A, 3B and 4**, **Table 5** (visits and patients by type of service) and **Table 6A** (selected diagnoses and services), following the **2026 UDS Manual** (calendar year 2026, due February 15, 2027), as the Universal Report and as the **Grant Reports** for 330(g), (h) and (i) funding. It also lists the patient records that would make the tables wrong, so staff can fix them before submission, and gives whoever prepares **Table 9D** (patient service revenue) a worksheet from OpenEMR's accounts receivable.
 
 It doesn't submit anything. Health centers still enter the figures in HRSA's Electronic Handbooks (EHBs), and should check them against their own records first.
 
-> **Status: 0.4.0, pre-release.** The counting rules are tested against hand-worked synthetic cases only. They have not yet been compared with a health center's real UDS submission. If your health center uses OpenEMR and would compare this module's table totals with a report you have already filed (totals only, no patient data shared), please open an issue.
+> **Status: 0.5.0, pre-release.** The counting rules are tested against hand-worked synthetic cases only. They have not yet been compared with a health center's real UDS submission. If your health center uses OpenEMR and would compare this module's table totals with a report you have already filed (totals only, no patient data shared), please open an issue.
 
 What installing it changes in your database, what it reads and writes, and what it hooks into are listed in [FOOTPRINT.md](FOOTPRINT.md), generated from the source.
 
@@ -15,6 +15,7 @@ What installing it changes in your database, what it reads and writes, and what 
   - a CSV download, and
   - a "Records to fix" list. **Blocking** problems keep a patient off a table entirely. **Quality** problems push a patient into an "unknown" line.
 - **Grant Reports:** choose 330(g), 330(h) or 330(i) instead of the Universal Report, on the page and in the CSV. See [Grant Reports](#grant-reports).
+- **Table 9D worksheet:** charges, collections and adjustments by payer line, reclassified as the manual asks, with each adjustment reason and where it suggests it goes. For staff who can open OpenEMR's Collections report. See [Table 9D worksheet](#table-9d-worksheet).
 - **Records to fix › patient list:** the patients behind each problem, each opening the chart. Viewing the list is written to OpenEMR's audit log.
 - **Settings** (administrators only):
   - which visit categories count as UDS visits,
@@ -93,6 +94,22 @@ A health center funded under more than one Health Center Program type files a Gr
 
 Each covers those patients and **all** their in-scope visits and services, whatever paid for them (FAQ 2), on Tables 3A, 3B, 4, 5 and 6A. Table 5 has no FTEs, and the Patients by ZIP Code table isn't part of a Grant Report. The membership test is the one Table 4 uses, so a Grant Report's total patients equals the Universal Report's line for that population, and no Grant Report cell can be larger than the Universal Report's, as the manual requires.
 
+## Table 9D worksheet
+
+Table 9D follows the health center's audited financial statements, and part of it comes from the general ledger (FAQ 8, page 169), so the module gives a worksheet for whoever prepares it, not the table. It reads OpenEMR's accounts receivable: fee sheet charges and the payments and adjustments posted to them. It opens from the Universal Report; Grant Reports have no Table 9D.
+
+| Rule (2026 UDS Manual) | Implementation |
+|---|---|
+| Charges (Column A) by date of service in the year, from the fee schedule (pages 164–165, FAQ 6) | Active fee sheet lines of visits dated in the year at in-scope sites. Sales tax lines are left out, and so are old COPAY lines (payments recorded as negative charges), which are reported |
+| Charges are reclassified: each payer is charged what it accepted, and the rest moves to the next payer and finally to Self-Pay (page 165, FAQ 4) | Each payer is charged what it settled on the visit (the payments and adjustments posted for it, up to the day the report runs). The balance still open goes to whoever owes it now: the insurer at the level after the last one closed, or the patient. The page also shows each line's charges before reclassification |
+| Collections (Column B) and adjustments (Column D) by posting date in the year, for services of any year (FAQ 6) | Postings dated in the year: the date entered with the posting, else its batch's Post To Date, else the day it was saved. Takebacks and refunds, posted as negative payments, reduce collections (page 168) |
+| A payer line follows the payer, including managed care plans run by private insurers (pages 160–161) | The insurer that sent the payment, else the patient's insurer at that level on the date of service, by the UDS insurance categories set in Settings. Patient postings are Self-Pay |
+| Contractual adjustments, sliding fee discounts and hardship waivers are Column D; bad debt is Line 15, not Column D (pages 162–167) | By the reason posted with each adjustment ([data/table-9d-adjustments.json](data/table-9d-adjustments.json)). Reasons with no clear treatment, and reasons the file doesn't know, are listed for review and kept out of Column D |
+| Bad debt by the allowance method where possible; direct write-off otherwise (page 163) | Direct write-offs posted in the year. An allowance comes from the general ledger |
+| Pharmacy revenue is Line 17, not charges (pages 164–166) | Product sales from OpenEMR's inventory and their payments are reported apart, because OpenEMR doesn't tell pharmaceuticals from supplies such as eyeglasses, which are charges |
+
+Lines 17 and 18, capitation, settlements and wrap payments are left to the general ledger. Insurers not mapped to a UDS category, and insurers mapped to None/Uninsured (a program such as Title X is uninsured on Table 4 but Other Public on Table 9D), get their own rows so the total stays whole. The worksheet also reports payments not yet applied to any visit, and visits paid more than was charged.
+
 ## The Financial Review Date pitfall
 
 OpenEMR's **Financial Review Date** is a plain text box on a date column, and OpenEMR saves with the database's strict checking off. A date typed as `2026-09-15` is kept; typed any other way (`9/15/2026`, `Sept 15`) it is **silently stored as no date at all**, with no message on screen. The patient's income then can't be used and counts as Unknown on Table 4. The Records to fix list names this case on its own ("Financial Review Date was not saved"), so staff can re-enter those dates.
@@ -105,7 +122,7 @@ The expected results are data too ([data/cases/](data/cases/)): line and column 
 
 ## Not done yet, or approximated
 
-- **Other tables:** 6B, 7, 8A, 9D and 9E and the two forms aren't produced yet; Grant Reports don't include them either. Tables 6B and 7 can build on OpenEMR's existing eCQM engine once its measure package covers the 2026 versions.
+- **Other tables:** 6B, 7, 8A and 9E and the two forms aren't produced yet; Grant Reports don't include them either. Table 9D is a worksheet, for the reasons [above](#table-9d-worksheet). Tables 6B and 7 can build on OpenEMR's existing eCQM engine once its measure package covers the 2026 versions.
 - **Table 5 FTEs** (Column A) aren't computed; they come from HR records. A person who holds two roles (a nurse who is also a case manager, say) has one line per person, plus any line set by visit category.
 - **Countable visits:** whether a visit is truly countable (independent judgment, a credentialed provider, not a nurse-only or ancillary service) is approximated by visit category and provider. Each health center has to set the categories.
 - **Homelessness and farmworker look-back:** the manual counts someone as homeless for 12 months after homelessness was last documented, and as a farmworker if that was their work within 24 months. The module uses the current value of each field; it has no history of past values.
@@ -122,11 +139,11 @@ composer require anun333/oe-module-uds-report
 
 That places it in `interface/modules/custom_modules/oe-module-uds-report/`. Then go to Modules › Manage Modules and **Register**, **Install** and **Enable** UDS Report. Installing adds the settings tables and the three demographic fields. Uninstalling leaves them in place, because they hold data staff entered.
 
-Viewing needs `patients/demo`; Settings needs `admin/super`.
+Viewing needs `patients/demo`; the Table 9D worksheet needs `acct/rep_a`, as OpenEMR's Collections report does; Settings needs `admin/super`.
 
 ## Compatibility
 
-Checked end to end on OpenEMR 8.4.1 (PHP 8.3 and later), including Tables 5 and 6A from codes saved through OpenEMR's own billing functions, and a Table 5 line chosen through the Settings page. The package declares no Composer constraint on `openemr/openemr`: OpenEMR reports itself to Composer as version `1.0.0+no-version-set`, so any minimum version written there would block every install.
+Checked end to end on OpenEMR 8.4.1 (PHP 8.3 and later), including Tables 5 and 6A from codes saved through OpenEMR's own billing functions, a Table 5 line chosen through the Settings page, and the Table 9D worksheet from payments and adjustments posted through OpenEMR's EOB posting screen. The package declares no Composer constraint on `openemr/openemr`: OpenEMR reports itself to Composer as version `1.0.0+no-version-set`, so any minimum version written there would block every install.
 
 ## Development
 

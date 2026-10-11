@@ -24,6 +24,7 @@ final readonly class ReferenceData
         public Table6a $table6a,
         public Table5 $table5,
         public ProviderTaxonomy $providerTaxonomy,
+        public AdjustmentReasons $adjustmentReasons,
     ) {
     }
 }

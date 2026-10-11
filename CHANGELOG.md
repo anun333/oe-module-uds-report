@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.5.0 — 2026-10-11
+
+- **Table 9D worksheet**, for whoever prepares Table 9D (Accrued Patient Service Revenue). Table 9D follows the audited financial statements and partly comes from the general ledger, so this is an input to it, not the table.
+  - Charges by date of service, reclassified as FAQ 4 asks: each payer is charged what it settled, and the balance still open goes to whoever owes it now, the next insurer or the patient. Each line's charges before reclassification are shown too.
+  - Collections and adjustments by posting date, on the line of the payer that posted them.
+  - Adjustments sorted by the reason posted with them into Column D or Line 15 (bad debt), by `data/table-9d-adjustments.json`, which covers OpenEMR's stock reasons and what its payment screens, ERA posting and Collections report post. Unclear reasons are listed for review, not guessed.
+  - Flags insurers not mapped to a UDS category, payments not applied to any visit, credit balances, old COPAY lines and product sales (pharmacy revenue is Line 17, which OpenEMR can't separate from supplies).
+  - A page and a CSV download, opened from the Universal Report. Needs `acct/rep_a`, the permission of OpenEMR's own Collections report.
+- Amounts are summed in whole cents, so totals are exact.
+- The CSV download no longer puts an apostrophe before a negative amount such as `-12.50`, which a spreadsheet reads as a number, not a formula. Every other cell starting with `=`, `+`, `-` or `@` is still guarded.
+- A test now rejects apostrophes in translated text, which OpenEMR shows as backticks.
+- Checked end to end on OpenEMR 8.4.1, with payments and adjustments posted through OpenEMR's EOB posting screen and every figure worked out by hand first.
+
 ## 0.4.0 — 2026-10-11
 
 - **Grant Reports for 330(g), 330(h) and 330(i).** Health centers with more than one Health Center Program funding type file one for each special population alongside the Universal Report.

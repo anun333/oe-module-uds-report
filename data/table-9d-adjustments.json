@@ -1,0 +1,98 @@
+{
+    "about": "Suggested Table 9D treatment of an adjustment, from the reason OpenEMR posted with it (ar_activity.memo). Before matching, the reason is lowercased, its spaces collapsed, and a trailing Ins1, Ins2 or Ins3 removed (OpenEMR appends one to reasons containing ins). The first rule whose label equals the reason (match exact), or starts it (match prefix), applies. contractual and discount go to Column D on the line of whoever the adjustment was posted for; bad_debt goes to Line 15; review makes no suggestion. A reason no rule matches is treated as review. Zero-amount adjustments are notes (patient responsibility, deductibles) and are not read.",
+    "basis": "2026 UDS Manual, Instructions for Table 9D (pages 159-170): Column D adjustments (pages 166-168), Line 15 bad debt (page 163), sliding fee discounts and waivers (page 162). Reasons are those OpenEMR writes: the stock Adjustment Reasons list and the Collections Report (sql/database.sql and interface/reports/collections_report.php), the batch payment screen (library/payment.inc.php), checkout (interface/patient_file/pos_checkout_normal.php) and ERA posting (interface/billing/sl_eob_process.php), all read at OpenEMR commit 88a85cead1.",
+    "rules": [
+        {
+            "match": "exact",
+            "label": "Adjust code 29",
+            "class": "bad_debt",
+            "note": "ERA: the time limit for filing expired (CARC 29). The manual names delayed or improper billing as a cause of bad debt."
+        },
+        {
+            "match": "prefix",
+            "label": "Adjust code",
+            "class": "contractual",
+            "note": "ERA adjustment by a payer, posted as Adjust code and the CARC (patient responsibility is posted as a zero-amount note instead). A denial the clinic reworks and gets paid is offset when the payment posts."
+        },
+        {
+            "match": "exact",
+            "label": "Ins adjust",
+            "class": "contractual",
+            "note": "Stock reason, and what the batch payment screen posts for every insurance adjustment."
+        },
+        {
+            "match": "exact",
+            "label": "Ins bundling",
+            "class": "contractual"
+        },
+        {
+            "match": "exact",
+            "label": "Discount",
+            "class": "discount",
+            "note": "Stock reason, and what checkout posts for a discount (translated on sites not in English, so it may need a rule in that language)."
+        },
+        {
+            "match": "exact",
+            "label": "Hardship w/o",
+            "class": "discount",
+            "note": "Hardship fee waivers are Column D adjustments (page 166)."
+        },
+        {
+            "match": "exact",
+            "label": "Bad debt",
+            "class": "bad_debt"
+        },
+        {
+            "match": "exact",
+            "label": "Coll w/o",
+            "class": "bad_debt",
+            "note": "Written off to a collection agency."
+        },
+        {
+            "match": "exact",
+            "label": "Adj from collt report",
+            "class": "bad_debt",
+            "note": "What the Collections Report's Clear Insurance Debt button posts: an insurer's unpaid balance, written off as uncollectable (page 163)."
+        },
+        {
+            "match": "exact",
+            "label": "Untimely filing",
+            "class": "bad_debt",
+            "note": "The manual names delayed or improper billing as a cause of bad debt (page 163)."
+        },
+        {
+            "match": "exact",
+            "label": "Sm debt w/o",
+            "class": "review",
+            "note": "Small balances written off by policy: a price concession (Column D) in most audits, bad debt in some. Follow the audit."
+        },
+        {
+            "match": "exact",
+            "label": "Bad check",
+            "class": "review",
+            "note": "A returned check undoes a collection, which belongs in Column B rather than among adjustments."
+        },
+        {
+            "match": "exact",
+            "label": "Adm adjust",
+            "class": "review",
+            "note": "Administrative adjustment: the reason does not say what for."
+        },
+        {
+            "match": "exact",
+            "label": "After hrs calls",
+            "class": "review"
+        },
+        {
+            "match": "exact",
+            "label": "Pt released",
+            "class": "review"
+        },
+        {
+            "match": "exact",
+            "label": "Pt adjust",
+            "class": "review",
+            "note": "What the batch payment screen posts for every patient adjustment, whatever the reason."
+        }
+    ]
+}

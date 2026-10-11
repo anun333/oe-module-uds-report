@@ -174,7 +174,9 @@ final class UdsReportRulesTest extends TestCase
     {
         self::assertSame("'=HYPERLINK(1)", CsvRow::cell('=HYPERLINK(1)'));
         self::assertSame("'+1", CsvRow::cell('+1'));
-        self::assertSame("'-1", CsvRow::cell('-1'));
+        self::assertSame("'-1+1", CsvRow::cell('-1+1'));
+        self::assertSame("'-A1", CsvRow::cell('-A1'));
+        self::assertSame('-1', CsvRow::cell('-1'), 'a negative amount is a number, not a formula');
         self::assertSame("'@SUM(A1)", CsvRow::cell('@SUM(A1)'));
         self::assertSame('Table 3A', CsvRow::cell('Table 3A'));
         self::assertSame(-1, CsvRow::cell(-1), 'numbers are written as numbers');

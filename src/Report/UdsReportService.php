@@ -20,6 +20,7 @@ use OpenEMR\Modules\UdsReport\Model\UdsPatient;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceData;
 use OpenEMR\Modules\UdsReport\Repository\EncounterCodeRepository;
 use OpenEMR\Modules\UdsReport\Repository\Table5VisitRepository;
+use OpenEMR\Modules\UdsReport\Repository\Table9DRepository;
 use OpenEMR\Modules\UdsReport\Repository\UdsPatientRepository;
 
 final class UdsReportService
@@ -93,6 +94,30 @@ final class UdsReportService
             $this->settings,
             $pids,
         );
+    }
+
+    /**
+     * The Table 9D worksheet, for the whole health center: Grant Reports have no
+     * Table 9D, so it ignores the grant.
+     */
+    public function table9D(): Table9DWorksheet
+    {
+        $repository = new Table9DRepository($this->patientRepository);
+        return new Table9DWorksheet(
+            $this->reference->adjustmentReasons,
+            $repository->charged($this->year, $this->settings),
+            $repository->posted($this->year, $this->settings),
+        );
+    }
+
+    /**
+     * What the Table 9D worksheet reports beside the table.
+     *
+     * @return array{copayLines: array{count: int, cents: int}, unapplied: array{count: int, cents: int}, productSales: array{count: int, cents: int}}
+     */
+    public function table9DNotes(): array
+    {
+        return (new Table9DRepository($this->patientRepository))->notes($this->year, $this->settings);
     }
 
     /** @return array<string, list<int>> DataGap value => pids */

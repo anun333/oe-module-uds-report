@@ -296,7 +296,7 @@ final readonly class UdsPatientRepository
     /**
      * @return array<int, InsuranceCategory> insurance company id => category
      */
-    private function insuranceCompanies(UdsSettings $settings): array
+    public function insuranceCompanies(UdsSettings $settings): array
     {
         $categories = [];
         foreach (QueryUtils::fetchRecords('SELECT id, cqm_sop, ins_type_code FROM insurance_companies') as $row) {

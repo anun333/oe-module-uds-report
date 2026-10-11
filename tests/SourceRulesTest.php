@@ -38,4 +38,28 @@ final class SourceRulesTest extends TestCase
         }
         self::assertSame([], $offenders, 'xl(), xlt() or xla() called with a variable');
     }
+
+    /**
+     * The other half of the same rule: an apostrophe in a translated literal
+     * is shown as a backtick. Write "the clinic settings", not "the clinic's".
+     */
+    public function testTranslatedTextHasNoApostrophes(): void
+    {
+        $files = [...glob(__DIR__ . '/../public/*.php') ?: [], ...glob(__DIR__ . '/../src/*/*.php') ?: []];
+        $offenders = [];
+        $literals = [];
+        foreach ($files as $file) {
+            $source = file_get_contents($file) ?: '';
+            preg_match_all('/\bxl[ta]?\(\s*(\'(?:[^\'\\\\]|\\\\.)*\'|"(?:[^"\\\\]|\\\\.)*")/', $source, $m);
+            $literals = [...$literals, ...$m[1]];
+            foreach ($m[1] as $literal) {
+                if (str_contains(substr($literal, 1, -1), "'")) {
+                    $offenders[] = basename($file) . ': ' . $literal;
+                }
+            }
+        }
+        self::assertContains("'Table 9D worksheet'", $literals, 'the literals were found');
+        self::assertGreaterThan(200, count($literals));
+        self::assertSame([], $offenders, 'apostrophes in translated text');
+    }
 }

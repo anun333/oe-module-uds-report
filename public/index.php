@@ -37,6 +37,8 @@ if (!AclMain::aclCheckCore('patients', 'demo')) {
     AccessDeniedHelper::denyWithTemplate('ACL check failed for patients/demo: UDS Report', xl('UDS Report'));
 }
 $isAdmin = AclMain::aclCheckCore('admin', 'super');
+// Revenue is shown to those who can see the core Collections report.
+$canSeeRevenue = AclMain::aclCheckCore('acct', 'rep_a');
 $reference = (new ReferenceDataGuard(new ReferenceDataLoader(), ServiceContainer::getLogger()))->loadOrStop($isAdmin);
 
 $now = ServiceContainer::getClock()->now();
@@ -90,6 +92,9 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
                 <?php } ?>
             </select>
             <a class="btn btn-sm btn-outline-secondary mr-2" href="<?php echo attr($moduleUrl . '/public/export.php?' . $query); ?>"><?php echo xlt('Download CSV'); ?></a>
+            <?php if ($grant === null && $canSeeRevenue) { ?>
+                <a class="btn btn-sm btn-outline-secondary mr-2" href="<?php echo attr($moduleUrl . '/public/table9d.php?year=' . $year); ?>"><?php echo xlt('Table 9D worksheet'); ?></a>
+            <?php } ?>
             <?php if ($isAdmin) { ?>
                 <a class="btn btn-sm btn-outline-secondary" href="<?php echo attr($moduleUrl . '/public/settings.php'); ?>"><?php echo xlt('Settings'); ?></a>
             <?php } ?>

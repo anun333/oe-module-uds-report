@@ -4,7 +4,8 @@
  * Writes one row of the UDS CSV download.
  *
  * Text cells that a spreadsheet would read as a formula (starting with =, +, -
- * or @) are prefixed with an apostrophe, so opening the file can't run one.
+ * or @) are prefixed with an apostrophe, so opening the file can't run one. A
+ * negative amount such as -12.50 is a number, not a formula, and is left alone.
  *
  * @package   OpenEMR
  * @link      https://www.open-emr.org
@@ -30,6 +31,9 @@ final class CsvRow
 
     public static function cell(int|string $value): int|string
     {
-        return is_string($value) && preg_match('/^[=+\-@]/', $value) === 1 ? "'" . $value : $value;
+        if (!is_string($value) || preg_match('/^-\d+(?:\.\d+)?$/D', $value) === 1) {
+            return $value;
+        }
+        return preg_match('/^[=+\-@]/', $value) === 1 ? "'" . $value : $value;
     }
 }
