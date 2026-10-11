@@ -1,10 +1,10 @@
 # UDS Report for OpenEMR
 
-This module produces the demographic part of the HRSA **Uniform Data System (UDS)** report, which every Health Center Program awardee and look-alike files each year. It covers the **Patients by ZIP Code** table, **Tables 3A, 3B and 4**, **Table 5** (visits and patients by type of service) and **Table 6A** (selected diagnoses and services), following the **2026 UDS Manual** (calendar year 2026, due February 15, 2027). It also lists the patient records that would make the tables wrong, so staff can fix them before submission.
+This module produces the demographic part of the HRSA **Uniform Data System (UDS)** report, which every Health Center Program awardee and look-alike files each year. It covers the **Patients by ZIP Code** table, **Tables 3A, 3B and 4**, **Table 5** (visits and patients by type of service) and **Table 6A** (selected diagnoses and services), following the **2026 UDS Manual** (calendar year 2026, due February 15, 2027), as the Universal Report and as the **Grant Reports** for 330(g), (h) and (i) funding. It also lists the patient records that would make the tables wrong, so staff can fix them before submission.
 
 It doesn't submit anything. Health centers still enter the figures in HRSA's Electronic Handbooks (EHBs), and should check them against their own records first.
 
-> **Status: 0.3.0, pre-release.** The counting rules are tested against hand-worked synthetic cases only. They have not yet been compared with a health center's real UDS submission. If your health center uses OpenEMR and would compare this module's table totals with a report you have already filed (totals only, no patient data shared), please open an issue.
+> **Status: 0.4.0, pre-release.** The counting rules are tested against hand-worked synthetic cases only. They have not yet been compared with a health center's real UDS submission. If your health center uses OpenEMR and would compare this module's table totals with a report you have already filed (totals only, no patient data shared), please open an issue.
 
 What installing it changes in your database, what it reads and writes, and what it hooks into are listed in [FOOTPRINT.md](FOOTPRINT.md), generated from the source.
 
@@ -14,6 +14,7 @@ What installing it changes in your database, what it reads and writes, and what 
   - a cross-table check (the manual requires the same patient total on every table),
   - a CSV download, and
   - a "Records to fix" list. **Blocking** problems keep a patient off a table entirely. **Quality** problems push a patient into an "unknown" line.
+- **Grant Reports:** choose 330(g), 330(h) or 330(i) instead of the Universal Report, on the page and in the CSV. See [Grant Reports](#grant-reports).
 - **Records to fix › patient list:** the patients behind each problem, each opening the chart. Viewing the list is written to OpenEMR's audit log.
 - **Settings** (administrators only):
   - which visit categories count as UDS visits,
@@ -80,6 +81,18 @@ What it can't count yet (each line is marked on the report, with the reason):
 - **Dental Lines 27–32** count the codes whoever recorded them; the manual limits them to dental providers (except fluoride).
 - **Dental codes** are recognised by their shape (D plus four digits) under any code type except ICD, since OpenEMR has no CDT code type.
 
+## Grant Reports
+
+A health center funded under more than one Health Center Program type files a Grant Report for each special population it is funded for, alongside the Universal Report (pages 11–12 and 15–16):
+
+| Grant Report | Patients | Matches the Universal Report's |
+|---|---|---|
+| Migratory and Seasonal Agricultural Workers, 330(g) | Agricultural Worker (UDS) is migratory, seasonal, or an aged or disabled former migratory worker | Table 4, Line 16 |
+| Homeless Population, 330(h) | Housing Status (UDS) is any homeless arrangement | Table 4, Line 23 |
+| Residents of Public Housing, 330(i) | Seen at a site marked in Settings as in or next to public housing; it is a site-based count, so where the patient lives doesn't matter | Table 4, Line 26 |
+
+Each covers those patients and **all** their in-scope visits and services, whatever paid for them (FAQ 2), on Tables 3A, 3B, 4, 5 and 6A. Table 5 has no FTEs, and the Patients by ZIP Code table isn't part of a Grant Report. The membership test is the one Table 4 uses, so a Grant Report's total patients equals the Universal Report's line for that population, and no Grant Report cell can be larger than the Universal Report's, as the manual requires.
+
 ## The Financial Review Date pitfall
 
 OpenEMR's **Financial Review Date** is a plain text box on a date column, and OpenEMR saves with the database's strict checking off. A date typed as `2026-09-15` is kept; typed any other way (`9/15/2026`, `Sept 15`) it is **silently stored as no date at all**, with no message on screen. The patient's income then can't be used and counts as Unknown on Table 4. The Records to fix list names this case on its own ("Financial Review Date was not saved"), so staff can re-enter those dates.
@@ -92,7 +105,7 @@ The expected results are data too ([data/cases/](data/cases/)): line and column 
 
 ## Not done yet, or approximated
 
-- **Other tables:** 6B, 7, 8A, 9D and 9E, the two forms, and the per-grant reports (330(g), (h) and (i) subsets) aren't produced yet. Tables 6B and 7 can build on OpenEMR's existing eCQM engine once its measure package covers the 2026 versions.
+- **Other tables:** 6B, 7, 8A, 9D and 9E and the two forms aren't produced yet; Grant Reports don't include them either. Tables 6B and 7 can build on OpenEMR's existing eCQM engine once its measure package covers the 2026 versions.
 - **Table 5 FTEs** (Column A) aren't computed; they come from HR records. A person who holds two roles (a nurse who is also a case manager, say) has one line per person, plus any line set by visit category.
 - **Countable visits:** whether a visit is truly countable (independent judgment, a credentialed provider, not a nurse-only or ancillary service) is approximated by visit category and provider. Each health center has to set the categories.
 - **Homelessness and farmworker look-back:** the manual counts someone as homeless for 12 months after homelessness was last documented, and as a farmworker if that was their work within 24 months. The module uses the current value of each field; it has no history of past values.

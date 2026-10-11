@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0 — 2026-10-11
+
+- **Grant Reports for 330(g), 330(h) and 330(i).** Health centers with more than one Health Center Program funding type file one for each special population alongside the Universal Report.
+  - Choose the report next to the year, on the report page and in the CSV download (`uds-YEAR-330h-tables.csv`, for example).
+  - Each covers the population's patients and all their in-scope visits and services, on Tables 3A, 3B, 4, 5 (without FTEs) and 6A. The Patients by ZIP Code table is left out, as the manual says.
+  - Membership is the Table 4 test for the same population, so a Grant Report's total equals the Universal Report's Table 4 Line 16, 23 or 26, and no Grant Report cell can be larger than the Universal Report's.
+  - Records to fix lists the problems in the chosen report's patients.
+- Tests check every Table 3A, 3B and 4 cell of each Grant Report against the Universal Report. Checked end to end on OpenEMR 8.4.1.
+- **Fixed: apostrophes in Table 5 and 6A text showed as backticks** ("Alzheimer`s disease", since 0.2.0). OpenEMR's `xl()` turns apostrophes into backticks, and the labels and notes from the data files went through it although they have no translations. They're now shown as written.
+
 ## 0.3.0 — 2026-10-11
 
 - **Table 5: Staffing and Utilization**, clinic and virtual visits and patients by type of service and personnel. FTEs are left to HR records.

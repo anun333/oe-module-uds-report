@@ -27,6 +27,7 @@ use OpenEMR\Core\Header;
 use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\UdsReport\Bootstrap;
 use OpenEMR\Modules\UdsReport\Enum\DataGap;
+use OpenEMR\Modules\UdsReport\Enum\GrantReport;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataGuard;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataLoader;
 use OpenEMR\Modules\UdsReport\Report\Labels;
@@ -45,8 +46,9 @@ $reference = (new ReferenceDataGuard(new ReferenceDataLoader(), ServiceContainer
 $request = CurrentRequest::get();
 $year = ReportYear::fromQuery($request->query->getString('year'), ServiceContainer::getClock()->now());
 $gap = DataGap::tryFrom($request->query->getString('gap')) ?? DataGap::NoBirthSex;
+$grant = GrantReport::tryFrom($request->query->getString('grant'));
 
-$report = new UdsReportService($year, (new SettingsRepository())->load(), $reference, new UdsPatientRepository($reference->insuranceCategories));
+$report = new UdsReportService($year, (new SettingsRepository())->load(), $reference, new UdsPatientRepository($reference->insuranceCategories), $grant);
 $pids = $report->gaps()[$gap->value] ?? [];
 
 $rows = [];
@@ -80,7 +82,7 @@ $moduleUrl = $webRoot . Bootstrap::MODULE_INSTALLATION_PATH;
 </head>
 <body class="body_top">
 <div class="container-fluid py-3">
-    <a href="<?php echo attr($moduleUrl . '/public/index.php?year=' . $year); ?>">&larr; <?php echo xlt('UDS Report'); ?> <?php echo text((string)$year); ?></a>
+    <a href="<?php echo attr($moduleUrl . '/public/index.php?year=' . $year . ($grant === null ? '' : '&grant=' . $grant->value)); ?>">&larr; <?php echo xlt('UDS Report'); ?> <?php echo text((string)$year); ?>, <?php echo text(Labels::report($grant)); ?></a>
     <h1 class="h5 mt-2"><?php echo text(Labels::gap($gap)); ?></h1>
     <p class="text-muted"><?php echo text((string)count($pids)); ?> <?php echo xlt('patients with countable visits in'); ?> <?php echo text((string)$year); ?>.
         <?php echo xlt('Open a patient to fix the record in Demographics; the report reflects changes on reload.'); ?></p>

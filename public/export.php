@@ -20,6 +20,7 @@ use OpenEMR\Common\Acl\AclMain;
 use OpenEMR\Common\Http\CurrentRequest;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataGuard;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataLoader;
+use OpenEMR\Modules\UdsReport\Enum\GrantReport;
 use OpenEMR\Modules\UdsReport\Report\CsvRow;
 use OpenEMR\Modules\UdsReport\Report\Labels;
 use OpenEMR\Modules\UdsReport\Report\ReportYear;
@@ -35,7 +36,8 @@ $reference = (new ReferenceDataGuard(new ReferenceDataLoader(), ServiceContainer
 
 $now = ServiceContainer::getClock()->now();
 $year = ReportYear::fromQuery(CurrentRequest::get()->query->getString('year'), $now);
-$report = new UdsReportService($year, (new SettingsRepository())->load(), $reference, new UdsPatientRepository($reference->insuranceCategories));
+$grant = GrantReport::tryFrom(CurrentRequest::get()->query->getString('grant'));
+$report = new UdsReportService($year, (new SettingsRepository())->load(), $reference, new UdsPatientRepository($reference->insuranceCategories), $grant);
 $tables = $report->tables();
 
 $out = fopen('php://output', 'w');
@@ -43,16 +45,19 @@ if ($out === false) {
     throw new RuntimeException('Cannot open the output stream');
 }
 header('Content-Type: text/csv; charset=utf-8');
-header('Content-Disposition: attachment; filename="uds-' . $year . '-tables.csv"');
+header('Content-Disposition: attachment; filename="uds-' . $year . ($grant === null ? '' : '-' . $grant->value) . '-tables.csv"');
 header('Cache-Control: no-store');
 
-CsvRow::write($out, ['UDS demographic tables', (string)$year, 'generated ' . $now->format('Y-m-d H:i')]);
+CsvRow::write($out, ['UDS demographic tables', (string)$year, 'generated ' . $now->format('Y-m-d H:i'), Labels::report($grant)]);
 CsvRow::write($out, []);
-CsvRow::write($out, ['Patients by ZIP Code', 'None/Uninsured (B)', 'Medicaid/CHIP/Other Public (C)', 'Medicare (D)', 'Private (E)', 'Total Patients (F)']);
-foreach ($tables->zipTable()['rows'] as $label => $r) {
-    CsvRow::write($out, [(string)$label, $r['none'], $r['public'], $r['medicare'], $r['private'], $r['total']]);
+if ($grant === null) {
+    // Not part of a Grant Report.
+    CsvRow::write($out, ['Patients by ZIP Code', 'None/Uninsured (B)', 'Medicaid/CHIP/Other Public (C)', 'Medicare (D)', 'Private (E)', 'Total Patients (F)']);
+    foreach ($tables->zipTable()['rows'] as $label => $r) {
+        CsvRow::write($out, [(string)$label, $r['none'], $r['public'], $r['medicare'], $r['private'], $r['total']]);
+    }
+    CsvRow::write($out, []);
 }
-CsvRow::write($out, []);
 $t3a = $tables->table3A();
 CsvRow::write($out, ['Table 3A', 'Line', 'Age Group', 'Male (A)', 'Female (B)']);
 foreach ($t3a['lines'] as $line => $r) {

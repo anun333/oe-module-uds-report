@@ -1,7 +1,7 @@
 <?php
 
 /**
- * UDS Report: Patients by ZIP Code and Tables 3A, 3B and 4.
+ * UDS Report: the Universal Report or a Grant Report (330(g), (h) or (i)) for a year.
  *
  * @package   OpenEMR
  * @link      https://www.open-emr.org
@@ -22,6 +22,7 @@ use OpenEMR\Core\Header;
 use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\UdsReport\Bootstrap;
 use OpenEMR\Modules\UdsReport\Enum\DataGap;
+use OpenEMR\Modules\UdsReport\Enum\GrantReport;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataGuard;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataLoader;
 use OpenEMR\Modules\UdsReport\Report\DemographicTables;
@@ -40,7 +41,9 @@ $reference = (new ReferenceDataGuard(new ReferenceDataLoader(), ServiceContainer
 
 $now = ServiceContainer::getClock()->now();
 $year = ReportYear::fromQuery(CurrentRequest::get()->query->getString('year'), $now);
-$report = new UdsReportService($year, (new SettingsRepository())->load(), $reference, new UdsPatientRepository($reference->insuranceCategories));
+$grant = GrantReport::tryFrom(CurrentRequest::get()->query->getString('grant'));
+$query = 'year=' . $year . ($grant === null ? '' : '&grant=' . $grant->value);
+$report = new UdsReportService($year, (new SettingsRepository())->load(), $reference, new UdsPatientRepository($reference->insuranceCategories), $grant);
 $tables = $report->tables();
 $zip = $tables->zipTable();
 $t3a = $tables->table3A();
@@ -71,7 +74,7 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
 <body class="body_top">
 <div class="container-fluid py-3">
     <div class="d-flex flex-wrap align-items-center justify-content-between">
-        <h1 class="h4 mb-2"><?php echo xlt('UDS Report'); ?>: <?php echo text((string)$year); ?></h1>
+        <h1 class="h4 mb-2"><?php echo xlt('UDS Report'); ?>: <?php echo text((string)$year); ?> <small class="text-muted"><?php echo text(Labels::report($grant)); ?></small></h1>
         <form method="get" class="form-inline mb-2">
             <label class="mr-2" for="uds-year"><?php echo xlt('Calendar year'); ?></label>
             <select class="form-control form-control-sm mr-2" id="uds-year" name="year" onchange="this.form.submit()">
@@ -79,7 +82,14 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
                     <option value="<?php echo attr((string)$y); ?>" <?php echo $y === $year ? 'selected' : ''; ?>><?php echo text((string)$y); ?></option>
                 <?php } ?>
             </select>
-            <a class="btn btn-sm btn-outline-secondary mr-2" href="<?php echo attr($moduleUrl . '/public/export.php?year=' . $year); ?>"><?php echo xlt('Download CSV'); ?></a>
+            <label class="mr-2" for="uds-grant"><?php echo xlt('Report'); ?></label>
+            <select class="form-control form-control-sm mr-2" id="uds-grant" name="grant" onchange="this.form.submit()">
+                <option value=""><?php echo text(Labels::report(null)); ?></option>
+                <?php foreach (GrantReport::cases() as $g) { ?>
+                    <option value="<?php echo attr($g->value); ?>" <?php echo $g === $grant ? 'selected' : ''; ?>><?php echo text(Labels::report($g)); ?></option>
+                <?php } ?>
+            </select>
+            <a class="btn btn-sm btn-outline-secondary mr-2" href="<?php echo attr($moduleUrl . '/public/export.php?' . $query); ?>"><?php echo xlt('Download CSV'); ?></a>
             <?php if ($isAdmin) { ?>
                 <a class="btn btn-sm btn-outline-secondary" href="<?php echo attr($moduleUrl . '/public/settings.php'); ?>"><?php echo xlt('Settings'); ?></a>
             <?php } ?>
@@ -88,6 +98,14 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
     <p class="text-muted small mb-3">
         <?php echo xlt('Patients with at least one countable visit in the year, counted by the 2026 UDS Manual rules. Check every figure against your own records before entering it in the EHBs.'); ?>
     </p>
+    <?php if ($grant !== null) { ?>
+    <div class="alert alert-info small">
+        <?php echo text(sprintf(
+            xl('This Grant Report covers the patients counted on Table 4, Line %s of the Universal Report, and all their in-scope visits and services, whatever paid for them. Only health centers with more than one Health Center Program funding type file Grant Reports. It has Tables 3A, 3B, 4, 5 (without FTEs) and 6A; the Patients by ZIP Code table is not part of it.'),
+            $grant->table4Line(),
+        )); ?>
+    </div>
+    <?php } ?>
 
     <?php if (!$check['consistent']) { ?>
         <div class="alert alert-warning">
@@ -120,7 +138,7 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
             <tr>
                 <td><?php echo $gap->isBlocking() ? '<span class="badge badge-danger">' . xlt('Blocking') . '</span>' : '<span class="badge badge-light border">' . xlt('Quality') . '</span>'; ?></td>
                 <td><?php echo text(Labels::gap($gap)); ?></td>
-                <td class="num"><a href="<?php echo attr($moduleUrl . '/public/gaps.php?year=' . $year . '&gap=' . urlencode($gap->value)); ?>"><?php echo text($n($count)); ?> <?php echo text($patients($count)); ?></a></td>
+                <td class="num"><a href="<?php echo attr($moduleUrl . '/public/gaps.php?' . $query . '&gap=' . urlencode($gap->value)); ?>"><?php echo text($n($count)); ?> <?php echo text($patients($count)); ?></a></td>
             </tr>
         <?php } ?>
         </tbody>
@@ -129,6 +147,7 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
         <p class="text-muted"><?php echo xlt('No record problems found.'); ?></p>
     <?php } ?>
 
+    <?php if ($grant === null) { ?>
     <h2 class="h5 uds-section"><?php echo xlt('Patients by ZIP Code'); ?></h2>
     <div class="table-responsive">
         <table class="table table-sm table-bordered uds-table">
@@ -161,6 +180,7 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
             </tbody>
         </table>
     </div>
+    <?php } ?>
 
     <h2 class="h5 uds-section"><?php echo xlt('Table 3A: Patients by Age and by Sex'); ?></h2>
     <div class="table-responsive">
@@ -252,7 +272,7 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
     <p class="small text-muted"><?php echo xlt('Lines 14-15 and 17-22 are entered only by health centers with 330(g) or 330(h) funding; everyone enters the totals on Lines 16 and 23.'); ?></p>
 
     <h2 class="h5 uds-section"><?php echo xlt('Table 5: Staffing and Utilization'); ?></h2>
-    <p class="small text-muted"><?php echo xlt('Visits and patients from the countable visits, each on the line of the provider who saw the patient: the line set for the visit category, else the line chosen for the provider in Settings, else the one suggested by the provider\'s taxonomy code. One visit per patient, service category, site and day. FTEs (Column A) come from your HR records; enter them in EHB.'); ?></p>
+    <p class="small text-muted"><?php echo xlt('Visits and patients from the countable visits, each on the line of the provider who saw the patient: the line set for the visit category, else the line chosen for the provider in Settings, else the one suggested by the taxonomy code of the provider. One visit per patient, service category, site and day. FTEs (Column A) come from your HR records; enter them in EHB.'); ?></p>
     <table class="table table-sm table-bordered uds-table" style="max-width: 70rem">
         <thead class="thead-light"><tr><th><?php echo xlt('Line'); ?></th><th><?php echo xlt('Personnel by Major Service Category'); ?></th><th class="num"><?php echo xlt('FTEs'); ?> (A)</th><th class="num"><?php echo xlt('Clinic Visits'); ?> (B)</th><th class="num"><?php echo xlt('Virtual Visits'); ?> (B2)</th><th class="num"><?php echo xlt('Patients'); ?> (C)</th></tr></thead>
         <tbody>
@@ -260,7 +280,7 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
             $l = $row['line']; ?>
             <tr class="<?php echo $l->isPersonnel() ? '' : 'subtotal'; ?>">
                 <td><?php echo text($l->line); ?></td>
-                <td><?php echo text(xl($l->label)); ?></td>
+                <td><?php echo text($l->label); ?></td>
                 <td class="num text-muted" title="<?php echo xla('From HR records'); ?>">&mdash;</td>
                 <td class="num"><?php echo $row['visits'] === null ? '&mdash;' : text($n($row['visits'])); ?></td>
                 <td class="num"><?php echo $row['virtual'] === null ? '&mdash;' : text($n($row['virtual'])); ?></td>
@@ -274,7 +294,7 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
     $sourceLabel = [
         Table5::SOURCE_CLINIC => xl('chosen in Settings'),
         Table5::SOURCE_TAXONOMY => xl('from the taxonomy code'),
-        Table5::SOURCE_DEFAULT_TAXONOMY => xl('from OpenEMR\'s default taxonomy code; confirm it'),
+        Table5::SOURCE_DEFAULT_TAXONOMY => xl('from the default taxonomy code OpenEMR gives every user; confirm it'),
         Table5::SOURCE_NONE => xl('no line known; choose one'),
     ];
     ?>
@@ -292,7 +312,7 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
         <li><?php echo text(sprintf(xl('%s encounters were counted into another visit (one visit per patient, service category, site and day).'), $n($t5['merged']))); ?></li>
         <?php } ?>
         <?php if ($t5['behavioralWithoutDiagnosis'] > 0) { ?>
-        <li><?php echo text(sprintf(xl('%s mental health or substance use visits have no diagnosis, so they stay on the provider\'s line instead of going by the primary diagnosis.'), $n($t5['behavioralWithoutDiagnosis']))); ?></li>
+        <li><?php echo text(sprintf(xl('%s mental health or substance use visits have no diagnosis, so they stay on the line of the provider instead of going by the primary diagnosis.'), $n($t5['behavioralWithoutDiagnosis']))); ?></li>
         <?php } ?>
     </ul>
     <details class="small mb-4" <?php echo $unconfirmed !== [] ? 'open' : ''; ?>>
@@ -326,11 +346,11 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
             $l = $row['line'];
             if ($l->group !== $group) {
                 $group = $l->group; ?>
-            <tr class="subtotal"><td colspan="4"><?php echo text(xl($group)); ?></td></tr>
+            <tr class="subtotal"><td colspan="4"><?php echo text($group); ?></td></tr>
             <?php } ?>
             <tr class="<?php echo $l->isCounted() ? '' : 'grant-only'; ?>">
                 <td><?php echo text($l->line); ?></td>
-                <td><?php echo text(xl($l->label)); ?><?php if ($l->limit !== null) { ?> <span title="<?php echo attr(xl($l->limit)); ?>">*</span><?php } ?></td>
+                <td><?php echo text($l->label); ?><?php if ($l->limit !== null) { ?> <span title="<?php echo attr($l->limit); ?>">*</span><?php } ?></td>
                 <td class="num"><?php echo $row['visits'] === null ? '&mdash;' : text($n($row['visits'])); ?></td>
                 <td class="num"><?php echo $row['patients'] === null ? '&mdash;' : text($n($row['patients'])); ?></td>
             </tr>
@@ -342,7 +362,7 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
         <ul class="mt-2">
         <?php foreach ($t6a as $row) {
             if ($row['line']->limit !== null) { ?>
-            <li><?php echo xlt('Line'); ?> <?php echo text($row['line']->line); ?>: <?php echo text(xl($row['line']->limit)); ?></li>
+            <li><?php echo xlt('Line'); ?> <?php echo text($row['line']->line); ?>: <?php echo text($row['line']->limit); ?></li>
             <?php }
         } ?>
         </ul>

@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace OpenEMR\Modules\UdsReport\Report;
 
 use OpenEMR\Modules\UdsReport\Enum\DataGap;
+use OpenEMR\Modules\UdsReport\Enum\GrantReport;
 use OpenEMR\Modules\UdsReport\Enum\InsuranceCategory;
 use OpenEMR\Modules\UdsReport\Enum\PovertyRegion;
 
@@ -40,6 +41,17 @@ final class Labels
             DataGap::HousingNotAsked => xl('Housing status (UDS) not recorded'),
             DataGap::AgricultureNotAsked => xl('Agricultural worker status (UDS) not recorded'),
             DataGap::VeteranNotAsked => xl('Military service (UDS) not recorded'),
+        };
+    }
+
+    /** The report's name: the Universal Report, or a population's Grant Report. */
+    public static function report(?GrantReport $grant): string
+    {
+        return match ($grant) {
+            null => xl('Universal Report'),
+            GrantReport::AgriculturalWorkers => xl('Migratory and Seasonal Agricultural Workers Grant Report (330(g))'),
+            GrantReport::Homeless => xl('Homeless Population Grant Report (330(h))'),
+            GrantReport::PublicHousing => xl('Residents of Public Housing Grant Report (330(i))'),
         };
     }
 

@@ -68,7 +68,7 @@ $people = QueryUtils::fetchRecords(
     $savedProviderIds,
 );
 $allPeopleIds = array_map(static fn(array $u): int => Row::int($u, 'id'), $people);
-$lineOption = static fn(Table5Line $l): string => sprintf(xl('Line %1$s: %2$s'), $l->line, xl($l->label));
+$lineOption = static fn(Table5Line $l): string => sprintf(xl('Line %1$s: %2$s'), $l->line, $l->label);
 
 /**
  * Ids ticked in a posted checkbox list, limited to the ids that exist.
