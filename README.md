@@ -1,10 +1,10 @@
 # UDS Report for OpenEMR
 
-This module produces the demographic part of the HRSA **Uniform Data System (UDS)** report, which every Health Center Program awardee and look-alike files each year. It covers the **Patients by ZIP Code** table, **Tables 3A, 3B and 4**, and **Table 6A** (selected diagnoses and services), following the **2026 UDS Manual** (calendar year 2026, due February 15, 2027). It also lists the patient records that would make the tables wrong, so staff can fix them before submission.
+This module produces the demographic part of the HRSA **Uniform Data System (UDS)** report, which every Health Center Program awardee and look-alike files each year. It covers the **Patients by ZIP Code** table, **Tables 3A, 3B and 4**, **Table 5** (visits and patients by type of service) and **Table 6A** (selected diagnoses and services), following the **2026 UDS Manual** (calendar year 2026, due February 15, 2027). It also lists the patient records that would make the tables wrong, so staff can fix them before submission.
 
 It doesn't submit anything. Health centers still enter the figures in HRSA's Electronic Handbooks (EHBs), and should check them against their own records first.
 
-> **Status: 0.2.0, pre-release.** The counting rules are tested against hand-worked synthetic cases only. They have not yet been compared with a health center's real UDS submission. If your health center uses OpenEMR and would compare this module's table totals with a report you have already filed (totals only, no patient data shared), please open an issue.
+> **Status: 0.3.0, pre-release.** The counting rules are tested against hand-worked synthetic cases only. They have not yet been compared with a health center's real UDS submission. If your health center uses OpenEMR and would compare this module's table totals with a report you have already filed (totals only, no patient data shared), please open an issue.
 
 What installing it changes in your database, what it reads and writes, and what it hooks into are listed in [FOOTPRINT.md](FOOTPRINT.md), generated from the source.
 
@@ -18,8 +18,9 @@ What installing it changes in your database, what it reads and writes, and what 
 - **Settings** (administrators only):
   - which visit categories count as UDS visits,
   - which sites are in the scope of project, school-based, or in or next to public housing,
-  - the poverty-guideline region, and
-  - the UDS insurance category of each insurance company.
+  - the poverty-guideline region,
+  - the UDS insurance category of each insurance company, and
+  - the Table 5 line of each provider (suggested from their NUCC taxonomy code) and, optionally, of each visit category.
 - **Three coded demographic fields,** added to the Demographics **Stats** group:
   - **Housing Status (UDS):** housed, shelter, transitional, doubling up, street, permanent supportive housing, other homeless arrangement, homeless (arrangement unknown), or declined.
   - **Agricultural Worker (UDS):** migratory, seasonal, aged or disabled former migratory worker, or declined.
@@ -41,6 +42,22 @@ What installing it changes in your database, what it reads and writes, and what 
 | ZIP codes with 10 or fewer patients combine into "Other ZIP Codes"; people experiencing homelessness without a ZIP use the site's ZIP | As stated |
 | Lines 24 (school-based) and 26 (public housing) depend on the visit site | Sites marked in Settings |
 | Line 25 counts only an affirmative answer, never active duty | "Served" only |
+
+## Table 5: Staffing and Utilization
+
+Visits (Columns B and B2) and patients (Column C) by type of service and personnel. FTEs (Column A) come from HR records, which OpenEMR doesn't hold, so the column is left for the health center to enter in EHB.
+
+| Rule (2026 UDS Manual) | Implementation |
+|---|---|
+| A visit goes on the line of the provider who saw the patient (page 59) | The line set for the visit's category in Settings, if any; else the line chosen for the provider in Settings; else the one suggested by the provider's NUCC taxonomy code ([data/table-5-taxonomy.json](data/table-5-taxonomy.json), from Appendix A) |
+| Only providers generate visits; medical assistants, LPNs, lab and X-ray staff, pharmacists and others don't (page 64 and Appendix A) | Their lines report no visits, and LPNs and therapy assistants are marked as non-providers on the lines they share with providers. Their encounters are counted as "not Table 5 visits" on the report |
+| Mental health and substance use disorder visits are classified by the primary service, not the provider's title (pages 54–55) | A visit by a mental health or SUD provider whose first diagnosis is an alcohol or other substance use disorder (Table 6A Lines 18–19) goes on Line 21; an SUD specialist's other visits go on Line 20c. A visit with no diagnosis stays on the provider's line, and the report counts them |
+| Medical providers' visits are medical, even for opioid use disorder medication (FAQ 13) | Medical lines aren't reclassified |
+| One visit per patient, service category, site and day; per provider type for other professional and patient support services; two different providers at two different sites make two visits (page 19) | Encounters are grouped that way. A group's visit goes to the line that comes first in the table (a physician before an NP before a nurse), then to the earliest encounter. The report counts the encounters folded into another visit |
+| Virtual visits (Column B2): telehealth CPT and HCPCS codes, modifier 95 or 93, place of service 02 (page 60) | Those, plus place of service 10 and OpenEMR's Virtual Encounter class, listed in [data/table-5.json](data/table-5.json) |
+| Patients are counted once in each service category, so Line 34 normally exceeds Table 3A (page 64, FAQ 16) | As stated. Every UDS patient should still have at least one Table 5 visit; the report lists the number who don't |
+
+OpenEMR gives every new user the taxonomy code `207Q00000X` (Family Medicine). The report flags each provider still on it, and anyone whose code suggests no line, until a line is chosen for them in Settings.
 
 ## Table 6A: Selected Diagnoses and Services Rendered
 
@@ -69,13 +86,14 @@ OpenEMR's **Financial Review Date** is a plain text box on a date column, and Op
 
 ## Reference data
 
-The published figures and code mappings are in [data/](data/README.md), in plain files that people who prepare UDS submissions can check without reading PHP: the poverty guidelines, the race and ethnicity roll-up, the insurance categories, and the Table 6A codes. The counting rules stay in the code. A broken data file stops the report with a message naming the file and entry; it never runs on a bad edit.
+The published figures and code mappings are in [data/](data/README.md), in plain files that people who prepare UDS submissions can check without reading PHP: the poverty guidelines, the race and ethnicity roll-up, the insurance categories, the Table 5 lines and taxonomy mapping, and the Table 6A codes. The counting rules stay in the code. A broken data file stops the report with a message naming the file and entry; it never runs on a bad edit.
 
 The expected results are data too ([data/cases/](data/cases/)): line and column placements, insurance categories, poverty thresholds, and whole tables built from synthetic patients worked out by hand from the manual. Any program implementing the same rules can be held to them. The tests run every case (`tests/ConformanceTest.php`). The full report has also been checked end to end against a running OpenEMR with synthetic patients whose every cell was worked out by hand first.
 
 ## Not done yet, or approximated
 
-- **Other tables:** 5, 6B, 7, 8A, 9D and 9E, the two forms, and the per-grant reports (330(g), (h) and (i) subsets) aren't produced yet. Tables 6B and 7 can build on OpenEMR's existing eCQM engine once its measure package covers the 2026 versions.
+- **Other tables:** 6B, 7, 8A, 9D and 9E, the two forms, and the per-grant reports (330(g), (h) and (i) subsets) aren't produced yet. Tables 6B and 7 can build on OpenEMR's existing eCQM engine once its measure package covers the 2026 versions.
+- **Table 5 FTEs** (Column A) aren't computed; they come from HR records. A person who holds two roles (a nurse who is also a case manager, say) has one line per person, plus any line set by visit category.
 - **Countable visits:** whether a visit is truly countable (independent judgment, a credentialed provider, not a nurse-only or ancillary service) is approximated by visit category and provider. Each health center has to set the categories.
 - **Homelessness and farmworker look-back:** the manual counts someone as homeless for 12 months after homelessness was last documented, and as a farmworker if that was their work within 24 months. The module uses the current value of each field; it has no history of past values.
 - **Medicaid versus CHIP:** the two can't be told apart automatically. They're reported as Medicaid unless a plan is set to CHIP in Settings, which is what the manual says to do when they can't be distinguished.
@@ -95,7 +113,7 @@ Viewing needs `patients/demo`; Settings needs `admin/super`.
 
 ## Compatibility
 
-Checked end to end on OpenEMR 8.4.1 (PHP 8.3 and later), including Table 6A from codes saved through OpenEMR's own billing functions. The package declares no Composer constraint on `openemr/openemr`: OpenEMR reports itself to Composer as version `1.0.0+no-version-set`, so any minimum version written there would block every install.
+Checked end to end on OpenEMR 8.4.1 (PHP 8.3 and later), including Tables 5 and 6A from codes saved through OpenEMR's own billing functions, and a Table 5 line chosen through the Settings page. The package declares no Composer constraint on `openemr/openemr`: OpenEMR reports itself to Composer as version `1.0.0+no-version-set`, so any minimum version written there would block every install.
 
 ## Development
 

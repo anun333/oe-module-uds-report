@@ -1,0 +1,113 @@
+{
+    "about": "Table 5 results for synthetic visits, worked out by hand from the 2026 UDS Manual (pages 17-21 and 50-70). Each case lists the providers (id, name, NUCC taxonomy), the clinic's choices (providerLines: user id => line or \"none\"; categoryLines: visit category id => line), the UDS patients (the Tables 3A-4 population), and the countable visits: patient, encounter, day, site, provider, visit category, and optionally place of service (pos), encounter class (class), CPT and HCPCS codes, modifiers and first diagnosis (dx). expected gives [clinic visits (B), virtual visits (B2), patients (C)] for the lines it names; null means the cell isn't reported. Every other line must report 0 visits where it reports visits, and 0 patients where it reports patients. review gives the counts shown under the table.",
+    "cases": [
+        {
+            "name": "Physician and NP the same day at the same site make one visit, credited to the physician; place of service 02 and encounter class VR are virtual",
+            "providers": [
+                {"id": 1, "name": "Family, Physician", "taxonomy": "207QA0505X"},
+                {"id": 2, "name": "Practitioner, Nurse", "taxonomy": "363LF0000X"}
+            ],
+            "patients": [1, 2],
+            "visits": [
+                {"pid": 1, "encounter": 11, "day": "2026-03-02", "site": 3, "provider": 2, "category": 5},
+                {"pid": 1, "encounter": 10, "day": "2026-03-02", "site": 3, "provider": 1, "category": 5},
+                {"pid": 2, "encounter": 20, "day": "2026-03-02", "site": 3, "provider": 2, "category": 5, "pos": "02"},
+                {"pid": 1, "encounter": 12, "day": "2026-03-05", "site": 3, "provider": 2, "category": 5, "class": "VR"}
+            ],
+            "expected": {
+                "1": [1, 0, null], "8": [1, 0, null], "9a": [0, 2, null], "10a": [0, 2, null],
+                "15": [1, 2, 2], "34": [1, 2, 2]
+            },
+            "review": {"notCounted": 0, "merged": 1, "behavioralWithoutDiagnosis": 0, "patientsWithoutVisit": []}
+        },
+        {
+            "name": "Telehealth CPT and HCPCS codes and modifiers 95 and 93 make a visit virtual; an ordinary code doesn't",
+            "providers": [{"id": 2, "name": "Practitioner, Nurse", "taxonomy": "363LF0000X"}],
+            "patients": [1, 2, 3, 4, 5],
+            "visits": [
+                {"pid": 1, "encounter": 10, "day": "2026-04-01", "site": 3, "provider": 2, "category": 5, "cpt": ["98010"]},
+                {"pid": 2, "encounter": 20, "day": "2026-04-01", "site": 3, "provider": 2, "category": 5, "hcpcs": ["G2025"]},
+                {"pid": 3, "encounter": 30, "day": "2026-04-01", "site": 3, "provider": 2, "category": 5, "cpt": ["99213"], "modifiers": ["95"]},
+                {"pid": 4, "encounter": 40, "day": "2026-04-01", "site": 3, "provider": 2, "category": 5, "cpt": ["99442"], "modifiers": ["93"]},
+                {"pid": 5, "encounter": 50, "day": "2026-04-01", "site": 3, "provider": 2, "category": 5, "cpt": ["99213"], "modifiers": ["25"], "pos": "11"}
+            ],
+            "expected": {"9a": [1, 4, null], "10a": [1, 4, null], "15": [1, 4, 5], "34": [1, 4, 5]},
+            "review": {"notCounted": 0, "merged": 0, "behavioralWithoutDiagnosis": 0, "patientsWithoutVisit": []}
+        },
+        {
+            "name": "Mental health and substance use disorder visits go by the first diagnosis, not the provider's title",
+            "providers": [
+                {"id": 3, "name": "Social Worker, Clinical", "taxonomy": "1041C0700X"},
+                {"id": 4, "name": "Counselor, Addiction", "taxonomy": "101YA0400X"}
+            ],
+            "patients": [6],
+            "visits": [
+                {"pid": 6, "encounter": 60, "day": "2026-05-01", "site": 3, "provider": 3, "category": 7, "dx": "F329"},
+                {"pid": 6, "encounter": 61, "day": "2026-05-02", "site": 3, "provider": 3, "category": 7, "dx": "F1120"},
+                {"pid": 6, "encounter": 62, "day": "2026-05-03", "site": 3, "provider": 4, "category": 7, "dx": "F411"},
+                {"pid": 6, "encounter": 63, "day": "2026-05-04", "site": 3, "provider": 4, "category": 7, "dx": "F1020"},
+                {"pid": 6, "encounter": 64, "day": "2026-05-05", "site": 3, "provider": 3, "category": 7}
+            ],
+            "expected": {
+                "20a2": [2, 0, null], "20c": [1, 0, null], "20": [3, 0, 1], "21": [2, 0, 1], "34": [5, 0, 2]
+            },
+            "review": {"notCounted": 0, "merged": 0, "behavioralWithoutDiagnosis": 1, "patientsWithoutVisit": []}
+        },
+        {
+            "name": "Dentist and hygienist the same day make one dental visit; an LPN and an unknown taxonomy aren't providers, and a patient seen only by them has no Table 5 visit",
+            "providers": [
+                {"id": 5, "name": "Nurse, Practical", "taxonomy": "164W00000X"},
+                {"id": 6, "name": "Dentist, General", "taxonomy": "1223G0001X"},
+                {"id": 7, "name": "Hygienist, Dental", "taxonomy": "124Q00000X"},
+                {"id": 8, "name": "Staff, Unknown", "taxonomy": ""}
+            ],
+            "patients": [7, 8],
+            "visits": [
+                {"pid": 7, "encounter": 70, "day": "2026-06-01", "site": 3, "provider": 7, "category": 9},
+                {"pid": 7, "encounter": 71, "day": "2026-06-01", "site": 3, "provider": 6, "category": 9},
+                {"pid": 8, "encounter": 80, "day": "2026-06-02", "site": 3, "provider": 5, "category": 5},
+                {"pid": 8, "encounter": 81, "day": "2026-06-03", "site": 3, "provider": 8, "category": 5}
+            ],
+            "expected": {"16": [1, 0, null], "19": [1, 0, 1], "34": [1, 0, 1]},
+            "review": {"notCounted": 2, "merged": 1, "behavioralWithoutDiagnosis": 0, "patientsWithoutVisit": [8]}
+        },
+        {
+            "name": "The clinic's provider and category choices apply; patient support allows one visit per provider type a day",
+            "providers": [
+                {"id": 9, "name": "Nutritionist, Unset", "taxonomy": "207Q00000X"},
+                {"id": 10, "name": "Nurse, Registered", "taxonomy": "163W00000X"},
+                {"id": 11, "name": "Educator, Health", "taxonomy": "174H00000X"},
+                {"id": 12, "name": "Physician, Not counted", "taxonomy": "207R00000X"}
+            ],
+            "settings": {"providerLines": {"9": "22", "12": "none"}, "categoryLines": {"20": "24"}},
+            "patients": [9],
+            "visits": [
+                {"pid": 9, "encounter": 90, "day": "2026-07-01", "site": 3, "provider": 9, "category": 5},
+                {"pid": 9, "encounter": 91, "day": "2026-07-01", "site": 3, "provider": 10, "category": 20},
+                {"pid": 9, "encounter": 92, "day": "2026-07-01", "site": 3, "provider": 10, "category": 20},
+                {"pid": 9, "encounter": 93, "day": "2026-07-01", "site": 3, "provider": 11, "category": 5},
+                {"pid": 9, "encounter": 94, "day": "2026-07-02", "site": 3, "provider": 12, "category": 5}
+            ],
+            "expected": {
+                "22": [1, 0, 1], "24": [1, 0, null], "25": [1, 0, null], "29": [2, 0, 1], "34": [3, 0, 2]
+            },
+            "review": {"notCounted": 1, "merged": 1, "behavioralWithoutDiagnosis": 0, "patientsWithoutVisit": []}
+        },
+        {
+            "name": "Two different providers at two different sites the same day make two visits",
+            "providers": [
+                {"id": 1, "name": "Family, Physician", "taxonomy": "207QA0505X"},
+                {"id": 2, "name": "Practitioner, Nurse", "taxonomy": "363LF0000X"}
+            ],
+            "patients": [10],
+            "visits": [
+                {"pid": 10, "encounter": 100, "day": "2026-08-03", "site": 3, "provider": 1, "category": 5},
+                {"pid": 10, "encounter": 101, "day": "2026-08-03", "site": 4, "provider": 2, "category": 5}
+            ],
+            "expected": {
+                "1": [1, 0, null], "8": [1, 0, null], "9a": [1, 0, null], "10a": [1, 0, null], "15": [2, 0, 1], "34": [2, 0, 1]
+            },
+            "review": {"notCounted": 0, "merged": 0, "behavioralWithoutDiagnosis": 0, "patientsWithoutVisit": []}
+        }
+    ]
+}

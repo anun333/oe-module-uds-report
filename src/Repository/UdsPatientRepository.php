@@ -233,29 +233,17 @@ final readonly class UdsPatientRepository
      */
     private function countableVisits(int $year, UdsSettings $settings): array
     {
-        $categories = $settings->countableCategoryIds ?? $this->defaultCountableCategories();
-        if ($categories === []) {
+        $filter = CountableVisitFilter::fromSettings($settings, $this);
+        if ($filter->matchesNothing()) {
             return [];
         }
-        $binds = [sprintf('%04d-01-01 00:00:00', $year), sprintf('%04d-01-01 00:00:00', $year + 1), ...$categories];
-        $categoryIn = implode(',', array_fill(0, count($categories), '?'));
-        $facilityFilter = '';
-        if ($settings->inScopeFacilityIds !== null) {
-            if ($settings->inScopeFacilityIds === []) {
-                return [];
-            }
-            $facilityFilter = 'AND fe.facility_id IN (' . implode(',', array_fill(0, count($settings->inScopeFacilityIds), '?')) . ')';
-            array_push($binds, ...$settings->inScopeFacilityIds);
-        }
+        [$where, $binds] = $filter->where($year);
 
         $rows = QueryUtils::fetchRecords(
             "SELECT fe.pid, fe.date, fe.facility_id
                FROM form_encounter AS fe
                JOIN patient_data AS pd ON pd.pid = fe.pid
-              WHERE fe.date >= ? AND fe.date < ?
-                AND fe.provider_id > 0
-                AND fe.pc_catid IN ($categoryIn)
-                $facilityFilter
+              WHERE $where
               ORDER BY fe.date",
             $binds,
         );

@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0 — 2026-10-11
+
+- **Table 5: Staffing and Utilization**, clinic and virtual visits and patients by type of service and personnel. FTEs are left to HR records.
+  - Each visit goes on its provider's line: chosen in Settings, or suggested from the provider's NUCC taxonomy code (`data/table-5-taxonomy.json`, written from the manual's Appendix A and checked against NUCC taxonomy 26.1).
+  - A visit category can send all its visits to one line (case management or health education by a nurse, for example).
+  - Mental health and substance use disorder visits go by their first diagnosis, not the provider's title.
+  - One visit per patient, service category, site and day, as the manual counts them; virtual visits from telehealth codes, modifiers 95 and 93, place of service 02 or 10, or OpenEMR's Virtual Encounter class.
+  - The report lists each provider's line and how it was chosen, flags providers still on OpenEMR's default taxonomy code, and counts encounters that aren't Table 5 visits and UDS patients with no Table 5 visit.
+  - On the report page and in the CSV download.
+- Tables 3A–4 and Table 5 read countable visits through one shared query, so they can't disagree about which visits count.
+- Hand-worked Table 5 cases in `data/cases/table-5.json`. Checked end to end on OpenEMR 8.4.1, with codes saved through OpenEMR's own billing functions and a line chosen through the Settings page.
+
 ## 0.2.0 — 2026-10-10
 
 - **Table 6A: Selected Diagnoses and Services Rendered**, from the billing codes on each encounter.

@@ -29,7 +29,9 @@ use OpenEMR\Modules\UdsReport\Enum\InsuranceCategory;
 use OpenEMR\Modules\UdsReport\Enum\PovertyRegion;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataGuard;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataLoader;
+use OpenEMR\Modules\UdsReport\ReferenceData\Table5Line;
 use OpenEMR\Modules\UdsReport\Report\Labels;
+use OpenEMR\Modules\UdsReport\Report\UdsSettings;
 use OpenEMR\Modules\UdsReport\Repository\Row;
 use OpenEMR\Modules\UdsReport\Repository\SettingsRepository;
 use OpenEMR\Modules\UdsReport\Repository\UdsPatientRepository;
@@ -53,6 +55,20 @@ $companies = QueryUtils::fetchRecords("SELECT id, name, cqm_sop, ins_type_code F
 $allCategoryIds = array_map(static fn(array $c): int => Row::int($c, 'pc_catid'), $categories);
 $allFacilityIds = array_map(static fn(array $f): int => Row::int($f, 'id'), $facilities);
 $allCompanyIds = array_map(static fn(array $c): int => Row::int($c, 'id'), $companies);
+// Table 5: the lines whose personnel are providers, and the people who see patients.
+$visitLines = array_values(array_filter($reference->table5->lines, static fn(Table5Line $l): bool => $l->visits));
+$visitLineIds = array_map(static fn(Table5Line $l): string => $l->line, $visitLines);
+$savedProviderIds = array_keys($repo->load()->providerLines);
+$people = QueryUtils::fetchRecords(
+    'SELECT `id`, `fname`, `lname`, `taxonomy`, `active` FROM `users`
+      WHERE (`authorized` = 1 AND `active` = 1)
+         OR `id` IN (SELECT DISTINCT `provider_id` FROM `form_encounter` WHERE `provider_id` > 0)'
+    . ($savedProviderIds === [] ? '' : ' OR `id` IN (' . implode(',', array_fill(0, count($savedProviderIds), '?')) . ')')
+    . ' ORDER BY `lname`, `fname`',
+    $savedProviderIds,
+);
+$allPeopleIds = array_map(static fn(array $u): int => Row::int($u, 'id'), $people);
+$lineOption = static fn(Table5Line $l): string => sprintf(xl('Line %1$s: %2$s'), $l->line, xl($l->label));
 
 /**
  * Ids ticked in a posted checkbox list, limited to the ids that exist.
@@ -86,6 +102,24 @@ if ($request->getMethod() === 'POST') {
     $repo->saveList(SettingsRepository::SCHOOL_BASED_FACILITIES, $postedIds('school_based', $allFacilityIds), $userId);
     $repo->saveList(SettingsRepository::PUBLIC_HOUSING_FACILITIES, $postedIds('public_housing', $allFacilityIds), $userId);
     $repo->savePovertyRegion(PovertyRegion::tryFrom($request->request->getString('poverty_region')) ?? PovertyRegion::Contiguous, $userId);
+    $providerLines = [];
+    $postedProviderLines = $request->request->all('provider_line');
+    foreach ($allPeopleIds as $personId) {
+        $line = $postedProviderLines[$personId] ?? '';
+        if (is_string($line) && ($line === UdsSettings::NOT_A_PROVIDER || in_array($line, $visitLineIds, true))) {
+            $providerLines[$personId] = $line;
+        }
+    }
+    $repo->saveLineMap(SettingsRepository::PROVIDER_LINES, $providerLines, $userId);
+    $categoryLines = [];
+    $postedCategoryLines = $request->request->all('category_line');
+    foreach ($allCategoryIds as $categoryId) {
+        $line = $postedCategoryLines[$categoryId] ?? '';
+        if (is_string($line) && in_array($line, $visitLineIds, true)) {
+            $categoryLines[$categoryId] = $line;
+        }
+    }
+    $repo->saveLineMap(SettingsRepository::CATEGORY_LINES, $categoryLines, $userId);
     $choices = $request->request->all('insurance');
     foreach ($allCompanyIds as $companyId) {
         $choice = $choices[$companyId] ?? '';
@@ -167,6 +201,63 @@ $checked = static fn(bool $on): string => $on ? 'checked' : '';
                             <option value=""><?php echo xlt('Use automatic'); ?></option>
                             <?php foreach (InsuranceCategory::assignable() as $category) { ?>
                                 <option value="<?php echo attr($category->value); ?>" <?php echo $override === $category ? 'selected' : ''; ?>><?php echo text(Labels::insuranceCategory($category)); ?></option>
+                            <?php } ?>
+                        </select>
+                    </td>
+                </tr>
+            <?php } ?>
+            </tbody>
+        </table>
+
+        <h2 class="h6 mt-4" id="table5"><?php echo xlt('Table 5 lines'); ?></h2>
+        <p class="small text-muted"><?php echo xlt('Each countable visit goes on the Table 5 line of the person who saw the patient. The suggestion comes from the NUCC taxonomy code on the user (Administration › Users). OpenEMR gives every new user 207Q00000X (Family Medicine), so check anyone who still has it. Choose Not a provider for people whose encounters are not UDS visits, such as medical assistants or LPNs.'); ?></p>
+        <table class="table table-sm" style="max-width: 70rem">
+            <thead class="thead-light"><tr><th><?php echo xlt('Person'); ?></th><th><?php echo xlt('Taxonomy'); ?></th><th><?php echo xlt('Suggested'); ?></th><th><?php echo xlt('Line used'); ?></th></tr></thead>
+            <tbody>
+            <?php foreach ($people as $person) {
+                $id = Row::int($person, 'id');
+                $taxonomy = trim(Row::nullableText($person, 'taxonomy') ?? '');
+                $suggestion = $reference->providerTaxonomy->suggest($taxonomy);
+                $suggestedLine = $suggestion === null ? null : $reference->table5->line($suggestion['line']);
+                $isDefault = strtoupper($taxonomy) === $reference->providerTaxonomy->openemrDefault;
+                $choice = $settings->providerLines[$id] ?? ''; ?>
+                <tr class="<?php echo $choice === '' && ($isDefault || $suggestion === null) ? 'table-warning' : ''; ?>">
+                    <td><?php echo text(trim(Row::text($person, 'lname') . ', ' . Row::text($person, 'fname'), ', ')); ?><?php echo Row::nullableInt($person, 'active') === 0 ? ' <span class="text-muted">(' . xlt('inactive') . ')</span>' : ''; ?></td>
+                    <td><?php echo text($taxonomy); ?><?php echo $isDefault ? ' <span class="text-muted">(' . xlt('OpenEMR default') . ')</span>' : ''; ?></td>
+                    <td><?php
+                    if ($suggestedLine === null) {
+                        echo xlt('None');
+                    } else {
+                        echo text($lineOption($suggestedLine));
+                        echo $suggestion['provider'] ? '' : ' <span class="text-muted">(' . xlt('not a provider') . ')</span>';
+                    } ?></td>
+                    <td>
+                        <select class="form-control form-control-sm" name="provider_line[<?php echo attr((string)$id); ?>]">
+                            <option value=""><?php echo xlt('Use the suggestion'); ?></option>
+                            <?php foreach ($visitLines as $l) { ?>
+                                <option value="<?php echo attr($l->line); ?>" <?php echo $choice === $l->line ? 'selected' : ''; ?>><?php echo text($lineOption($l)); ?></option>
+                            <?php } ?>
+                            <option value="<?php echo attr(UdsSettings::NOT_A_PROVIDER); ?>" <?php echo $choice === UdsSettings::NOT_A_PROVIDER ? 'selected' : ''; ?>><?php echo xlt('Not a provider (encounters not counted)'); ?></option>
+                        </select>
+                    </td>
+                </tr>
+            <?php } ?>
+            </tbody>
+        </table>
+        <p class="small text-muted"><?php echo xlt('A visit category can send every visit in it to one line, whoever saw the patient: for example case management or health education visits by a nurse.'); ?></p>
+        <table class="table table-sm" style="max-width: 50rem">
+            <thead class="thead-light"><tr><th><?php echo xlt('Visit category'); ?></th><th><?php echo xlt('Line'); ?></th></tr></thead>
+            <tbody>
+            <?php foreach ($categories as $c) {
+                $id = Row::int($c, 'pc_catid');
+                $choice = $settings->categoryLines[$id] ?? ''; ?>
+                <tr>
+                    <td><?php echo text(xl_appt_category(Row::text($c, 'pc_catname'))); ?></td>
+                    <td>
+                        <select class="form-control form-control-sm" name="category_line[<?php echo attr((string)$id); ?>]">
+                            <option value=""><?php echo xlt('The line of whoever saw the patient'); ?></option>
+                            <?php foreach ($visitLines as $l) { ?>
+                                <option value="<?php echo attr($l->line); ?>" <?php echo $choice === $l->line ? 'selected' : ''; ?>><?php echo text($lineOption($l)); ?></option>
                             <?php } ?>
                         </select>
                     </td>

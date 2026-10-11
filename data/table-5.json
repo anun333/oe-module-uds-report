@@ -1,0 +1,451 @@
+{
+    "about": "The lines of UDS Table 5 (Staffing and Utilization). A line with a category is a personnel line: visits counts its clinic (in-person) and virtual visits (Columns B and B2); false means the manual grays those columns out because the personnel aren't providers. A line with sum adds up other lines. patients names the service category whose unduplicated patients go in Column C; \"sum\" adds the categories' patients, as Line 34 does. FTEs (Column A) come from HR records and aren't computed.",
+    "basis": "2026 UDS Manual (HRSA, revised 2026-08-10), Table 5 on pages 69-70 and its instructions on pages 50-64, including the countable visit rules on pages 17-21 and the FAQ on pages 65-68. PDF sha256 02761d82af5b4786. Column grays checked against the table's rendering on page 70.",
+    "categories": {
+        "medical": "Medical",
+        "dental": "Dental",
+        "mental_health": "Mental health",
+        "sud": "Substance use disorder",
+        "other_professional": "Other professional",
+        "vision": "Vision",
+        "patient_support": "Patient support",
+        "pharmacy": "Pharmacy",
+        "other_programs": "Other programs and services",
+        "central_support": "Facility and support services"
+    },
+    "virtual": {
+        "about": "A visit is virtual (Column B2) when any of these is on it. The manual's list (page 60): telehealth CPT and HCPCS codes, modifier 95 or 93, place of service 02. Added here, marked so they can be checked: place of service 10 (telehealth in the patient's home, introduced after the manual's list was written) and OpenEMR's encounter class VR (Virtual Encounter).",
+        "placeOfService": [
+            "02",
+            "10"
+        ],
+        "encounterClass": [
+            "VR"
+        ],
+        "modifiers": [
+            "95",
+            "93"
+        ],
+        "codes": {
+            "cpt": [
+                "98008 through 98015",
+                "98689",
+                "99422",
+                "99423"
+            ],
+            "hcpcs": [
+                "G0071",
+                "G0406 through G0408",
+                "G0425 through G0427",
+                "G2025"
+            ]
+        }
+    },
+    "substanceUseDiagnoses": {
+        "about": "A mental health or substance use disorder visit is a substance use disorder visit (Line 21) when its first diagnosis is one of these, and a mental health visit otherwise (pages 54-55: classify by the primary service, not the provider's title). The codes are Table 6A's Lines 18 (alcohol-related disorders) and 19 (other substance-related disorders, excluding tobacco use disorders), copied from data/table-6a.json in the same notation.",
+        "icd10": [
+            "F10-",
+            "G62.1",
+            "I42.6",
+            "K70-",
+            "O99.31-",
+            "F11- through F19- (exclude F17-)",
+            "G62.0",
+            "O99.32-"
+        ]
+    },
+    "lines": [
+        {
+            "line": "1",
+            "label": "Family Physicians",
+            "category": "medical",
+            "visits": true
+        },
+        {
+            "line": "2",
+            "label": "General Practitioners",
+            "category": "medical",
+            "visits": true
+        },
+        {
+            "line": "3",
+            "label": "Internists",
+            "category": "medical",
+            "visits": true
+        },
+        {
+            "line": "4",
+            "label": "Obstetrician/Gynecologists",
+            "category": "medical",
+            "visits": true
+        },
+        {
+            "line": "5",
+            "label": "Pediatricians",
+            "category": "medical",
+            "visits": true
+        },
+        {
+            "line": "7",
+            "label": "Other Specialty Physicians",
+            "category": "medical",
+            "visits": true
+        },
+        {
+            "line": "8",
+            "label": "Total Physicians (Lines 1–7)",
+            "sum": [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "7"
+            ]
+        },
+        {
+            "line": "9a",
+            "label": "Nurse Practitioners",
+            "category": "medical",
+            "visits": true
+        },
+        {
+            "line": "9b",
+            "label": "Physician Assistants/Associates",
+            "category": "medical",
+            "visits": true
+        },
+        {
+            "line": "10",
+            "label": "Certified Nurse Midwives",
+            "category": "medical",
+            "visits": true
+        },
+        {
+            "line": "10a",
+            "label": "Total NPs, PAs, and CNMs (Lines 9a–10)",
+            "sum": [
+                "9a",
+                "9b",
+                "10"
+            ]
+        },
+        {
+            "line": "11",
+            "label": "Nurses",
+            "category": "medical",
+            "visits": true
+        },
+        {
+            "line": "12",
+            "label": "Other Medical Personnel",
+            "category": "medical",
+            "visits": false
+        },
+        {
+            "line": "13",
+            "label": "Laboratory Personnel",
+            "category": "medical",
+            "visits": false
+        },
+        {
+            "line": "14",
+            "label": "X-ray Personnel",
+            "category": "medical",
+            "visits": false
+        },
+        {
+            "line": "15",
+            "label": "Total Medical Care Services (Lines 8 + 10a–14)",
+            "sum": [
+                "8",
+                "10a",
+                "11",
+                "12",
+                "13",
+                "14"
+            ],
+            "patients": "medical"
+        },
+        {
+            "line": "16",
+            "label": "Dentists",
+            "category": "dental",
+            "visits": true
+        },
+        {
+            "line": "17",
+            "label": "Dental Hygienists",
+            "category": "dental",
+            "visits": true
+        },
+        {
+            "line": "17a",
+            "label": "Dental Therapists",
+            "category": "dental",
+            "visits": true
+        },
+        {
+            "line": "18",
+            "label": "Other Dental Personnel",
+            "category": "dental",
+            "visits": false
+        },
+        {
+            "line": "19",
+            "label": "Total Dental Services (Lines 16–18)",
+            "sum": [
+                "16",
+                "17",
+                "17a",
+                "18"
+            ],
+            "patients": "dental"
+        },
+        {
+            "line": "20a",
+            "label": "Psychiatrists",
+            "category": "mental_health",
+            "visits": true
+        },
+        {
+            "line": "20a1",
+            "label": "Licensed Clinical Psychologists",
+            "category": "mental_health",
+            "visits": true
+        },
+        {
+            "line": "20a2",
+            "label": "Licensed Clinical Social Workers",
+            "category": "mental_health",
+            "visits": true
+        },
+        {
+            "line": "20b",
+            "label": "Other Licensed Mental Health Providers",
+            "category": "mental_health",
+            "visits": true
+        },
+        {
+            "line": "20c",
+            "label": "Other Mental Health Personnel",
+            "category": "mental_health",
+            "visits": true
+        },
+        {
+            "line": "20",
+            "label": "Total Mental Health Services (Lines 20a–c)",
+            "sum": [
+                "20a",
+                "20a1",
+                "20a2",
+                "20b",
+                "20c"
+            ],
+            "patients": "mental_health"
+        },
+        {
+            "line": "21",
+            "label": "Substance Use Disorder Services",
+            "category": "sud",
+            "visits": true,
+            "patients": "sud"
+        },
+        {
+            "line": "22",
+            "label": "Other Professional Services",
+            "category": "other_professional",
+            "visits": true,
+            "patients": "other_professional"
+        },
+        {
+            "line": "22a",
+            "label": "Ophthalmologists",
+            "category": "vision",
+            "visits": true
+        },
+        {
+            "line": "22b",
+            "label": "Optometrists",
+            "category": "vision",
+            "visits": true
+        },
+        {
+            "line": "22c",
+            "label": "Other Vision Care Personnel",
+            "category": "vision",
+            "visits": false
+        },
+        {
+            "line": "22d",
+            "label": "Total Vision Services (Lines 22a–c)",
+            "sum": [
+                "22a",
+                "22b",
+                "22c"
+            ],
+            "patients": "vision"
+        },
+        {
+            "line": "23a",
+            "label": "Pharmacists",
+            "category": "pharmacy",
+            "visits": false
+        },
+        {
+            "line": "23b",
+            "label": "Clinical Pharmacists",
+            "category": "pharmacy",
+            "visits": false
+        },
+        {
+            "line": "23c",
+            "label": "Pharmacy Technicians",
+            "category": "pharmacy",
+            "visits": false
+        },
+        {
+            "line": "23d",
+            "label": "Other Pharmacy Personnel",
+            "category": "pharmacy",
+            "visits": false
+        },
+        {
+            "line": "23",
+            "label": "Pharmacy Personnel (Lines 23a–d)",
+            "sum": [
+                "23a",
+                "23b",
+                "23c",
+                "23d"
+            ]
+        },
+        {
+            "line": "24",
+            "label": "Case Managers",
+            "category": "patient_support",
+            "visits": true
+        },
+        {
+            "line": "25",
+            "label": "Health Education Specialists",
+            "category": "patient_support",
+            "visits": true
+        },
+        {
+            "line": "26a",
+            "label": "Eligibility Assistance Services Personnel",
+            "category": "patient_support",
+            "visits": false
+        },
+        {
+            "line": "26b",
+            "label": "Outreach Services Personnel",
+            "category": "patient_support",
+            "visits": false
+        },
+        {
+            "line": "26c",
+            "label": "Transportation Services Personnel",
+            "category": "patient_support",
+            "visits": false
+        },
+        {
+            "line": "27b",
+            "label": "Language Assistance Services Personnel",
+            "category": "patient_support",
+            "visits": false
+        },
+        {
+            "line": "28a",
+            "label": "Community Health Workers",
+            "category": "patient_support",
+            "visits": false
+        },
+        {
+            "line": "28b",
+            "label": "Other Patient Support Services Personnel",
+            "category": "patient_support",
+            "visits": false
+        },
+        {
+            "line": "29",
+            "label": "Total Patient Support Services (Lines 24–28b)",
+            "sum": [
+                "24",
+                "25",
+                "26a",
+                "26b",
+                "26c",
+                "27b",
+                "28a",
+                "28b"
+            ],
+            "patients": "patient_support"
+        },
+        {
+            "line": "29a",
+            "label": "Other Programs and Services",
+            "category": "other_programs",
+            "visits": false
+        },
+        {
+            "line": "30a",
+            "label": "Management and Support Personnel",
+            "category": "central_support",
+            "visits": false
+        },
+        {
+            "line": "30b",
+            "label": "Fiscal and Billing Personnel",
+            "category": "central_support",
+            "visits": false
+        },
+        {
+            "line": "30c",
+            "label": "Information Technology Personnel",
+            "category": "central_support",
+            "visits": false
+        },
+        {
+            "line": "31",
+            "label": "Facility Personnel",
+            "category": "central_support",
+            "visits": false
+        },
+        {
+            "line": "32",
+            "label": "Patient Registration and Health Records Personnel",
+            "category": "central_support",
+            "visits": false
+        },
+        {
+            "line": "33",
+            "label": "Total Facility and Support Services Personnel (Lines 30a–32)",
+            "sum": [
+                "30a",
+                "30b",
+                "30c",
+                "31",
+                "32"
+            ]
+        },
+        {
+            "line": "34",
+            "label": "Grand Total (Lines 15+19+20+21+22+22d+23+29+29a+33)",
+            "sum": [
+                "15",
+                "19",
+                "20",
+                "21",
+                "22",
+                "22d",
+                "23",
+                "29",
+                "29a",
+                "33"
+            ],
+            "patients": "sum"
+        }
+    ]
+}

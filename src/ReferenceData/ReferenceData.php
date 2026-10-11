@@ -22,6 +22,8 @@ final readonly class ReferenceData
         public RaceEthnicity $raceEthnicity,
         public InsuranceCategoryMap $insuranceCategories,
         public Table6a $table6a,
+        public Table5 $table5,
+        public ProviderTaxonomy $providerTaxonomy,
     ) {
     }
 }

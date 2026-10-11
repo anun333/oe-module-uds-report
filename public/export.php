@@ -82,6 +82,14 @@ foreach (Labels::table4Special() as $line => $label) {
     CsvRow::write($out, ['', $line, $label, $t4['special'][$line] ?? 0]);
 }
 CsvRow::write($out, []);
+$t5 = $report->table5()->result();
+CsvRow::write($out, ['Table 5', 'Line', 'Personnel by Major Service Category', 'FTEs (A)', 'Clinic Visits (B)', 'Virtual Visits (B2)', 'Patients (C)']);
+foreach ($t5['rows'] as $row) {
+    CsvRow::write($out, ['', $row['line']->line, $row['line']->label, '', $row['visits'] ?? '', $row['virtual'] ?? '', $row['patients'] ?? '']);
+}
+CsvRow::write($out, ['', '', 'FTEs come from HR records and are not computed. Encounters not counted: ' . $t5['notCounted']
+    . '; UDS patients with no Table 5 visit: ' . count($t5['patientsWithoutVisit'])]);
+CsvRow::write($out, []);
 CsvRow::write($out, ['Table 6A', 'Line', 'Diagnosis or Service', 'Visits (A)', 'Patients (B)', 'Counted']);
 foreach ($report->table6A()->rows() as $row) {
     CsvRow::write($out, [

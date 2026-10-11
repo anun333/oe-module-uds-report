@@ -29,6 +29,8 @@ final class SettingsRepository
         self::COUNTABLE_CATEGORIES, self::IN_SCOPE_FACILITIES, self::SCHOOL_BASED_FACILITIES, self::PUBLIC_HOUSING_FACILITIES,
     ];
     private const POVERTY_REGION = 'poverty_region';
+    public const PROVIDER_LINES = 'table5_provider_lines';
+    public const CATEGORY_LINES = 'table5_category_lines';
 
     public function load(): UdsSettings
     {
@@ -55,6 +57,8 @@ final class SettingsRepository
             publicHousingFacilityIds: self::intListOrNull($values[self::PUBLIC_HOUSING_FACILITIES] ?? null) ?? [],
             povertyRegion: (is_string($region) ? PovertyRegion::tryFrom($region) : null) ?? PovertyRegion::Contiguous,
             insuranceOverrides: $overrides,
+            providerLines: self::lineMap($values[self::PROVIDER_LINES] ?? null),
+            categoryLines: self::lineMap($values[self::CATEGORY_LINES] ?? null),
         );
     }
 
@@ -67,6 +71,20 @@ final class SettingsRepository
             throw new \InvalidArgumentException('Unknown UDS setting');
         }
         $this->save($name, $ids === null ? null : array_values(array_unique($ids)), $userId);
+    }
+
+    /**
+     * The clinic's Table 5 line choices: per provider (PROVIDER_LINES) or per visit category (CATEGORY_LINES).
+     *
+     * @param array<int, string> $map id => line; an empty map clears the setting
+     */
+    public function saveLineMap(string $name, array $map, int $userId): void
+    {
+        if (!in_array($name, [self::PROVIDER_LINES, self::CATEGORY_LINES], true)) {
+            throw new \InvalidArgumentException('Unknown UDS setting');
+        }
+        ksort($map);
+        $this->save($name, $map === [] ? null : $map, $userId);
     }
 
     public function savePovertyRegion(PovertyRegion $region, int $userId): void
@@ -89,7 +107,7 @@ final class SettingsRepository
     }
 
     /**
-     * @param string|list<int>|null $value
+     * @param string|list<int>|array<int, string>|null $value
      */
     private function save(string $name, string|array|null $value, int $userId): void
     {
@@ -102,6 +120,26 @@ final class SettingsRepository
              ON DUPLICATE KEY UPDATE `value` = VALUES(`value`), `updated_by` = VALUES(`updated_by`)',
             [$name, json_encode($value, JSON_THROW_ON_ERROR), $userId],
         );
+    }
+
+    /**
+     * A saved id => line map. JSON object keys come back as numeric strings, which PHP
+     * turns into int array keys; anything else is dropped.
+     *
+     * @return array<int, string>
+     */
+    private static function lineMap(mixed $value): array
+    {
+        if (!is_array($value)) {
+            return [];
+        }
+        $map = [];
+        foreach ($value as $id => $line) {
+            if (is_int($id) && $id > 0 && is_string($line) && preg_match('/^[0-9a-z]{1,6}$/', $line) === 1) {
+                $map[$id] = $line;
+            }
+        }
+        return $map;
     }
 
     /**

@@ -1,0 +1,534 @@
+{
+    "about": "Suggested Table 5 line for an OpenEMR user, from the NUCC taxonomy code in the user's Taxonomy field. The first rule whose match equals the code, or is a prefix of it, applies. provider false marks personnel who aren't providers on that line (Appendix A), so their encounters are not visits. A code no rule matches gets no suggestion, and the clinic chooses the line in the module's settings, as it can for anyone. OpenEMR gives every new user 207Q00000X (Family Medicine) by default, so that code is only ever a suggestion to confirm.",
+    "basis": "NUCC Health Care Provider Taxonomy, version 26.1 (nucc_taxonomy_261.csv, sha256 0615cce1dac2fae7), mapped to the lines of the 2026 UDS Manual's Table 5 using its instructions (pages 50-59) and Appendix A, Listing of Personnel (pages 178-181).",
+    "openemrDefault": "207Q00000X",
+    "rules": [
+        {
+            "match": "207Q",
+            "line": "1",
+            "note": "Family Medicine, every specialization (FAQ 13: a physician providing MOUD stays on a medical line)"
+        },
+        {
+            "match": "208D",
+            "line": "2",
+            "note": "General Practice"
+        },
+        {
+            "match": "207R00000X",
+            "line": "3",
+            "note": "Internal Medicine"
+        },
+        {
+            "match": "207V",
+            "line": "4",
+            "note": "Obstetrics & Gynecology"
+        },
+        {
+            "match": "208000000X",
+            "line": "5",
+            "note": "Pediatrics"
+        },
+        {
+            "match": "2084P0800X",
+            "line": "20a",
+            "note": "Psychiatry"
+        },
+        {
+            "match": "2084P0802X",
+            "line": "20a",
+            "note": "Addiction Psychiatry"
+        },
+        {
+            "match": "2084P0804X",
+            "line": "20a",
+            "note": "Child & Adolescent Psychiatry"
+        },
+        {
+            "match": "2084P0805X",
+            "line": "20a",
+            "note": "Geriatric Psychiatry"
+        },
+        {
+            "match": "2084P0015X",
+            "line": "20a",
+            "note": "Psychosomatic Medicine"
+        },
+        {
+            "match": "2084F0202X",
+            "line": "20a",
+            "note": "Forensic Psychiatry"
+        },
+        {
+            "match": "2084A0401X",
+            "line": "20a",
+            "note": "Addiction Medicine (Psychiatry & Neurology)"
+        },
+        {
+            "match": "207W",
+            "line": "22a",
+            "note": "Ophthalmology"
+        },
+        {
+            "match": "207Z",
+            "line": "13",
+            "note": "Pathology (not a provider: Appendix A)"
+        },
+        {
+            "match": "2085",
+            "line": "14",
+            "note": "Radiology (not a provider: Appendix A)"
+        },
+        {
+            "match": "207U",
+            "line": "14",
+            "note": "Nuclear Medicine"
+        },
+        {
+            "match": "20",
+            "line": "7",
+            "note": "Every other physician specialty and subspecialty, including internal medicine and pediatric subspecialties"
+        },
+        {
+            "match": "363LP0808X",
+            "line": "20b",
+            "note": "Psychiatric/Mental Health Nurse Practitioner"
+        },
+        {
+            "match": "363L",
+            "line": "9a",
+            "note": "Nurse Practitioner"
+        },
+        {
+            "match": "367500000X",
+            "line": "9a",
+            "note": "Certified Registered Nurse Anesthetist (Appendix A: nurse practitioner anesthetist, Line 9a)"
+        },
+        {
+            "match": "363A",
+            "line": "9b",
+            "note": "Physician Assistant"
+        },
+        {
+            "match": "367A00000X",
+            "line": "10",
+            "note": "Advanced Practice Midwife (certified nurse midwife)"
+        },
+        {
+            "match": "364SP0808X",
+            "line": "20b",
+            "note": "Psychiatric/Mental Health Clinical Nurse Specialist"
+        },
+        {
+            "match": "364S",
+            "line": "11",
+            "note": "Clinical Nurse Specialist (Appendix A: Line 11)"
+        },
+        {
+            "match": "163WP0808X",
+            "line": "20b",
+            "note": "Psychiatric/Mental Health Registered Nurse"
+        },
+        {
+            "match": "163WA0400X",
+            "line": "21",
+            "note": "Addiction (Substance Use Disorder) Registered Nurse"
+        },
+        {
+            "match": "163WC0400X",
+            "line": "24",
+            "note": "Case Management Registered Nurse (Appendix A: RNs can be case managers)"
+        },
+        {
+            "match": "163WD0400X",
+            "line": "25",
+            "note": "Diabetes Educator Registered Nurse (Appendix A: RNs can be health education specialists)"
+        },
+        {
+            "match": "163W",
+            "line": "11",
+            "note": "Registered Nurse"
+        },
+        {
+            "match": "164W00000X",
+            "line": "11",
+            "provider": false,
+            "note": "Licensed Practical Nurse (Appendix A: not a provider on Line 11)"
+        },
+        {
+            "match": "164X00000X",
+            "line": "11",
+            "provider": false,
+            "note": "Licensed Vocational Nurse (Appendix A: not a provider on Line 11)"
+        },
+        {
+            "match": "167G00000X",
+            "line": "20c",
+            "note": "Licensed Psychiatric Technician"
+        },
+        {
+            "match": "376K00000X",
+            "line": "12",
+            "note": "Nurse's Aide"
+        },
+        {
+            "match": "374U00000X",
+            "line": "12",
+            "note": "Home Health Aide"
+        },
+        {
+            "match": "3747",
+            "line": "12",
+            "note": "Technician (attendant care, personal care attendant)"
+        },
+        {
+            "match": "374J00000X",
+            "line": "28b",
+            "note": "Doula (page 58: peer support functions such as doulas)"
+        },
+        {
+            "match": "103TA0400X",
+            "line": "21",
+            "note": "Addiction (Substance Use Disorder) Psychologist"
+        },
+        {
+            "match": "103T",
+            "line": "20a1",
+            "note": "Psychologist"
+        },
+        {
+            "match": "103G",
+            "line": "20a1",
+            "note": "Clinical Neuropsychologist"
+        },
+        {
+            "match": "1041C0700X",
+            "line": "20a2",
+            "note": "Clinical Social Worker"
+        },
+        {
+            "match": "1041",
+            "line": "20b",
+            "note": "Social Worker other than clinical (licensed master social worker, Line 20b)"
+        },
+        {
+            "match": "106H00000X",
+            "line": "20b",
+            "note": "Marriage & Family Therapist"
+        },
+        {
+            "match": "101YA0400X",
+            "line": "21",
+            "note": "Addiction (Substance Use Disorder) Counselor"
+        },
+        {
+            "match": "101Y",
+            "line": "20b",
+            "note": "Counselor (mental health, professional, school, pastoral)"
+        },
+        {
+            "match": "103K00000X",
+            "line": "20b",
+            "note": "Behavior Analyst"
+        },
+        {
+            "match": "102L00000X",
+            "line": "20b",
+            "note": "Psychoanalyst"
+        },
+        {
+            "match": "106E00000X",
+            "line": "20c",
+            "note": "Assistant Behavior Analyst"
+        },
+        {
+            "match": "106S00000X",
+            "line": "20c",
+            "note": "Behavior Technician"
+        },
+        {
+            "match": "101200000X",
+            "line": "20c",
+            "note": "Drama Therapist"
+        },
+        {
+            "match": "102X00000X",
+            "line": "20c",
+            "note": "Poetry Therapist"
+        },
+        {
+            "match": "175T00000X",
+            "line": "28b",
+            "note": "Peer Specialist (page 58: SUD peer supporters and recovery coaches)"
+        },
+        {
+            "match": "1223",
+            "line": "16",
+            "note": "Dentist, every specialization"
+        },
+        {
+            "match": "125Q00000X",
+            "line": "16",
+            "note": "Oral Medicine (NUCC lists it under Dentist)"
+        },
+        {
+            "match": "124Q00000X",
+            "line": "17",
+            "note": "Dental Hygienist"
+        },
+        {
+            "match": "125J00000X",
+            "line": "17a",
+            "note": "Dental Therapist"
+        },
+        {
+            "match": "125K00000X",
+            "line": "17a",
+            "note": "Advanced Practice Dental Therapist"
+        },
+        {
+            "match": "126800000X",
+            "line": "18",
+            "note": "Dental Assistant"
+        },
+        {
+            "match": "126900000X",
+            "line": "18",
+            "note": "Dental Laboratory Technician"
+        },
+        {
+            "match": "122400000X",
+            "line": "18",
+            "note": "Denturist"
+        },
+        {
+            "match": "152W",
+            "line": "22b",
+            "note": "Optometrist"
+        },
+        {
+            "match": "156F",
+            "line": "22c",
+            "note": "Eye and vision technician or technologist"
+        },
+        {
+            "match": "183500000X",
+            "line": "23a",
+            "note": "Pharmacist"
+        },
+        {
+            "match": "1835G0000X",
+            "line": "23a",
+            "note": "Pharmacist, General Practice"
+        },
+        {
+            "match": "1835",
+            "line": "23b",
+            "note": "Pharmacist with a board-certified specialty (clinical pharmacist)"
+        },
+        {
+            "match": "183700000X",
+            "line": "23c",
+            "note": "Pharmacy Technician"
+        },
+        {
+            "match": "111N",
+            "line": "22",
+            "note": "Chiropractor"
+        },
+        {
+            "match": "211D00000X",
+            "line": "22",
+            "provider": false,
+            "note": "Podiatric Assistant (not a provider)"
+        },
+        {
+            "match": "213E",
+            "line": "22",
+            "note": "Podiatrist"
+        },
+        {
+            "match": "136A00000X",
+            "line": "22",
+            "provider": false,
+            "note": "Dietetic Technician (not a provider)"
+        },
+        {
+            "match": "133V",
+            "line": "22",
+            "note": "Registered Dietitian"
+        },
+        {
+            "match": "133N",
+            "line": "22",
+            "note": "Nutritionist"
+        },
+        {
+            "match": "231H",
+            "line": "22",
+            "note": "Audiologist"
+        },
+        {
+            "match": "2355",
+            "line": "22",
+            "provider": false,
+            "note": "Speech-language or audiology assistant or technologist (not a provider)"
+        },
+        {
+            "match": "235Z00000X",
+            "line": "22",
+            "note": "Speech-Language Pathologist"
+        },
+        {
+            "match": "171100000X",
+            "line": "22",
+            "note": "Acupuncturist"
+        },
+        {
+            "match": "175F00000X",
+            "line": "22",
+            "note": "Naturopath"
+        },
+        {
+            "match": "225200000X",
+            "line": "22",
+            "provider": false,
+            "note": "Physical Therapy Assistant (Appendix A: not a provider)"
+        },
+        {
+            "match": "2251",
+            "line": "22",
+            "note": "Physical Therapist"
+        },
+        {
+            "match": "224Z",
+            "line": "22",
+            "provider": false,
+            "note": "Occupational Therapy Assistant (Appendix A: not a provider)"
+        },
+        {
+            "match": "225X",
+            "line": "22",
+            "note": "Occupational Therapist"
+        },
+        {
+            "match": "2278",
+            "line": "22",
+            "note": "Respiratory Therapist, Certified"
+        },
+        {
+            "match": "2279",
+            "line": "22",
+            "note": "Respiratory Therapist, Registered"
+        },
+        {
+            "match": "225700000X",
+            "line": "22",
+            "note": "Massage Therapist"
+        },
+        {
+            "match": "222Z00000X",
+            "line": "22",
+            "note": "Orthotist"
+        },
+        {
+            "match": "171M00000X",
+            "line": "24",
+            "note": "Case Manager/Care Coordinator"
+        },
+        {
+            "match": "174H00000X",
+            "line": "25",
+            "note": "Health Educator"
+        },
+        {
+            "match": "171400000X",
+            "line": "25",
+            "note": "Health & Wellness Coach"
+        },
+        {
+            "match": "174N00000X",
+            "line": "25",
+            "note": "Lactation Consultant, Non-RN"
+        },
+        {
+            "match": "172V00000X",
+            "line": "28a",
+            "note": "Community Health Worker"
+        },
+        {
+            "match": "171R00000X",
+            "line": "27b",
+            "note": "Interpreter"
+        },
+        {
+            "match": "172A00000X",
+            "line": "26c",
+            "note": "Driver"
+        },
+        {
+            "match": "246Q",
+            "line": "13",
+            "note": "Pathology specialist or technologist"
+        },
+        {
+            "match": "246R",
+            "line": "13",
+            "note": "Pathology technician, including phlebotomy"
+        },
+        {
+            "match": "247ZC0005X",
+            "line": "13",
+            "note": "Clinical Laboratory Director, non-physician"
+        },
+        {
+            "match": "2471",
+            "line": "14",
+            "note": "Radiologic Technologist"
+        },
+        {
+            "match": "243U00000X",
+            "line": "14",
+            "note": "Radiology Practitioner Assistant"
+        },
+        {
+            "match": "246XS1301X",
+            "line": "14",
+            "note": "Sonography specialist (Appendix A: ultrasound technicians, Line 14)"
+        },
+        {
+            "match": "246ZS0410X",
+            "line": "12",
+            "note": "Surgical Technologist"
+        },
+        {
+            "match": "246ZC0007X",
+            "line": "12",
+            "note": "Surgical Assistant"
+        },
+        {
+            "match": "246ZX2200X",
+            "line": "12",
+            "note": "Orthopedic Assistant"
+        },
+        {
+            "match": "246W00000X",
+            "line": "12",
+            "note": "Cardiology Technician"
+        },
+        {
+            "match": "246Y",
+            "line": "32",
+            "note": "Health Information specialist or technologist (Line 32: patient health records personnel)"
+        },
+        {
+            "match": "2470",
+            "line": "32",
+            "note": "Health Information technician"
+        },
+        {
+            "match": "146",
+            "line": "12",
+            "note": "Emergency medical services personnel (Appendix A: EMS/EMT not credentialed as a nurse, Line 12)"
+        }
+    ]
+}

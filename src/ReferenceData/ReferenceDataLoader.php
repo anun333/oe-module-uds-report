@@ -32,11 +32,18 @@ final readonly class ReferenceDataLoader
     /** @throws ReferenceDataException */
     public function load(): ReferenceData
     {
+        $povertyGuidelines = PovertyGuidelines::fromData($this->read(PovertyGuidelines::FILE));
+        $raceEthnicity = RaceEthnicity::fromData($this->read(RaceEthnicity::FILE));
+        $insuranceCategories = InsuranceCategoryMap::fromData($this->read(InsuranceCategoryMap::FILE));
+        $table6a = Table6a::fromData($this->read(Table6a::FILE));
+        $table5 = Table5::fromData($this->read(Table5::FILE));
         return new ReferenceData(
-            PovertyGuidelines::fromData($this->read(PovertyGuidelines::FILE)),
-            RaceEthnicity::fromData($this->read(RaceEthnicity::FILE)),
-            InsuranceCategoryMap::fromData($this->read(InsuranceCategoryMap::FILE)),
-            Table6a::fromData($this->read(Table6a::FILE)),
+            $povertyGuidelines,
+            $raceEthnicity,
+            $insuranceCategories,
+            $table6a,
+            $table5,
+            ProviderTaxonomy::fromData($this->read(ProviderTaxonomy::FILE), $table5),
         );
     }
 

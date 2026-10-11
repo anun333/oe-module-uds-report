@@ -56,6 +56,14 @@ final class JsonShape
         return $value;
     }
 
+    public static function bool(mixed $value, string $where): bool
+    {
+        if (!is_bool($value)) {
+            throw new ReferenceDataException($where, 'must be true or false');
+        }
+        return $value;
+    }
+
     public static function text(mixed $value, string $where): string
     {
         if (!is_string($value) || trim($value) === '') {

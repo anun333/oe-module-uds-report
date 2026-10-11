@@ -7,6 +7,8 @@ These files hold the published figures and code mappings the UDS Report uses. Th
 | [poverty-guidelines.json](poverty-guidelines.json) | HHS poverty guidelines by year and region, for Table 4 income Lines 1–5 | HHS publishes new guidelines (each January) |
 | [race-ethnicity.json](race-ethnicity.json) | Which CDC race and ethnicity codes go to which Table 3B line and column | HRSA changes the Table 3B lines |
 | [insurance-categories.json](insurance-categories.json) | The UDS insurance category for each payment typology group and OpenEMR claim type | A mapping turns out to be wrong, or HRSA changes the insurance lines |
+| [table-5.json](table-5.json) | The lines of Table 5, which report visits and patients, what makes a visit virtual, and the diagnoses that make a behavioral health visit a substance use disorder visit | HRSA publishes a new manual |
+| [table-5-taxonomy.json](table-5-taxonomy.json) | The Table 5 line suggested for each NUCC taxonomy code (from the manual's Appendix A) | NUCC publishes a new taxonomy (twice a year), or HRSA changes Appendix A |
 | [table-6a.json](table-6a.json) | The lines of Table 6A and the codes that put a visit on each, in the manual's notation | HRSA publishes a new manual (codes change every year) |
 
 Each file begins with an `about` that explains its fields.
@@ -17,6 +19,7 @@ Reviews from people who prepare UDS submissions are the most useful. In particul
 
 - **insurance-categories.json:** do you agree with each category? A `null` category means undecided. Each null has a note saying why, and the clinic chooses in Settings.
 - **race-ethnicity.json:** does each subgroup and Hispanic origin go to the right line or column?
+- **table-5-taxonomy.json:** would you put each kind of provider on that line? Codes no rule covers (about 80 rare ones, such as art therapists or athletic trainers) get no suggestion, and the clinic chooses.
 - **table-6a.json:** does each line carry the codes your manual shows? The file was checked against the 2026 manual token by token, but a second reader is worth more. Lines marked `partial` or `none` say what is missing.
 - **poverty-guidelines.json:** the 2025 Alaska and Hawaii rows are empty because those figures haven't been checked against HHS yet. Filling them in takes the HHS notice and two numbers each.
 

@@ -27,6 +27,7 @@ use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataLoader;
 use OpenEMR\Modules\UdsReport\Report\DemographicTables;
 use OpenEMR\Modules\UdsReport\Report\Labels;
 use OpenEMR\Modules\UdsReport\Report\ReportYear;
+use OpenEMR\Modules\UdsReport\Report\Table5;
 use OpenEMR\Modules\UdsReport\Report\UdsReportService;
 use OpenEMR\Modules\UdsReport\Repository\SettingsRepository;
 use OpenEMR\Modules\UdsReport\Repository\UdsPatientRepository;
@@ -46,6 +47,7 @@ $t3a = $tables->table3A();
 $t3b = $tables->table3B();
 $t4 = $tables->table4();
 $check = $tables->crossCheck();
+$t5 = $report->table5()->result();
 $t6a = $report->table6A()->rows();
 $gaps = $report->gaps();
 $region = $report->settings->povertyRegion;
@@ -248,6 +250,71 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
         </tbody>
     </table>
     <p class="small text-muted"><?php echo xlt('Lines 14-15 and 17-22 are entered only by health centers with 330(g) or 330(h) funding; everyone enters the totals on Lines 16 and 23.'); ?></p>
+
+    <h2 class="h5 uds-section"><?php echo xlt('Table 5: Staffing and Utilization'); ?></h2>
+    <p class="small text-muted"><?php echo xlt('Visits and patients from the countable visits, each on the line of the provider who saw the patient: the line set for the visit category, else the line chosen for the provider in Settings, else the one suggested by the provider\'s taxonomy code. One visit per patient, service category, site and day. FTEs (Column A) come from your HR records; enter them in EHB.'); ?></p>
+    <table class="table table-sm table-bordered uds-table" style="max-width: 70rem">
+        <thead class="thead-light"><tr><th><?php echo xlt('Line'); ?></th><th><?php echo xlt('Personnel by Major Service Category'); ?></th><th class="num"><?php echo xlt('FTEs'); ?> (A)</th><th class="num"><?php echo xlt('Clinic Visits'); ?> (B)</th><th class="num"><?php echo xlt('Virtual Visits'); ?> (B2)</th><th class="num"><?php echo xlt('Patients'); ?> (C)</th></tr></thead>
+        <tbody>
+        <?php foreach ($t5['rows'] as $row) {
+            $l = $row['line']; ?>
+            <tr class="<?php echo $l->isPersonnel() ? '' : 'subtotal'; ?>">
+                <td><?php echo text($l->line); ?></td>
+                <td><?php echo text(xl($l->label)); ?></td>
+                <td class="num text-muted" title="<?php echo xla('From HR records'); ?>">&mdash;</td>
+                <td class="num"><?php echo $row['visits'] === null ? '&mdash;' : text($n($row['visits'])); ?></td>
+                <td class="num"><?php echo $row['virtual'] === null ? '&mdash;' : text($n($row['virtual'])); ?></td>
+                <td class="num"><?php echo $row['patients'] === null ? '&mdash;' : text($n($row['patients'])); ?></td>
+            </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+    <?php
+    $unconfirmed = array_filter($t5['providers'], static fn(array $p): bool => in_array($p['source'], [Table5::SOURCE_DEFAULT_TAXONOMY, Table5::SOURCE_NONE], true));
+    $sourceLabel = [
+        Table5::SOURCE_CLINIC => xl('chosen in Settings'),
+        Table5::SOURCE_TAXONOMY => xl('from the taxonomy code'),
+        Table5::SOURCE_DEFAULT_TAXONOMY => xl('from OpenEMR\'s default taxonomy code; confirm it'),
+        Table5::SOURCE_NONE => xl('no line known; choose one'),
+    ];
+    ?>
+    <ul class="small mb-2">
+        <?php if ($unconfirmed !== []) { ?>
+        <li class="text-danger"><?php echo text(sprintf(xl('%s providers need their Table 5 line confirmed or chosen in Settings.'), $n(count($unconfirmed)))); ?></li>
+        <?php } ?>
+        <?php if ($t5['notCounted'] > 0) { ?>
+        <li><?php echo text(sprintf(xl('%s countable encounters are not Table 5 visits: their provider is not a provider for UDS purposes, or has no line.'), $n($t5['notCounted']))); ?></li>
+        <?php } ?>
+        <?php if ($t5['patientsWithoutVisit'] !== []) { ?>
+        <li class="text-danger"><?php echo text(sprintf(xl('%s UDS patients have no Table 5 visit, so the tables disagree. Their only visits are with someone who is not a provider, or has no line.'), $n(count($t5['patientsWithoutVisit'])))); ?></li>
+        <?php } ?>
+        <?php if ($t5['merged'] > 0) { ?>
+        <li><?php echo text(sprintf(xl('%s encounters were counted into another visit (one visit per patient, service category, site and day).'), $n($t5['merged']))); ?></li>
+        <?php } ?>
+        <?php if ($t5['behavioralWithoutDiagnosis'] > 0) { ?>
+        <li><?php echo text(sprintf(xl('%s mental health or substance use visits have no diagnosis, so they stay on the provider\'s line instead of going by the primary diagnosis.'), $n($t5['behavioralWithoutDiagnosis']))); ?></li>
+        <?php } ?>
+    </ul>
+    <details class="small mb-4" <?php echo $unconfirmed !== [] ? 'open' : ''; ?>>
+        <summary><?php echo xlt('Providers and their Table 5 lines'); ?></summary>
+        <table class="table table-sm table-bordered mt-2" style="max-width: 60rem">
+            <thead class="thead-light"><tr><th><?php echo xlt('Provider'); ?></th><th><?php echo xlt('Taxonomy'); ?></th><th class="num"><?php echo xlt('Countable encounters'); ?></th><th><?php echo xlt('Line'); ?></th><th><?php echo xlt('How'); ?></th></tr></thead>
+            <tbody>
+            <?php foreach ($t5['providers'] as $p) { ?>
+                <tr class="<?php echo in_array($p['source'], [Table5::SOURCE_DEFAULT_TAXONOMY, Table5::SOURCE_NONE], true) ? 'table-warning' : ''; ?>">
+                    <td><?php echo text($p['provider']->name); ?></td>
+                    <td><?php echo text($p['provider']->taxonomy); ?></td>
+                    <td class="num"><?php echo text($n($p['encounters'])); ?></td>
+                    <td><?php echo $p['line'] === null ? xlt('not counted') : text($p['line']); ?></td>
+                    <td><?php echo text($sourceLabel[$p['source']] ?? $p['source']); ?></td>
+                </tr>
+            <?php } ?>
+            </tbody>
+        </table>
+        <?php if ($isAdmin) { ?>
+        <a href="<?php echo attr($moduleUrl . '/public/settings.php#table5'); ?>"><?php echo xlt('Choose lines in Settings'); ?></a>
+        <?php } ?>
+    </details>
 
     <h2 class="h5 uds-section"><?php echo xlt('Table 6A: Selected Diagnoses and Services Rendered'); ?></h2>
     <p class="small text-muted"><?php echo xlt('From the billing codes on each encounter (the fee sheet). Diagnoses count at countable visits; tests, screenings, dental and support services at any encounter in the year at an in-scope site, for UDS patients. * counts only the codes the manual lists; a dash is a line defined only by value sets, not counted yet.'); ?></p>
