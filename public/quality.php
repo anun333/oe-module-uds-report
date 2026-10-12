@@ -21,6 +21,7 @@ use OpenEMR\BC\ServiceContainer;
 use OpenEMR\Common\Acl\AccessDeniedHelper;
 use OpenEMR\Common\Acl\AclMain;
 use OpenEMR\Common\Csrf\CsrfUtils;
+use OpenEMR\Common\Database\QueryUtils;
 use OpenEMR\Common\Http\CurrentRequest;
 use OpenEMR\Common\Session\SessionWrapperFactory;
 use OpenEMR\Core\Header;
@@ -54,6 +55,33 @@ $entries = $reference->ecqmMeasures->forYear($year);
 $measureIds = array_values(array_unique(array_column($entries, 'measure')));
 $store = new QualityResultsRepository();
 $patientRepository = new UdsPatientRepository($reference->insuranceCategories);
+
+// 0.7.0 adds two tables; a site that updated the files but not the database gets told how.
+if (!QueryUtils::existsTable('uds_quality_run') || !QueryUtils::existsTable('uds_quality_result')) {
+    $upgrade = xl('This version of the UDS Report module adds two tables. Run its database upgrade: Modules > Manage Modules, then Upgrade next to UDS Report.');
+    if ($isPost) {
+        header('Content-Type: application/json');
+        http_response_code(409);
+        echo json_encode(['error' => $upgrade]);
+        exit;
+    }
+    ?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title><?php echo xlt('UDS Tables 6B and 7'); ?></title>
+    <?php Header::setupHeader(['common']); ?>
+</head>
+<body class="body_top">
+<div class="container-fluid py-3">
+    <h1 class="h4 mb-3"><?php echo xlt('UDS Tables 6B and 7'); ?></h1>
+    <div class="alert alert-warning"><?php echo text($upgrade); ?></div>
+</div>
+</body>
+</html>
+    <?php
+    exit;
+}
 
 // ------------------------------------------------------------ start or continue (JSON)
 if ($isPost) {

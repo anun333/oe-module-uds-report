@@ -9,6 +9,7 @@
   - Measures not installed at the manual's version are named, not guessed at; so are the lines with no eCQM.
 - **The calculation is stored and resumable.** An administrator starts it from the page (50 patients per request) or with `bin/uds-quality.php` on the server; each batch is saved with its progress in one transaction. New tables `uds_quality_run` and `uds_quality_result`, also in `sql/0_6_0-to-0_7_0_upgrade.sql` for Module Manager's upgrade.
 - Needs OpenEMR's PHP eCQM engine (master after 8.4) and the 2026 measures (openemr/openemr#14536, not yet merged).
+- **Upgrading from 0.6.0:** run the database upgrade (Modules › Manage Modules › Upgrade next to UDS Report). Until then the new page says so instead of failing. Checked: Module Manager's upgrade creates both tables and records 0.7.0.
 - Checked on OpenEMR master with #14536: per-patient results identical to `openemr:cqm-calculate`; for 2,009 synthetic patients the CMS165 results match the prediction exactly, by race and ethnicity too. About 0.09 seconds per patient across 15 measures.
 
 ## 0.6.0 — 2026-10-11
