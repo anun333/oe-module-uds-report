@@ -132,7 +132,8 @@ final class QualityMeasures
             $cells[$line]['B']++;
             $cells[$line]['C'] += (int)$at['numerator'];
         }
-        ksort($cells, SORT_NATURAL);
+        $order = array_flip(self::table7Lines());
+        uksort($cells, static fn(string $x, string $y): int => ($order[$x] ?? PHP_INT_MAX) <=> ($order[$y] ?? PHP_INT_MAX));
         $sum = static function (callable $keep) use ($cells): array {
             $t = ['A' => 0, 'B' => 0, 'C' => 0];
             foreach ($cells as $line => $c) {
@@ -176,5 +177,50 @@ final class QualityMeasures
             throw new \InvalidArgumentException("not a Table 3B ethnicity column: $column");
         }
         return '1' . $race . self::HISPANIC_SUFFIX[$column];
+    }
+
+    /**
+     * Every Table 7 race and ethnicity line in the manual's order: the Hispanic lines by
+     * race, each with its subgroups m, p, c, a, o; then the not-Hispanic lines; then h.
+     *
+     * @return list<string>
+     */
+    public static function table7Lines(): array
+    {
+        $races = ['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'b1', 'b2', 'b3', 'b4', 'c', 'd', 'e', 'f', 'g'];
+        $lines = [];
+        foreach ($races as $race) {
+            foreach (['m', 'p', 'c', 'a', 'o'] as $suffix) {
+                $lines[] = '1' . $race . $suffix;
+            }
+        }
+        foreach ($races as $race) {
+            $lines[] = '2' . $race;
+        }
+        $lines[] = 'h';
+        return $lines;
+    }
+
+    /**
+     * The Table 3B cell a Table 7 line stands for, the inverse of table7Line(), so the
+     * page can label a line by race and ethnicity. Null for anything else.
+     *
+     * @return array{line: string, column: string}|null
+     */
+    public static function table7Cell(string $line): ?array
+    {
+        if ($line === 'h') {
+            return ['line' => '7', 'column' => 'C'];
+        }
+        if (preg_match('/^([12])(a[1-7]|b[1-4]|[c-g])([mpcao]?)$/D', $line, $m) !== 1 || ($m[1] === '1') === ($m[3] === '')) {
+            return null;
+        }
+        $race = match (true) {
+            $m[2][0] === 'a' => '1' . chr(ord('a') + (int)$m[2][1] - 1),
+            $m[2][0] === 'b' => '2' . chr(ord('a') + (int)$m[2][1] - 1),
+            default => (string)array_search($m[2], self::RACE_LETTER, true),
+        };
+        $column = $m[1] === '2' ? 'B' : (string)array_search($m[3], self::HISPANIC_SUFFIX, true);
+        return ['line' => $race, 'column' => $column];
     }
 }

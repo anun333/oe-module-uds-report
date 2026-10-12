@@ -127,6 +127,24 @@ final class QualityMeasuresTest extends TestCase
         self::assertSame($expected, QualityMeasures::table7Line($line, $column));
     }
 
+    public function testTable7CellIsTheInverseForEveryCell(): void
+    {
+        $lines = [...array_map(static fn(string $l): string => '1' . $l, range('a', 'g')), ...array_map(static fn(string $l): string => '2' . $l, range('a', 'd')), '3', '4', '5', '6', '7'];
+        $seen = [];
+        foreach ($lines as $line) {
+            foreach (['A1', 'A2', 'A3', 'A4', 'A5', 'B'] as $column) {
+                $t7 = QualityMeasures::table7Line($line, $column);
+                self::assertSame(['line' => $line, 'column' => $column], QualityMeasures::table7Cell($t7), $t7);
+                $seen[$t7] = true;
+            }
+        }
+        self::assertSame(['line' => '7', 'column' => 'C'], QualityMeasures::table7Cell('h'));
+        self::assertCount(16 * 6, $seen, 'every Table 3B cell has its own Table 7 line');
+        self::assertNull(QualityMeasures::table7Cell('2em'), 'a not-Hispanic line has no subgroup letter');
+        self::assertNull(QualityMeasures::table7Cell('1e'), 'a Hispanic line needs one');
+        self::assertNull(QualityMeasures::table7Cell('total'));
+    }
+
     public function testTable7LineRejectsWhatIsNotACell(): void
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -159,5 +177,16 @@ final class QualityMeasuresTest extends TestCase
         self::assertSame(['A' => 2, 'B' => 2, 'C' => 1], $t['subtotal_hispanic']);
         self::assertSame(['A' => 1, 'B' => 1, 'C' => 1], $t['subtotal_not_hispanic']);
         self::assertSame(['A' => 4, 'B' => 4, 'C' => 3], $t['total']);
+    }
+
+    public function testTable7RowsFollowTheManualsOrder(): void
+    {
+        $s = 'PopulationSet_1';
+        $placement = [1 => ['line' => '5', 'column' => 'B'], 2 => ['line' => '5', 'column' => 'A4'], 3 => ['line' => '5', 'column' => 'A1'], 4 => ['line' => '7', 'column' => 'C'], 5 => ['line' => '1a', 'column' => 'A3']];
+        $results = array_map(static fn(int $pid): array => self::r($pid, $s, ['DENOM' => 1]), array_keys($placement));
+        $keys = array_keys((new QualityMeasures($results, array_keys($placement)))->table7($placement));
+        self::assertSame(['1a1c', '1em', '1ea', '2e', 'h', 'subtotal_hispanic', 'subtotal_not_hispanic', 'total'], $keys);
+        self::assertCount(16 * 5 + 16 + 1, QualityMeasures::table7Lines());
+        self::assertSame($lines = QualityMeasures::table7Lines(), array_values(array_unique($lines)));
     }
 }

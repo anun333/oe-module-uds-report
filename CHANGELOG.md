@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.7.0 — 2026-10-12
+
+- **Tables 6B and 7, the eCQM lines**, on their own page from the UDS Report, with a CSV download. Calculated by OpenEMR's PHP eCQM engine with the measure versions the 2026 manual names.
+  - The manual's column logic: Column A is the denominator less exclusions and less exceptions who don't meet the numerator; Column B equals A; Column C is the numerator; each patient counts once; only patients with a countable UDS visit count.
+  - Line 12 needs all three of CMS155's numerators; Line 14a is CMS138's third population; Lines 23a and 23b are CMS137's initiation and engagement over one denominator (read from each measure's CQL).
+  - Table 7's blood pressure and diabetes sections by race and ethnicity, from each patient's Table 3B cell by Appendix B's crosswalk, in the manual's line order, with subtotals.
+  - Measures not installed at the manual's version are named, not guessed at; so are the lines with no eCQM.
+- **The calculation is stored and resumable.** An administrator starts it from the page (50 patients per request) or with `bin/uds-quality.php` on the server; each batch is saved with its progress in one transaction. New tables `uds_quality_run` and `uds_quality_result`, also in `sql/0_6_0-to-0_7_0_upgrade.sql` for Module Manager's upgrade.
+- Needs OpenEMR's PHP eCQM engine (master after 8.4) and the 2026 measures (openemr/openemr#14536, not yet merged).
+- Checked on OpenEMR master with #14536: per-patient results identical to `openemr:cqm-calculate`; for 2,009 synthetic patients the CMS165 results match the prediction exactly, by race and ethnicity too. About 0.09 seconds per patient across 15 measures.
+
 ## 0.6.0 — 2026-10-11
 
 - **eCQM readiness for Tables 6B and 7**, on its own page from the UDS Report. The module doesn't produce Tables 6B and 7 yet; this shows what to fix before it can.
