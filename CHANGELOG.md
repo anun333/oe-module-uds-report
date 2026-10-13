@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.2 — 2026-10-13
+
+- **Tables 6B and 7 work on OpenEMR master as it is**, with no change to the module: the 2026 measures merged on 2026-10-13 (openemr/openemr#14536). Rechecked on master 76fa2f1e88, which also retired the Node calculation service (#14524; the module never used it): `bin/uds-quality.php` calculated 2026 for nine synthetic patients with 15 measures, CMS164v7 reported missing, and each patient's CMS165v14 result matched its prediction (denominator 5, numerator 2). Ongoing problems and visits with no end time still don't count until openemr/openemr#14526 is fixed.
+- README: the requirements and the compatibility table say so.
+
 ## 0.7.1 — 2026-10-12
 
 - **Runs on OpenEMR 8.1.0 to 8.3.0**, not only 8.4 and later. Those releases don't have OpenEMR's `CurrentRequest` (added in 8.4.0), so the module reads the request itself there. Checked on the official 8.1.0, 8.2.0, 8.3.0 and 8.4.0 images: the module installs through Module Manager and every page loads. Tables 6B and 7 still need OpenEMR's PHP eCQM engine (master after 8.4).

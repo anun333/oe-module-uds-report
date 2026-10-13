@@ -147,7 +147,7 @@ HTTP_HOST=localhost php interface/modules/custom_modules/oe-module-uds-report/bi
 
 **What it needs.**
 - OpenEMR's PHP eCQM engine ([openemr/openemr#14469](https://github.com/openemr/openemr/pull/14469)), on OpenEMR master after 8.4.
-- The 2026 measure files. They are in [openemr/openemr#14536](https://github.com/openemr/openemr/pull/14536), not yet merged; until then the page names each measure that isn't installed.
+- The 2026 measure files, in OpenEMR master since 2026-10-13 ([openemr/openemr#14536](https://github.com/openemr/openemr/pull/14536)). On an OpenEMR without them, the page names each measure that isn't installed.
 - The [readiness page](#ecqm-readiness) cleared, above all [openemr/openemr#14526](https://github.com/openemr/openemr/issues/14526): until it's fixed, ongoing problems and visits with no end time don't count, and the page says so.
 
 **Not calculated.** Line 18 (CMS164v7, which the manual keeps at an old version no measure bundle has); the lines with no eCQM (prenatal care, Lines 1–9; HIV linkage to care, Line 20; dental sealants, Lines 22a and 22b); and Table 7 Section A (deliveries and birth weight). The page lists them, to be reported from the health center's records.
@@ -187,7 +187,7 @@ Viewing needs `patients/demo`; the Table 9D worksheet needs `acct/rep_a`, as Ope
 
 | OpenEMR | Tables, Grant Reports, 9D worksheet, eCQM readiness | Tables 6B and 7 | How it was checked |
 |---|---|---|---|
-| master (8.5.0-dev) | works | works with the 2026 measures ([#14536](https://github.com/openemr/openemr/pull/14536)) | end to end, synthetic patients |
+| master (8.5.0-dev) | works | works: the 2026 measures are in master since 2026-10-13 ([#14536](https://github.com/openemr/openemr/pull/14536)). Ongoing problems and visits with no end time don't count until [#14526](https://github.com/openemr/openemr/issues/14526) is fixed | end to end, synthetic patients; rechecked on master 76fa2f1e88 (2026-10-13): CMS165v14 for nine synthetic patients matched each one's prediction |
 | 8.4.1 | works | no PHP eCQM engine; the page says so | end to end, synthetic patients |
 | 8.4.0, 8.3.0, 8.2.0, 8.1.0 | installs, every page loads | no PHP eCQM engine | official Docker images: installed through Module Manager, every page loaded as an administrator with no PHP error (no patients) |
 | 8.0.0 and older | won't run: OpenEMR classes it uses don't exist there (`AccessDeniedHelper`, `BC\ServiceContainer`, and others) | | which classes exist at each release tag |
