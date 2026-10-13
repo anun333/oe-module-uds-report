@@ -32,6 +32,7 @@ use OpenEMR\Services\Qdm\QdmRecord;
 use OpenEMR\Services\Qdm\QdmRequestSome;
 use OpenEMR\Services\Qdm\Services\DiagnosisService;
 use OpenEMR\Services\Qdm\Services\EncounterService;
+use OpenEMR\Services\Qdm\Services\LaboratoryTestService;
 
 final readonly class EcqmReadinessRepository
 {
@@ -116,6 +117,88 @@ final readonly class EcqmReadinessRepository
             'uncoded' => Row::nullableInt($row, 'uncoded') ?? 0,
             'noEndDate' => Row::nullableInt($row, 'no_end') ?? 0,
         ];
+    }
+
+    /** The HbA1c tests CMS122 reads (its "HbA1c Laboratory Test" value set). */
+    private const HBA1C = ['LOINC:4548-4', 'LOINC:4549-2', 'LOINC:17856-6', 'LOINC:96595-4'];
+
+    /**
+     * The lab results of the patients with countable visits, as OpenEMR's eCQM
+     * builder reads them (every year, not only this one: the engine loads a
+     * patient's whole record), with the units the engine refuses. The engine
+     * accepts only UCUM units and refuses a patient for every measure over one
+     * result with any other. Rejected is null when this OpenEMR can't be asked.
+     *
+     * @return array{results: int, patients: int, rejected: ?array<string, array{results: int, patients: int}>, rejectedPatients: ?int, a1cNineToTen: int}
+     */
+    public function labResults(int $year, UdsSettings $settings): array
+    {
+        $zero = ['results' => 0, 'patients' => 0, 'rejected' => [], 'rejectedPatients' => 0, 'a1cNineToTen' => 0];
+        $filter = CountableVisitFilter::fromSettings($settings, $this->patients);
+        if ($filter->matchesNothing()) {
+            return $zero;
+        }
+        [$where, $binds] = $filter->where($year);
+        $from = "FROM procedure_result AS res
+                   JOIN procedure_report AS rep ON rep.procedure_report_id = res.procedure_report_id
+                   JOIN procedure_order AS o ON o.procedure_order_id = rep.procedure_order_id
+                  WHERE o.procedure_order_type = 'laboratory_test' AND o.activity <> 0
+                    AND o.patient_id IN (SELECT DISTINCT fe.pid FROM form_encounter AS fe WHERE $where)";
+        $byUnit = [];
+        $results = 0;
+        foreach (QueryUtils::fetchRecords("SELECT COALESCE(res.units, '') AS unit, COUNT(*) AS n, COUNT(DISTINCT o.patient_id) AS p $from GROUP BY COALESCE(res.units, '')", $binds) as $row) {
+            $byUnit[Row::text($row, 'unit')] = ['results' => Row::nullableInt($row, 'n') ?? 0, 'patients' => Row::nullableInt($row, 'p') ?? 0];
+            $results += Row::nullableInt($row, 'n') ?? 0;
+        }
+        $patients = Row::nullableInt(QueryUtils::fetchRecords("SELECT COUNT(DISTINCT o.patient_id) AS p $from", $binds)[0] ?? [], 'p') ?? 0;
+        $units = 'OpenEMR\\Cqm\\Cql\\Util\\Units';
+        $rejected = class_exists($units) && method_exists($units, 'checkUnit')
+            ? EcqmChecks::rejectedUnits($byUnit, static fn(string $u): bool => (bool)$units::checkUnit($u))
+            : null;
+        $rejectedPatients = null;
+        if ($rejected !== null) {
+            $rejectedPatients = 0;
+            if ($rejected !== []) {
+                $in = implode(', ', array_fill(0, count($rejected), '?'));
+                $rejectedPatients = Row::nullableInt(QueryUtils::fetchRecords(
+                    "SELECT COUNT(DISTINCT o.patient_id) AS p $from AND COALESCE(res.units, '') IN ($in)",
+                    [...$binds, ...array_map('strval', array_keys($rejected))],
+                )[0] ?? [], 'p') ?? 0;
+            }
+        }
+        $codes = implode(', ', array_fill(0, count(self::HBA1C), '?'));
+        $a1c = Row::nullableInt(QueryUtils::fetchRecords(
+            "SELECT COUNT(DISTINCT o.patient_id) AS p $from
+                AND res.date >= ? AND res.date < ?
+                AND res.result REGEXP '^[0-9]+([.][0-9]+)?$' AND CAST(res.result AS DECIMAL(10, 4)) > 9 AND CAST(res.result AS DECIMAL(10, 4)) < 10
+                AND EXISTS (SELECT 1 FROM procedure_order_code AS oc WHERE oc.procedure_order_id = o.procedure_order_id AND oc.procedure_code IN ($codes))",
+            [...$binds, sprintf('%04d-01-01', $year), sprintf('%04d-01-01', $year + 1), ...self::HBA1C],
+        )[0] ?? [], 'p') ?? 0;
+        return ['results' => $results, 'patients' => $patients, 'rejected' => $rejected, 'rejectedPatients' => $rejectedPatients, 'a1cNineToTen' => $a1c];
+    }
+
+    /**
+     * Whether this OpenEMR's eCQM builder keeps a lab result's decimals: asked of
+     * the builder itself with a 9.4, so the answer changes when OpenEMR does. It
+     * read results as whole numbers through 2026-10 at least, so an HbA1c of 9.4
+     * reached CMS122 as 9. Null when it can't be asked.
+     */
+    public static function labDecimalsKept(): ?bool
+    {
+        try {
+            if (!class_exists(LaboratoryTestService::class) || !class_exists(QdmRecord::class) || !class_exists(QdmRequestSome::class)) {
+                return null;
+            }
+            $service = new LaboratoryTestService(new QdmRequestSome([0]), new CodeTypesService());
+            $model = json_decode(json_encode($service->makeQdmModel(new QdmRecord([
+                'pid' => 0, 'encounter' => 0, 'procedure_order_type' => 'laboratory_test', 'date_ordered' => '2026-06-01 09:00:00',
+                'procedure_code' => '', 'result_code' => '', 'result' => '9.4', 'units' => '%', 'date' => '2026-06-01 12:00:00', 'date_end' => null,
+            ], 0, 0)), JSON_THROW_ON_ERROR), true);
+            $value = is_array($model) && is_array($model['result'] ?? null) ? ($model['result']['value'] ?? null) : null;
+            return is_numeric($value) ? abs((float)$value - 9.4) < 0.001 : null;
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     /**

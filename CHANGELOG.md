@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.8.0 — 2026-10-13
+
+Found by running the module on realistic synthetic records (40 Synthea patients imported into OpenEMR 7.0.3, upgraded to master): on those, Tables 6B and 7 couldn't be calculated at all.
+
+- **A patient OpenEMR's eCQM engine refuses no longer stops the calculation.** The engine refuses a patient for every measure over one lab result whose unit isn't UCUM (`mEq/L`, `x10E3/uL`, `IU/L`, or the `UNK` OpenEMR's C-CDA import stores), and it refuses the whole batch with them. A refused batch is now tried again one patient at a time; everyone else is calculated, and the patients it still refuses are kept with the engine's reason. The Tables 6B and 7 page names them (left out of every line until their records are corrected), and the CSV gives their number and reasons, without identifiers. Any other error still stops the calculation. On the Synthea records: 14 of 31 patients refused (`Invalid UCUM unit: 'UNK'`), the other 17 calculated.
+- **The eCQM readiness page warns before the calculation:**
+  - patients with a lab result in a unit the engine refuses, each unit with the UCUM unit meaning the same where there is one (`mEq/L` is `meq/L`);
+  - when this OpenEMR reads lab results as whole numbers (asked of OpenEMR itself), the patients with an HbA1c between 9.0 and 10.0 in the year, whom CMS122 (Line 15) can't count as poorly controlled.
+- The readiness page no longer says the module doesn't calculate Tables 6B and 7.
+- New column `uds_quality_run.refused`: Module Manager's Upgrade (`sql/0_7_2-to-0_8_0_upgrade.sql`, run for 0.7.0, 0.7.1 and 0.7.2).
+
 ## 0.7.2 — 2026-10-13
 
 - **Tables 6B and 7 work on OpenEMR master as it is**, with no change to the module: the 2026 measures merged on 2026-10-13 (openemr/openemr#14536). Rechecked on master 76fa2f1e88, which also retired the Node calculation service (#14524; the module never used it): `bin/uds-quality.php` calculated 2026 for nine synthetic patients with 15 measures, CMS164v7 reported missing, and each patient's CMS165v14 result matched its prediction (denominator 5, numerator 2). Ongoing problems and visits with no end time still don't count until openemr/openemr#14526 is fixed.

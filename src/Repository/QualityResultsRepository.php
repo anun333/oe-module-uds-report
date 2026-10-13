@@ -37,8 +37,8 @@ final class QualityResultsRepository
         try {
             QueryUtils::sqlStatementThrowException('DELETE FROM `uds_quality_result` WHERE `year` = ?', [$year]);
             QueryUtils::sqlStatementThrowException(
-                'REPLACE INTO `uds_quality_run` (`year`, `status`, `patients`, `done`, `measures`, `missing`, `seconds`, `error`, `started_by`, `started_at`, `finished_at`)'
-                . " VALUES (?, 'running', ?, 0, ?, ?, 0, NULL, ?, NOW(), NULL)",
+                'REPLACE INTO `uds_quality_run` (`year`, `status`, `patients`, `done`, `measures`, `missing`, `seconds`, `error`, `refused`, `started_by`, `started_at`, `finished_at`)'
+                . " VALUES (?, 'running', ?, 0, ?, ?, 0, NULL, '[]', ?, NOW(), NULL)",
                 [$year, json_encode($pids, JSON_THROW_ON_ERROR), json_encode($measures, JSON_THROW_ON_ERROR), json_encode($missing, JSON_THROW_ON_ERROR), $userId],
             );
             QueryUtils::commitTransaction();
@@ -49,7 +49,7 @@ final class QualityResultsRepository
     }
 
     /**
-     * @return array{year: int, status: string, patients: list<int>, done: int, measures: list<string>, missing: list<string>, seconds: float, error: ?string, startedAt: string, finishedAt: ?string}|null
+     * @return array{year: int, status: string, patients: list<int>, done: int, measures: list<string>, missing: list<string>, seconds: float, error: ?string, refused: list<array{pid: int, reason: string}>, startedAt: string, finishedAt: ?string}|null
      */
     public function run(int $year): ?array
     {
@@ -71,20 +71,30 @@ final class QualityResultsRepository
             'missing' => array_map('strval', $list($r['missing'])),
             'seconds' => (float)$r['seconds'],
             'error' => is_string($r['error'] ?? null) ? $r['error'] : null,
+            'refused' => self::refusedList($r['refused'] ?? null),
             'startedAt' => (string)$r['started_at'],
             'finishedAt' => is_string($r['finished_at'] ?? null) ? $r['finished_at'] : null,
         ];
     }
 
     /**
-     * Saves one batch's results and moves the run on to $done patients.
+     * Saves one batch's results and the patients the engine refused in it, and
+     * moves the run on to $done patients.
      *
      * @param array<string, list<array<string, int|string>>> $byMeasure measure => rows (pid, set, populations)
+     * @param list<array{pid: int, reason: string}> $refused
      */
-    public function saveBatch(int $year, array $byMeasure, int $done, float $seconds): void
+    public function saveBatch(int $year, array $byMeasure, int $done, float $seconds, array $refused = []): void
     {
         QueryUtils::startTransaction();
         try {
+            if ($refused !== []) {
+                $stored = QueryUtils::fetchRecords('SELECT `refused` FROM `uds_quality_run` WHERE `year` = ? FOR UPDATE', [$year]);
+                QueryUtils::sqlStatementThrowException(
+                    'UPDATE `uds_quality_run` SET `refused` = ? WHERE `year` = ?',
+                    [json_encode(array_merge(self::refusedList($stored[0]['refused'] ?? null), $refused), JSON_THROW_ON_ERROR), $year],
+                );
+            }
             foreach ($byMeasure as $measure => $rows) {
                 foreach (array_chunk($rows, 500) as $chunk) {
                     $values = [];
@@ -141,6 +151,21 @@ final class QualityResultsRepository
                 $row[$population] = (int)$r[$column];
             }
             $out[] = $row;
+        }
+        return $out;
+    }
+
+    /**
+     * @return list<array{pid: int, reason: string}>
+     */
+    private static function refusedList(mixed $json): array
+    {
+        $v = json_decode(is_string($json) ? $json : '[]', true);
+        $out = [];
+        foreach (is_array($v) ? $v : [] as $r) {
+            if (is_array($r) && is_numeric($r['pid'] ?? null) && is_string($r['reason'] ?? null)) {
+                $out[] = ['pid' => (int)$r['pid'], 'reason' => $r['reason']];
+            }
         }
         return $out;
     }

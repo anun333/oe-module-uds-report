@@ -48,6 +48,8 @@ $problems = $readiness->problems($year, $settings);
 $pressures = $readiness->bloodPressures($year, $settings);
 $examTypeActive = $readiness->physicalExamTypeActive();
 $openEnds = EcqmReadinessRepository::openEndsCount();
+$labs = $readiness->labResults($year, $settings);
+$decimalsKept = EcqmReadinessRepository::labDecimalsKept();
 $moduleUrl = OEGlobalsBag::getInstance()->getWebRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
 $n = static fn(int $v): string => number_format($v);
 $ready = 0;
@@ -81,7 +83,7 @@ foreach ($measures as $m) {
         </form>
     </div>
     <div class="alert alert-info small">
-        <?php echo xlt('Most of Tables 6B and 7 are electronic clinical quality measures (eCQMs), which OpenEMR calculates from its own records. This page shows whether this OpenEMR can calculate the measures for the year, and which records the calculation cannot see, so they can be fixed before the measures are run. This module does not calculate Tables 6B and 7 yet.'); ?>
+        <?php echo xlt('Most of Tables 6B and 7 are electronic clinical quality measures (eCQMs), which OpenEMR calculates from its own records. This page shows whether this OpenEMR can calculate the measures for the year, and which records the calculation cannot see or refuses, so they can be fixed before the measures are run on the Tables 6B and 7 page.'); ?>
     </div>
 
     <h2 class="h5 uds-section"><?php echo xlt('Records the measures cannot see'); ?></h2>
@@ -130,6 +132,27 @@ foreach ($measures as $m) {
                 [$openEnds['visits'], xl('Visits with no end time'), $visits['noEndTime'], $visits['visits'],
                     xl('This OpenEMR treats a missing end time as unknown, so a visit with none is never during the year (openemr/openemr issue 14526). The visit screen sets no end time, so there is nothing to fix in the records.')],
             ];
+            if (is_array($labs['rejected']) && $labs['rejected'] !== []) {
+                $listed = [];
+                foreach (array_slice($labs['rejected'], 0, 12, true) as $unit => $c) {
+                    $listed[] = sprintf(xl('%1$s (%2$s results%3$s)'), $unit, $n($c['results']), isset(EcqmChecks::UCUM[$unit]) ? '; ' . sprintf(xl('UCUM: %s'), EcqmChecks::UCUM[$unit]) : '');
+                } ?>
+            <tr class="table-warning">
+                <td><?php echo xlt('Patients with a lab result in a unit the engine refuses'); ?></td>
+                <td class="num"><?php echo text($n((int)$labs['rejectedPatients']) . ' / ' . $n($labs['patients'])); ?></td>
+                <td class="small">
+                    <?php echo xlt('The eCQM engine in OpenEMR accepts only UCUM units. One lab result in any other unit, from any year, makes it refuse the patient for every measure. Tables 6B and 7 then leave the patient out and list them. Correct the unit on the existing results, and have the lab interface send UCUM.'); ?>
+                    <div class="mt-1"><?php echo text(implode('; ', $listed) . (count($labs['rejected']) > 12 ? '; …' : '')); ?></div>
+                </td>
+            </tr>
+            <?php }
+            if ($decimalsKept === false) { ?>
+            <tr class="table-warning">
+                <td><?php echo xlt('Patients with an HbA1c between 9.0 and 10.0 in the year'); ?></td>
+                <td class="num"><?php echo text($n($labs['a1cNineToTen'])); ?></td>
+                <td class="small"><?php echo xlt('This OpenEMR reads lab results as whole numbers, so an HbA1c of 9.4 reaches the diabetes measure (CMS122, Table 6B Line 15) as 9, which is not over 9.0: these patients are not counted as poorly controlled. Nothing to fix in the records; the count is how many patients the measure can miss.'); ?></td>
+            </tr>
+            <?php }
             foreach ($endRows as [$counts, $label, $count, $of, $why]) {
                 if ($counts === true) {
                     continue;

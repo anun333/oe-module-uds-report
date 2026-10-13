@@ -139,11 +139,13 @@ It lists the 16 measures UDS 2026 uses ([data/ecqm-measures.json](data/ecqm-meas
 | Lines 23a and 23b (CMS137): initiation and engagement, over one denominator | The measure's first and second population sets |
 | Table 7 by race and Hispanic, Latino/a, or Spanish ethnicity | Each patient's Table 3B cell, by Appendix B's crosswalk to the Table 7 line, with the subtotals |
 
-**Calculating.** The engine is run once per year and the results are stored, because it takes about a tenth of a second per patient (measured with light synthetic patients; real records take longer). An administrator starts it from the page, which works through the patients 50 at a time and can be resumed if closed; for a large health center, run it on the server instead:
+**Calculating.** The engine is run once per year and the results are stored, because it is slow: about a tenth of a second per light synthetic patient, and about a second per patient with realistic records (Synthea patients with years of visits and lab results). 20,000 such patients would take about five and a half hours. An administrator starts it from the page, which works through the patients 50 at a time and can be resumed if closed; for anything but a small health center, run it on the server instead:
 
 ```
 HTTP_HOST=localhost php interface/modules/custom_modules/oe-module-uds-report/bin/uds-quality.php --year=2026
 ```
+
+**Patients the engine refuses.** OpenEMR's engine accepts only UCUM units, and one lab result in any other unit (`mEq/L`, `x10E3/uL`, `IU/L`, or the `UNK` OpenEMR's C-CDA import stores) makes it refuse that patient for every measure. Those patients are left out of every line and named on the page, with the engine's reason, so their records can be corrected and the year calculated again; the CSV gives their number and reasons. The [readiness page](#ecqm-readiness) counts them beforehand, with the UCUM unit for each common one. It also warns when OpenEMR reads lab results as whole numbers, which keeps an HbA1c of 9.4 out of CMS122's poor-control count (it reaches the measure as 9).
 
 **What it needs.**
 - OpenEMR's PHP eCQM engine ([openemr/openemr#14469](https://github.com/openemr/openemr/pull/14469)), on OpenEMR master after 8.4.

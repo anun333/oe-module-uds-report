@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace OpenEMR\Modules\UdsReport\Repository;
 
 use OpenEMR\Core\OEGlobalsBag;
+use OpenEMR\Modules\UdsReport\Report\RefusedPatients;
 use OpenEMR\Services\Qdm\CqmCalculator;
 use OpenEMR\Services\Qdm\IndividualResult;
 use OpenEMR\Services\Qdm\QdmBuilder;
@@ -34,9 +35,12 @@ final class QualityMeasureRepository
     public const BATCH = 200;
 
     /**
+     * A batch the engine refuses is tried again one patient at a time, and the
+     * patients it still refuses are returned with its reason (RefusedPatients).
+     *
      * @param list<int> $pids the UDS patients (a countable visit in the year)
      * @param list<string> $measures measure folders, such as CMS165v14
-     * @return array{results: array<string, list<array<string, int|string>>>, missing: list<string>, seconds: float}
+     * @return array{results: array<string, list<array<string, int|string>>>, missing: list<string>, seconds: float, refused: list<array{pid: int, reason: string}>}
      */
     public function calculate(int $year, array $pids, array $measures): array
     {
@@ -54,23 +58,29 @@ final class QualityMeasureRepository
             }
         }
         $results = array_fill_keys(array_keys($present), []);
+        $refused = [];
         $started = microtime(true);
         if ($present !== [] && $pids !== []) {
             $globals = OEGlobalsBag::getInstance();
             $previous = $globals->get('cqm_performance_period');
             $globals->set('cqm_performance_period', (string)$year);
+            $engine = static fn(array $batch): array => self::rows(
+                (new ExportCat3Service(new QdmBuilder(), new CqmCalculator(), new QdmRequestSome(array_map('strval', $batch))))
+                    ->export(array_values($present), true)
+            );
             try {
                 foreach (array_chunk($pids, self::BATCH) as $batch) {
-                    $export = new ExportCat3Service(new QdmBuilder(), new CqmCalculator(), new QdmRequestSome(array_map('strval', $batch)));
-                    foreach (self::rows($export->export(array_values($present), true)) as $measure => $rows) {
+                    $out = RefusedPatients::calculate($batch, $engine, RefusedPatients::isEngineRefusal(...));
+                    foreach ($out['results'] as $measure => $rows) {
                         $results[$measure] = array_merge($results[$measure] ?? [], $rows);
                     }
+                    array_push($refused, ...$out['refused']);
                 }
             } finally {
                 $globals->set('cqm_performance_period', $previous);
             }
         }
-        return ['results' => $results, 'missing' => $missing, 'seconds' => round(microtime(true) - $started, 2)];
+        return ['results' => $results, 'missing' => $missing, 'seconds' => round(microtime(true) - $started, 2), 'refused' => $refused];
     }
 
     /**

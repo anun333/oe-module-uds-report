@@ -4,7 +4,8 @@
  * Calculates a year's eCQMs for Tables 6B and 7 in steps a request or a command
  * can take one at a time: start() fixes the patients and measures, each step()
  * calculates the next batch and saves it, and the run can stop and resume
- * anywhere.
+ * anywhere. Patients the engine refuses are saved with its reason and the run
+ * goes on; any other error stops it.
  *
  * @package   OpenEMR
  * @link      https://www.open-emr.org
@@ -60,7 +61,7 @@ final class QualityCalculation
                 $this->store->finish($year, $e->getMessage());
                 throw $e;
             }
-            $this->store->saveBatch($year, $out['results'], $run['done'] + count($next), $out['seconds']);
+            $this->store->saveBatch($year, $out['results'], $run['done'] + count($next), $out['seconds'], $out['refused']);
         } elseif ($next !== []) {
             $this->store->saveBatch($year, [], $run['done'] + count($next), 0.0);
         }

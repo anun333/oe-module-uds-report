@@ -108,6 +108,10 @@ CREATE TABLE `uds_quality_run` (
 ) ENGINE=InnoDB COMMENT='UDS Report: the eCQM calculation for Tables 6B and 7, one per year';
 #EndIf
 
+#IfMissingColumn uds_quality_run refused
+ALTER TABLE `uds_quality_run` ADD COLUMN `refused` LONGTEXT DEFAULT NULL COMMENT 'JSON list of {pid, reason}: patients the eCQM engine refused' AFTER `error`;
+#EndIf
+
 #IfNotTable uds_quality_result
 CREATE TABLE `uds_quality_result` (
     `year` SMALLINT NOT NULL,

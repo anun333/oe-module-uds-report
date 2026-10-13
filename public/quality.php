@@ -33,6 +33,7 @@ use OpenEMR\Modules\UdsReport\Report\CsvRow;
 use OpenEMR\Modules\UdsReport\Report\Labels;
 use OpenEMR\Modules\UdsReport\Report\QualityCalculation;
 use OpenEMR\Modules\UdsReport\Report\QualityMeasures;
+use OpenEMR\Modules\UdsReport\Report\RefusedPatients;
 use OpenEMR\Modules\UdsReport\Report\ReportYear;
 use OpenEMR\Modules\UdsReport\Repository\EcqmReadinessRepository;
 use OpenEMR\Modules\UdsReport\Repository\QualityMeasureRepository;
@@ -118,6 +119,22 @@ if ($isPost) {
 // ------------------------------------------------------------ the tables
 $run = $store->run($year);
 $finished = $run !== null && $run['status'] === 'done';
+$refusedByReason = RefusedPatients::byReason($run['refused'] ?? []);
+$refusedCount = count(array_unique(array_column($run['refused'] ?? [], 'pid')));
+$refusedNames = [];
+if ($refusedByReason !== []) {
+    $refusedPids = array_values(array_unique(array_merge(...array_values($refusedByReason))));
+    foreach (array_chunk($refusedPids, 500) as $chunk) {
+        foreach (
+            QueryUtils::fetchRecords(
+                'SELECT pid, pubpid, fname, lname FROM patient_data WHERE pid IN (' . implode(', ', array_fill(0, count($chunk), '?')) . ')',
+                $chunk,
+            ) as $row
+        ) {
+            $refusedNames[(int)$row['pid']] = trim($row['fname'] . ' ' . $row['lname']) . ' (' . $row['pubpid'] . ')';
+        }
+    }
+}
 $udsPids = $run['patients'] ?? [];
 
 /** Table 6B lines, in the manual's order, with the population sets each reports. */
@@ -186,6 +203,12 @@ if ($request->query->getString('format') === 'csv') {
     header('Content-Disposition: attachment; filename="uds-' . $year . '-tables-6b-7.csv"');
     header('Cache-Control: no-store');
     CsvRow::write($out, ['UDS Tables 6B and 7', (string)$year, $finished ? 'calculated ' . ($run['finishedAt'] ?? '') : 'not calculated']);
+    if ($refusedByReason !== []) {
+        CsvRow::write($out, ['Left out of every line: patients the eCQM engine refused', (string)$refusedCount, 'of ' . count($udsPids) . ' UDS patients']);
+        foreach ($refusedByReason as $reason => $pids) {
+            CsvRow::write($out, ['', (string)count($pids), $reason]);
+        }
+    }
     CsvRow::write($out, []);
     CsvRow::write($out, ['Table 6B', 'Line', 'Measure', 'eCQM', 'Patients in the denominator (A)', 'Records reviewed (B)', 'Patients meeting the measure (C)']);
     foreach ($lines6B as $i => $l) {
@@ -253,6 +276,15 @@ $openEnds = EcqmReadinessRepository::openEndsCount();
                 <p class="mb-2 text-danger"><?php echo xlt('The last calculation stopped with an error'); ?>: <?php echo text((string)$run['error']); ?></p>
             <?php } else { ?>
                 <p class="mb-2"><?php echo xlt('Calculated'); ?> <?php echo text((string)$run['finishedAt']); ?> <?php echo xlt('for'); ?> <?php echo text($n(count($run['patients']))); ?> <?php echo xlt('UDS patients'); ?> (<?php echo text(number_format($run['seconds'], 0)); ?> <?php echo xlt('seconds'); ?>). <?php echo xlt('Records changed since then are not reflected until it is calculated again.'); ?></p>
+            <?php } ?>
+            <?php if ($refusedByReason !== []) { ?>
+                <div class="alert alert-warning mb-2">
+                    <?php echo text(sprintf(xl('The eCQM engine in OpenEMR refused %1$s of %2$s UDS patients, so they are left out of every line below. Correct their records (the eCQM readiness page lists the usual causes) and calculate again.'), $n($refusedCount), $n(count($udsPids)))); ?>
+                    <?php foreach ($refusedByReason as $reason => $pids) { ?>
+                        <div class="mt-1 small"><strong><?php echo text($reason); ?></strong> (<?php echo text($n(count($pids))); ?>):
+                            <?php echo text(implode(', ', array_map(static fn(int $p): string => $refusedNames[$p] ?? (string)$p, array_slice($pids, 0, 50))) . (count($pids) > 50 ? ', …' : '')); ?></div>
+                    <?php } ?>
+                </div>
             <?php } ?>
             <?php if (($run['missing'] ?? []) !== []) { ?>
                 <p class="mb-2 text-warning"><?php echo xlt('Not installed at the version the manual names, so not calculated'); ?>: <?php echo text(implode(', ', $run['missing'])); ?></p>
