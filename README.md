@@ -185,7 +185,18 @@ Viewing needs `patients/demo`; the Table 9D worksheet needs `acct/rep_a`, as Ope
 
 ## Compatibility
 
-Checked end to end on OpenEMR 8.4.1 (PHP 8.3 and later), including Tables 5 and 6A from codes saved through OpenEMR's own billing functions, a Table 5 line chosen through the Settings page, and the Table 9D worksheet from payments and adjustments posted through OpenEMR's EOB posting screen. The eCQM readiness page was also checked against OpenEMR master (c11dd1b15c), where eCQMs are calculated in PHP, with and without a local fix for #14526. Tables 6B and 7 were checked on master (7001d5008b) with #14536's 2026 measures: the module's results for each patient are identical to OpenEMR's own `openemr:cqm-calculate`, and for 2,009 synthetic patients the CMS165 denominator (1,100) and numerator (443) match what each patient's records predict, by race and ethnicity too, calculated both from the page and from the command line. The package declares no Composer constraint on `openemr/openemr`: OpenEMR reports itself to Composer as version `1.0.0+no-version-set`, so any minimum version written there would block every install.
+| OpenEMR | Tables, Grant Reports, 9D worksheet, eCQM readiness | Tables 6B and 7 | How it was checked |
+|---|---|---|---|
+| master (8.5.0-dev) | works | works with the 2026 measures ([#14536](https://github.com/openemr/openemr/pull/14536)) | end to end, synthetic patients |
+| 8.4.1 | works | no PHP eCQM engine; the page says so | end to end, synthetic patients |
+| 8.4.0, 8.3.0, 8.2.0, 8.1.0 | installs, every page loads | no PHP eCQM engine | official Docker images: installed through Module Manager, every page loaded as an administrator with no PHP error (no patients) |
+| 8.0.0 and older | won't run: OpenEMR classes it uses don't exist there (`AccessDeniedHelper`, `BC\ServiceContainer`, and others) | | which classes exist at each release tag |
+
+PHP 8.3 or later is needed. On 8.1.0 to 8.3.0 the module reads the request itself, because OpenEMR's `CurrentRequest` only arrived in 8.4.0.
+
+The 8.4.1 checks: Tables 5 and 6A from codes saved through OpenEMR's own billing functions, a Table 5 line chosen through the Settings page, and the Table 9D worksheet from payments and adjustments posted through OpenEMR's EOB posting screen. The eCQM readiness page was also checked against OpenEMR master (c11dd1b15c), where eCQMs are calculated in PHP, with and without a local fix for #14526. Tables 6B and 7 were checked on master (7001d5008b) with #14536's 2026 measures: the module's results for each patient are identical to OpenEMR's own `openemr:cqm-calculate`, and for 2,009 synthetic patients the CMS165 denominator (1,100) and numerator (443) match what each patient's records predict, by race and ethnicity too, calculated both from the page and from the command line.
+
+The package declares no Composer constraint on `openemr/openemr`: OpenEMR reports itself to Composer as version `1.0.0+no-version-set`, so any minimum version written there would block every install.
 
 ## Development
 

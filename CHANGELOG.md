@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.1 — 2026-10-12
+
+- **Runs on OpenEMR 8.1.0 to 8.3.0**, not only 8.4 and later. Those releases don't have OpenEMR's `CurrentRequest` (added in 8.4.0), so the module reads the request itself there. Checked on the official 8.1.0, 8.2.0, 8.3.0 and 8.4.0 images: the module installs through Module Manager and every page loads. Tables 6B and 7 still need OpenEMR's PHP eCQM engine (master after 8.4).
+- A compatibility table in the README: what works on each OpenEMR release, and how each was checked.
+
 ## 0.7.0 — 2026-10-12
 
 - **Tables 6B and 7, the eCQM lines**, on their own page from the UDS Report, with a CSV download. Calculated by OpenEMR's PHP eCQM engine with the measure versions the 2026 manual names.

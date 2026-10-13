@@ -20,12 +20,12 @@ use OpenEMR\BC\ServiceContainer;
 use OpenEMR\Common\Acl\AccessDeniedHelper;
 use OpenEMR\Common\Acl\AclMain;
 use OpenEMR\Common\Database\QueryUtils;
-use OpenEMR\Common\Http\CurrentRequest;
 use OpenEMR\Common\Logging\EventAuditLogger;
 use OpenEMR\Common\Session\SessionWrapperFactory;
 use OpenEMR\Core\Header;
 use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\UdsReport\Bootstrap;
+use OpenEMR\Modules\UdsReport\Http\Request;
 use OpenEMR\Modules\UdsReport\Enum\DataGap;
 use OpenEMR\Modules\UdsReport\Enum\GrantReport;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataGuard;
@@ -43,7 +43,7 @@ if (!AclMain::aclCheckCore('patients', 'demo')) {
 $reference = (new ReferenceDataGuard(new ReferenceDataLoader(), ServiceContainer::getLogger()))
     ->loadOrStop(AclMain::aclCheckCore('admin', 'super'));
 
-$request = CurrentRequest::get();
+$request = Request::get();
 $year = ReportYear::fromQuery($request->query->getString('year'), ServiceContainer::getClock()->now());
 $gap = DataGap::tryFrom($request->query->getString('gap')) ?? DataGap::NoBirthSex;
 $grant = GrantReport::tryFrom($request->query->getString('grant'));

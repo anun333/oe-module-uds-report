@@ -22,11 +22,11 @@ use OpenEMR\Common\Acl\AccessDeniedHelper;
 use OpenEMR\Common\Acl\AclMain;
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Common\Database\QueryUtils;
-use OpenEMR\Common\Http\CurrentRequest;
 use OpenEMR\Common\Session\SessionWrapperFactory;
 use OpenEMR\Core\Header;
 use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\UdsReport\Bootstrap;
+use OpenEMR\Modules\UdsReport\Http\Request;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataGuard;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataLoader;
 use OpenEMR\Modules\UdsReport\Report\CsvRow;
@@ -46,7 +46,7 @@ if (!AclMain::aclCheckCore('patients', 'demo')) {
 // Calculating writes the module's tables and is heavy: the same permission as the module's settings.
 $canRun = AclMain::aclCheckCore('admin', 'super');
 $reference = (new ReferenceDataGuard(new ReferenceDataLoader(), ServiceContainer::getLogger()))->loadOrStop($canRun);
-$request = CurrentRequest::get();
+$request = Request::get();
 $session = SessionWrapperFactory::getInstance()->getActiveSession();
 $now = ServiceContainer::getClock()->now();
 $isPost = $request->getMethod() === 'POST';

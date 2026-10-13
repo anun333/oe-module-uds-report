@@ -18,10 +18,10 @@ require_once __DIR__ . '/../../../../globals.php';
 use OpenEMR\BC\ServiceContainer;
 use OpenEMR\Common\Acl\AccessDeniedHelper;
 use OpenEMR\Common\Acl\AclMain;
-use OpenEMR\Common\Http\CurrentRequest;
 use OpenEMR\Core\Header;
 use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\UdsReport\Bootstrap;
+use OpenEMR\Modules\UdsReport\Http\Request;
 use OpenEMR\Modules\UdsReport\Enum\Table9DLine;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataGuard;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataLoader;
@@ -40,7 +40,7 @@ $isAdmin = AclMain::aclCheckCore('admin', 'super');
 $reference = (new ReferenceDataGuard(new ReferenceDataLoader(), ServiceContainer::getLogger()))->loadOrStop($isAdmin);
 
 $now = ServiceContainer::getClock()->now();
-$year = ReportYear::fromQuery(CurrentRequest::get()->query->getString('year'), $now);
+$year = ReportYear::fromQuery(Request::get()->query->getString('year'), $now);
 $report = new UdsReportService($year, (new SettingsRepository())->load(), $reference, new UdsPatientRepository($reference->insuranceCategories));
 $sheet = $report->table9D()->result();
 $extra = $report->table9DNotes();
@@ -114,7 +114,7 @@ $method = [
     xl('Not in OpenEMR: capitation, cost report settlements, wrap payments, incentive revenue (Line 18) and contract pharmacy revenue (Line 17) are usually in the general ledger (FAQ 8, page 169).'),
 ];
 
-if (CurrentRequest::get()->query->getString('format') === 'csv') {
+if (Request::get()->query->getString('format') === 'csv') {
     $out = fopen('php://output', 'w');
     if ($out === false) {
         throw new RuntimeException('Cannot open the output stream');

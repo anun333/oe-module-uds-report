@@ -20,11 +20,11 @@ use OpenEMR\Common\Acl\AccessDeniedHelper;
 use OpenEMR\Common\Acl\AclMain;
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Common\Database\QueryUtils;
-use OpenEMR\Common\Http\CurrentRequest;
 use OpenEMR\Common\Session\SessionWrapperFactory;
 use OpenEMR\Core\Header;
 use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\UdsReport\Bootstrap;
+use OpenEMR\Modules\UdsReport\Http\Request;
 use OpenEMR\Modules\UdsReport\Enum\InsuranceCategory;
 use OpenEMR\Modules\UdsReport\Enum\PovertyRegion;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataGuard;
@@ -41,7 +41,7 @@ if (!AclMain::aclCheckCore('admin', 'super')) {
 }
 $reference = (new ReferenceDataGuard(new ReferenceDataLoader(), ServiceContainer::getLogger()))->loadOrStop(true);
 
-$request = CurrentRequest::get();
+$request = Request::get();
 $session = SessionWrapperFactory::getInstance()->getActiveSession();
 $sessionUserId = $session->get('authUserID');
 $userId = is_int($sessionUserId) ? $sessionUserId : (is_string($sessionUserId) && ctype_digit($sessionUserId) ? (int)$sessionUserId : 0);

@@ -17,7 +17,7 @@ require_once __DIR__ . '/../../../../globals.php';
 use OpenEMR\BC\ServiceContainer;
 use OpenEMR\Common\Acl\AccessDeniedHelper;
 use OpenEMR\Common\Acl\AclMain;
-use OpenEMR\Common\Http\CurrentRequest;
+use OpenEMR\Modules\UdsReport\Http\Request;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataGuard;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataLoader;
 use OpenEMR\Modules\UdsReport\Enum\GrantReport;
@@ -35,8 +35,8 @@ $reference = (new ReferenceDataGuard(new ReferenceDataLoader(), ServiceContainer
     ->loadOrStop(AclMain::aclCheckCore('admin', 'super'));
 
 $now = ServiceContainer::getClock()->now();
-$year = ReportYear::fromQuery(CurrentRequest::get()->query->getString('year'), $now);
-$grant = GrantReport::tryFrom(CurrentRequest::get()->query->getString('grant'));
+$year = ReportYear::fromQuery(Request::get()->query->getString('year'), $now);
+$grant = GrantReport::tryFrom(Request::get()->query->getString('grant'));
 $report = new UdsReportService($year, (new SettingsRepository())->load(), $reference, new UdsPatientRepository($reference->insuranceCategories), $grant);
 $tables = $report->tables();
 

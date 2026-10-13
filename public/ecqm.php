@@ -19,10 +19,10 @@ require_once __DIR__ . '/../../../../globals.php';
 use OpenEMR\BC\ServiceContainer;
 use OpenEMR\Common\Acl\AccessDeniedHelper;
 use OpenEMR\Common\Acl\AclMain;
-use OpenEMR\Common\Http\CurrentRequest;
 use OpenEMR\Core\Header;
 use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\UdsReport\Bootstrap;
+use OpenEMR\Modules\UdsReport\Http\Request;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataGuard;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataLoader;
 use OpenEMR\Modules\UdsReport\Report\EcqmChecks;
@@ -37,7 +37,7 @@ if (!AclMain::aclCheckCore('patients', 'demo')) {
 $reference = (new ReferenceDataGuard(new ReferenceDataLoader(), ServiceContainer::getLogger()))->loadOrStop(AclMain::aclCheckCore('admin', 'super'));
 
 $now = ServiceContainer::getClock()->now();
-$year = ReportYear::fromQuery(CurrentRequest::get()->query->getString('year'), $now);
+$year = ReportYear::fromQuery(Request::get()->query->getString('year'), $now);
 $settings = (new SettingsRepository())->load();
 $readiness = new EcqmReadinessRepository(new UdsPatientRepository($reference->insuranceCategories));
 $measures = $reference->ecqmMeasures->forYear($year);
