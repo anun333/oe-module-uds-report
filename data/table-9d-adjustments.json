@@ -38,6 +38,12 @@
             "note": "Hardship fee waivers are Column D adjustments (page 166)."
         },
         {
+            "match": "prefix",
+            "label": "Sliding",
+            "class": "discount",
+            "note": "Sliding fee discounts are Column D adjustments (page 162), whatever the clinic calls its reason: Sliding fee, Sliding fee discount, Sliding scale. Not in the stock list: a clinic adds it under Admin > Forms > Lists > Adjustment Reasons."
+        },
+        {
             "match": "exact",
             "label": "Bad debt",
             "class": "bad_debt"

@@ -172,6 +172,10 @@ final class Table9DTest extends TestCase
         self::assertSame('contractual', $class('Adjust code 45'));
         self::assertSame('contractual', $class('Adjust code 253'));
         self::assertSame('discount', $class('Hardship w/o'));
+        self::assertSame('discount', $class('Sliding fee'), 'a prefix rule');
+        self::assertSame('discount', $class('Sliding Fee Discount'));
+        self::assertSame('discount', $class('sliding  scale'));
+        self::assertSame('review', $class('Fee sliding'), 'the prefix must start the reason');
         self::assertSame('bad_debt', $class('Adj from collt report'));
         self::assertSame(['class' => AdjustmentClass::Review, 'note' => null, 'matched' => false], $reasons->classify('Mystery reason'));
         self::assertTrue($reasons->classify('Pt adjust')['matched'], 'the batch screen reason has a rule, which leaves it for review');

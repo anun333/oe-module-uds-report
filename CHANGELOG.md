@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **Table 9D: an adjustment reason starting with "Sliding" now counts as a sliding fee discount (Column D).** OpenEMR's stock Adjustment Reasons list has no sliding fee entry, so a clinic adds its own, such as "Sliding fee" or "Sliding fee discount". Until now the worksheet listed those for review.
+
 ## 0.8.0 — 2026-10-13
 
 Found by running the module on realistic synthetic records (40 Synthea patients imported into OpenEMR 7.0.3, upgraded to master): on those, Tables 6B and 7 couldn't be calculated at all.
