@@ -3,7 +3,8 @@
 /**
  * The rules behind the eCQM readiness page, kept apart from the database so they
  * can be tested: whether a UDS measure is installed at the version the manual
- * names, and whether OpenEMR's QDM builder lets a record with no end date count.
+ * names, whether OpenEMR's QDM builder lets a record with no end date count, and
+ * where the measures read screenings and exams from.
  *
  * @package   OpenEMR
  * @link      https://www.open-emr.org
@@ -75,6 +76,39 @@ final class EcqmChecks
         }
         uasort($out, static fn(array $a, array $b): int => $b['results'] <=> $a['results']);
         return $out;
+    }
+
+    /**
+     * Codes the UDS measures read only from the Observation form, and only as
+     * the Observation type named: QDM "Assessment, Performed" is type
+     * assessment, "Physical Exam, Performed" is physical_exam_performed
+     * (OpenEMR's AbstractObservationService). The same code as a lab result, or
+     * as an Observation of another type, is not read. All LOINC, from the
+     * measures' value sets for the 2026 reporting period (CMS138v14 Tobacco Use
+     * Screening, CMS2v15, CMS139v14 Falls Screening, CMS69v14, CMS155v14 BMI
+     * percentile, CMS165v14).
+     *
+     * @var array<string, array{type: string, measure: string, codes: list<string>}>
+     */
+    public const OBSERVATION_CODES = [
+        'tobacco' => ['type' => 'assessment', 'measure' => 'CMS138', 'codes' => ['39240-7', '68535-4', '68536-2', '72166-2']],
+        'depression' => ['type' => 'assessment', 'measure' => 'CMS2', 'codes' => ['73831-0', '73832-8']],
+        'falls' => ['type' => 'assessment', 'measure' => 'CMS139', 'codes' => ['52552-7', '57254-5', '59454-9', '73830-2']],
+        'bmi' => ['type' => 'physical_exam_performed', 'measure' => 'CMS69', 'codes' => ['39156-5']],
+        'bmiPercentile' => ['type' => 'physical_exam_performed', 'measure' => 'CMS155', 'codes' => ['59574-4', '59575-1', '59576-9']],
+        'bloodPressure' => ['type' => 'physical_exam_performed', 'measure' => 'CMS165', 'codes' => ['8480-6', '8462-4']],
+    ];
+
+    /**
+     * Whether a History tobacco value records the patient's tobacco use.
+     * OpenEMR saves the field as note|type|date|status|pack-years: status is a
+     * Smoking Status list option, type the current, quit or never button
+     * (named for the field, as in currenttobacco). Either one counts.
+     */
+    public static function tobaccoRecorded(?string $value): bool
+    {
+        $parts = explode('|', (string)$value);
+        return trim($parts[3] ?? '') !== '' || preg_match('/^(current|quit|never)/', trim($parts[1] ?? '')) === 1;
     }
 
     /**

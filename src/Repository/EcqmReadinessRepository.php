@@ -1,15 +1,17 @@
 <?php
 
 /**
- * What the eCQM readiness page reads: the year's countable visits, the problems
- * and blood pressures of the patients seen at them, OpenEMR's own lists, the
- * measure files installed, and how OpenEMR's QDM builder treats a record with no
- * end date.
+ * What the eCQM readiness page reads: the year's countable visits, the problems,
+ * vitals, History, PHQ-9 forms, observations and lab results of the patients
+ * seen at them, OpenEMR's own lists, the measure files installed, and how
+ * OpenEMR's QDM builder treats a record with no end date.
  *
  * What OpenEMR's eCQM builder reads (src/Services/Qdm/Services) was measured on
  * OpenEMR master c11dd1b15c with CMS165v13: visits by their Encounter Type code,
  * not billing codes; problems only when classified Diagnosis; blood pressures
- * only as Physical Exam Performed observations, not from the Vitals form.
+ * only as Physical Exam Performed observations, not from the Vitals form. No QDM
+ * service reads form_vitals, history_data or form_phq9 (OpenEMR master
+ * be104434f7, src/Services/Qdm/Services).
  *
  * @package   OpenEMR
  * @link      https://www.open-emr.org
@@ -234,6 +236,202 @@ final readonly class EcqmReadinessRepository
             'patients' => Row::nullableInt($row, 'patients') ?? 0,
             'vitalsOnly' => Row::nullableInt($row, 'vitals_only') ?? 0,
         ];
+    }
+
+    /**
+     * Patients with countable visits who had a BMI in the Vitals form in the
+     * year, and how many of them have none as an observation the eCQM builder
+     * reads (Physical Exam Performed, LOINC 39156-5).
+     *
+     * @return array{patients: int, vitalsOnly: int}
+     */
+    public function bodyMassIndexes(int $year, UdsSettings $settings): array
+    {
+        $filter = CountableVisitFilter::fromSettings($settings, $this->patients);
+        if ($filter->matchesNothing()) {
+            return ['patients' => 0, 'vitalsOnly' => 0];
+        }
+        [$where, $binds] = $filter->where($year);
+        [$start, $end] = self::yearBounds($year);
+        [$observed, $observedBinds] = self::observed('v.pid', 'bmi', $start, $end);
+        $row = QueryUtils::fetchRecords(
+            "SELECT COUNT(DISTINCT v.pid) AS patients,
+                    COUNT(DISTINCT CASE WHEN NOT $observed THEN v.pid END) AS vitals_only
+               FROM form_vitals AS v
+               JOIN forms AS f ON f.form_id = v.id AND f.formdir = 'vitals' AND f.deleted = 0
+              WHERE v.date >= ? AND v.date < ? AND v.BMI > 0
+                AND v.pid IN (SELECT DISTINCT fe.pid FROM form_encounter AS fe WHERE $where)",
+            [...$observedBinds, $start, $end, ...$binds],
+        )[0] ?? [];
+        return [
+            'patients' => Row::nullableInt($row, 'patients') ?? 0,
+            'vitalsOnly' => Row::nullableInt($row, 'vitals_only') ?? 0,
+        ];
+    }
+
+    /**
+     * Patients with countable visits whose History, saved in the year, records
+     * their tobacco use, and how many of them have no tobacco screening as an
+     * observation the eCQM builder reads (Assessment, CMS138's codes).
+     *
+     * @return array{patients: int, historyOnly: int}
+     */
+    public function tobaccoInHistory(int $year, UdsSettings $settings): array
+    {
+        $filter = CountableVisitFilter::fromSettings($settings, $this->patients);
+        if ($filter->matchesNothing()) {
+            return ['patients' => 0, 'historyOnly' => 0];
+        }
+        [$where, $binds] = $filter->where($year);
+        [$start, $end] = self::yearBounds($year);
+        $recorded = [];
+        foreach (QueryUtils::fetchRecords(
+            "SELECT DISTINCT h.pid, h.tobacco FROM history_data AS h
+              WHERE h.date >= ? AND h.date < ? AND COALESCE(h.tobacco, '') <> ''
+                AND h.pid IN (SELECT DISTINCT fe.pid FROM form_encounter AS fe WHERE $where)",
+            [$start, $end, ...$binds],
+        ) as $row) {
+            if (EcqmChecks::tobaccoRecorded(Row::text($row, 'tobacco'))) {
+                $recorded[Row::int($row, 'pid')] = true;
+            }
+        }
+        if ($recorded === []) {
+            return ['patients' => 0, 'historyOnly' => 0];
+        }
+        [$observed, $observedBinds] = self::observed('fe.pid', 'tobacco', $start, $end);
+        $screened = [];
+        foreach (QueryUtils::fetchRecords(
+            "SELECT DISTINCT fe.pid FROM form_encounter AS fe WHERE ($where) AND $observed",
+            [...$binds, ...$observedBinds],
+        ) as $row) {
+            $screened[Row::int($row, 'pid')] = true;
+        }
+        return ['patients' => count($recorded), 'historyOnly' => count(array_diff_key($recorded, $screened))];
+    }
+
+    /**
+     * Patients with countable visits who had a PHQ-9 form in the year, and how
+     * many of them have no depression screening as an observation the eCQM
+     * builder reads (Assessment, LOINC 73831-0 or 73832-8). Null when the PHQ-9
+     * form isn't installed: OpenEMR creates its table when it is.
+     *
+     * @return ?array{patients: int, formOnly: int}
+     */
+    public function depressionForms(int $year, UdsSettings $settings): ?array
+    {
+        $exists = QueryUtils::fetchRecords(
+            "SELECT COUNT(*) AS n FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'form_phq9'",
+        )[0] ?? [];
+        if ((Row::nullableInt($exists, 'n') ?? 0) === 0) {
+            return null;
+        }
+        $filter = CountableVisitFilter::fromSettings($settings, $this->patients);
+        if ($filter->matchesNothing()) {
+            return ['patients' => 0, 'formOnly' => 0];
+        }
+        [$where, $binds] = $filter->where($year);
+        [$start, $end] = self::yearBounds($year);
+        [$observed, $observedBinds] = self::observed('p.pid', 'depression', $start, $end);
+        $row = QueryUtils::fetchRecords(
+            "SELECT COUNT(DISTINCT p.pid) AS patients,
+                    COUNT(DISTINCT CASE WHEN NOT $observed THEN p.pid END) AS form_only
+               FROM form_phq9 AS p
+               JOIN forms AS f ON f.form_id = p.id AND f.formdir = 'phq9' AND f.deleted = 0
+              WHERE p.date >= ? AND p.date < ?
+                AND p.pid IN (SELECT DISTINCT fe.pid FROM form_encounter AS fe WHERE $where)",
+            [...$observedBinds, $start, $end, ...$binds],
+        )[0] ?? [];
+        return [
+            'patients' => Row::nullableInt($row, 'patients') ?? 0,
+            'formOnly' => Row::nullableInt($row, 'form_only') ?? 0,
+        ];
+    }
+
+    /**
+     * For each kind of record in EcqmChecks::OBSERVATION_CODES, the patients
+     * with countable visits who had one of its codes in the year only where the
+     * eCQM builder doesn't read it for the measure: an active observation of
+     * another type, or a lab result (by result code or order code).
+     *
+     * @return array<string, int> by kind, only kinds with any
+     */
+    public function misplacedCodes(int $year, UdsSettings $settings): array
+    {
+        $filter = CountableVisitFilter::fromSettings($settings, $this->patients);
+        if ($filter->matchesNothing()) {
+            return [];
+        }
+        [$where, $binds] = $filter->where($year);
+        [$start, $end] = self::yearBounds($year);
+        $out = [];
+        foreach (EcqmChecks::OBSERVATION_CODES as $kind => $read) {
+            $codes = $read['codes'];
+            $in = implode(', ', array_fill(0, count($codes), '?'));
+            [$like, $likeBinds] = self::codeLike('o.code', $codes);
+            [$observed, $observedBinds] = self::observed('x.pid', $kind, $start, $end);
+            $row = QueryUtils::fetchRecords(
+                "SELECT COUNT(DISTINCT x.pid) AS p FROM (
+                    SELECT o.pid FROM form_observation AS o
+                     WHERE COALESCE(o.ob_type, '') <> ? AND ($like) AND o.date >= ? AND o.date < ? AND COALESCE(o.activity, 1) <> 0
+                    UNION ALL
+                    SELECT ord.patient_id AS pid FROM procedure_result AS res
+                      JOIN procedure_report AS rep ON rep.procedure_report_id = res.procedure_report_id
+                      JOIN procedure_order AS ord ON ord.procedure_order_id = rep.procedure_order_id
+                     WHERE ord.activity <> 0 AND res.date >= ? AND res.date < ?
+                       AND (res.result_code IN ($in) OR EXISTS (
+                           SELECT 1 FROM procedure_order_code AS oc
+                            WHERE oc.procedure_order_id = ord.procedure_order_id AND oc.procedure_code IN ($in)))
+                 ) AS x
+                 WHERE NOT $observed AND x.pid IN (SELECT DISTINCT fe.pid FROM form_encounter AS fe WHERE $where)",
+                [
+                    $read['type'], ...$likeBinds, $start, $end,
+                    $start, $end, ...$codes, ...array_map(static fn(string $c): string => 'LOINC:' . $c, $codes),
+                    ...$observedBinds, ...$binds,
+                ],
+            )[0] ?? [];
+            $patients = Row::nullableInt($row, 'p') ?? 0;
+            if ($patients > 0) {
+                $out[$kind] = $patients;
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * SQL true when the patient in $pidColumn has, in [$start, $end), an
+     * observation of the type and with one of the codes the measures read for
+     * $kind, as the eCQM builder reads them (it doesn't skip inactive ones).
+     *
+     * @return array{string, list<string>}
+     */
+    private static function observed(string $pidColumn, string $kind, string $start, string $end): array
+    {
+        $read = EcqmChecks::OBSERVATION_CODES[$kind];
+        [$like, $likeBinds] = self::codeLike('o2.code', $read['codes']);
+        return [
+            "EXISTS (SELECT 1 FROM form_observation AS o2 WHERE o2.pid = $pidColumn AND o2.ob_type = ? AND ($like) AND o2.date >= ? AND o2.date < ?)",
+            [$read['type'], ...$likeBinds, $start, $end],
+        ];
+    }
+
+    /**
+     * An observation's code column holds one code as SYSTEM:code (LOINC:39156-5).
+     *
+     * @param list<string> $codes
+     * @return array{string, list<string>}
+     */
+    private static function codeLike(string $column, array $codes): array
+    {
+        return [
+            implode(' OR ', array_fill(0, count($codes), "$column LIKE ?")),
+            array_map(static fn(string $c): string => '%' . $c . '%', $codes),
+        ];
+    }
+
+    /** @return array{string, string} */
+    private static function yearBounds(int $year): array
+    {
+        return [sprintf('%04d-01-01 00:00:00', $year), sprintf('%04d-01-01 00:00:00', $year + 1)];
     }
 
     /** Whether the Physical Exam Performed observation type is active; null if the list has no such entry. */

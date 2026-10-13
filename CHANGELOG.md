@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **The eCQM readiness page counts more records the measures can't see.** No part of OpenEMR's eCQM builder reads the Vitals form, History or the PHQ-9 form, so a clinic using those everyday screens reports near zero on several Table 6B lines. New rows:
+  - patients whose BMI is only in the Vitals form (CMS69 Line 13, CMS155 Line 12);
+  - patients whose tobacco use is only in History (CMS138, Line 14a);
+  - patients with a PHQ-9 form and no depression screening the measure reads (CMS2, Line 21), when the PHQ-9 form is installed;
+  - for each measure's screening or exam codes (tobacco, depression and falls screening, BMI, BMI percentile, blood pressure), patients who have one in the year only as a lab result or as an Observation of another type.
+
+  Each row says what the measure reads instead.
 - **Table 9D: an adjustment reason starting with "Sliding" now counts as a sliding fee discount (Column D).** OpenEMR's stock Adjustment Reasons list has no sliding fee entry, so a clinic adds its own, such as "Sliding fee" or "Sliding fee discount". Until now the worksheet listed those for review.
 
 ## 0.8.0 — 2026-10-13

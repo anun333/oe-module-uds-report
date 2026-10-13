@@ -106,4 +106,45 @@ final class EcqmTest extends TestCase
             self::assertStringContainsString($message, $e->getMessage());
         }
     }
+
+    /**
+     * @return array<string, array{?string, bool}>
+     *
+     * @codeCoverageIgnore Data providers run before coverage instrumentation starts.
+     */
+    public static function tobaccoValues(): array
+    {
+        return [
+            'status chosen' => ['|0||1|0', true],
+            'never smoker, with note and date' => ['no tobacco|nevertobacco|2026-03-01|4|0', true],
+            'button only, older value' => ['|currenttobacco|', true],
+            'quit button' => ['|quittobacco||', true],
+            'nothing chosen' => ['|0||', false],
+            'nothing chosen, five parts' => ['|0|||0', false],
+            'not applicable button only' => ['|not_applicabletobacco||', false],
+            'a date alone is not a status' => ['|0|2026-03-01', false],
+            'note alone' => ['smokes cigars|0||', false],
+            'empty' => ['', false],
+            'null' => [null, false],
+        ];
+    }
+
+    #[DataProvider('tobaccoValues')]
+    public function testTobaccoRecorded(?string $value, bool $recorded): void
+    {
+        self::assertSame($recorded, EcqmChecks::tobaccoRecorded($value));
+    }
+
+    public function testObservationCodesAreLoincAndOfATypeTheEngineReads(): void
+    {
+        $measures = array_column((new ReferenceDataLoader())->load()->ecqmMeasures->forYear(2026), 'measure');
+        foreach (EcqmChecks::OBSERVATION_CODES as $kind => $read) {
+            self::assertContains($read['type'], ['assessment', 'physical_exam_performed'], $kind);
+            self::assertNotSame([], $read['codes'], $kind);
+            foreach ($read['codes'] as $code) {
+                self::assertMatchesRegularExpression('/^\d{1,6}-\d$/D', $code, "$kind: LOINC code shape");
+            }
+            self::assertCount(1, preg_grep('/^' . $read['measure'] . 'v\d+$/D', $measures) ?: [], "$kind: {$read['measure']} is a 2026 UDS measure");
+        }
+    }
 }

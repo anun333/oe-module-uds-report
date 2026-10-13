@@ -47,6 +47,15 @@ $types = $readiness->encounterTypes();
 $problems = $readiness->problems($year, $settings);
 $pressures = $readiness->bloodPressures($year, $settings);
 $examTypeActive = $readiness->physicalExamTypeActive();
+$bmis = $readiness->bodyMassIndexes($year, $settings);
+$tobacco = $readiness->tobaccoInHistory($year, $settings);
+$phq9 = $readiness->depressionForms($year, $settings);
+$misplaced = $readiness->misplacedCodes($year, $settings);
+$kinds = [
+    'tobacco' => xl('Tobacco screening'), 'depression' => xl('Depression screening'), 'falls' => xl('Falls screening'),
+    'bmi' => xl('BMI'), 'bmiPercentile' => xl('BMI percentile'), 'bloodPressure' => xl('Blood pressure'),
+];
+$typeTitles = ['assessment' => xl('Assessment'), 'physical_exam_performed' => xl('Physical Exam Performed')];
 $openEnds = EcqmReadinessRepository::openEndsCount();
 $labs = $readiness->labResults($year, $settings);
 $decimalsKept = EcqmReadinessRepository::labDecimalsKept();
@@ -87,7 +96,7 @@ foreach ($measures as $m) {
     </div>
 
     <h2 class="h5 uds-section"><?php echo xlt('Records the measures cannot see'); ?></h2>
-    <p class="text-muted small"><?php echo text(sprintf(xl('Countable visits in the year: %s. Problems and blood pressures are those of the patients seen at them.'), $n($visits['visits']))); ?></p>
+    <p class="text-muted small"><?php echo text(sprintf(xl('Countable visits in the year: %s. The problems, vitals, History, forms, observations and lab results counted are those of the patients seen at them.'), $n($visits['visits']))); ?></p>
     <div class="table-responsive">
         <table class="table table-sm table-bordered uds-table">
             <thead class="thead-light"><tr>
@@ -125,7 +134,40 @@ foreach ($measures as $m) {
                     <?php } ?>
                 </td>
             </tr>
-            <?php
+            <tr>
+                <td><?php echo xlt('Patients whose BMI is only in the Vitals form'); ?></td>
+                <td class="num"><?php echo text($n($bmis['vitalsOnly'])); ?> / <?php echo text($n($bmis['patients'])); ?></td>
+                <td class="small">
+                    <?php echo xlt('The BMI measures read BMI only from the Observation form, type Physical Exam Performed: code LOINC 39156-5 for adults (CMS69, Table 6B Line 13), and for children BMI percentile LOINC 59576-9 with height and weight (CMS155, Line 12). The Vitals form is not read.'); ?>
+                    <?php if ($examTypeActive === false) { ?>
+                        <div class="mt-1"><?php echo xlt('The Physical Exam Performed type is turned off in Admin > Forms > Lists > Observation Types.'); ?></div>
+                    <?php } ?>
+                </td>
+            </tr>
+            <tr>
+                <td><?php echo xlt('Patients whose tobacco use is only in History'); ?></td>
+                <td class="num"><?php echo text($n($tobacco['historyOnly'])); ?> / <?php echo text($n($tobacco['patients'])); ?></td>
+                <td class="small"><?php echo xlt('Tobacco screening (CMS138, Table 6B Line 14a) reads only the Observation form: type Assessment, code LOINC 72166-2 (or 39240-7, 68535-4, 68536-2), with the result coded as tobacco user or non-user. The Tobacco field in History is not read. Counted here: History saved during the year with a tobacco status.'); ?></td>
+            </tr>
+            <?php if ($phq9 !== null) { ?>
+            <tr>
+                <td><?php echo xlt('Patients with a PHQ-9 form and no depression screening the measure reads'); ?></td>
+                <td class="num"><?php echo text($n($phq9['formOnly'])); ?> / <?php echo text($n($phq9['patients'])); ?></td>
+                <td class="small"><?php echo xlt('Depression screening (CMS2, Table 6B Line 21) reads only the Observation form: type Assessment, code LOINC 73832-8 (adults) or 73831-0 (adolescents), with the result coded positive or negative. The PHQ-9 form is not read.'); ?></td>
+            </tr>
+            <?php }
+            foreach ($misplaced as $kind => $patients) {
+                $read = EcqmChecks::OBSERVATION_CODES[$kind]; ?>
+            <tr class="table-warning">
+                <td><?php echo text(sprintf(xl('Patients with a %1$s code (%2$s) only where the measure does not read it'), $kinds[$kind], $read['measure'])); ?></td>
+                <td class="num"><?php echo text($n($patients)); ?></td>
+                <td class="small"><?php echo text(sprintf(
+                    xl('The measure reads these codes (LOINC %1$s) only as observations of type %2$s. These patients had one in the year only as a lab result or as an observation of another type. Record it in the Observation form with that type.'),
+                    implode(', ', $read['codes']),
+                    $typeTitles[$read['type']],
+                )); ?></td>
+            </tr>
+            <?php }
             $endRows = [
                 [$openEnds['problems'], xl('Ongoing problems (no end date)'), $problems['noEndDate'], $problems['problems'],
                     xl('This OpenEMR treats a missing end date as unknown, so an ongoing problem never overlaps the year (openemr/openemr issue 14526). Do not add end dates to ongoing problems to work around it: an end date marks a problem resolved.')],

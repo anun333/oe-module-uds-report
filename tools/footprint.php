@@ -391,7 +391,7 @@ $md[] = '|---|---|---|---|';
 foreach (array_unique(array_merge(array_keys($reads), array_keys($writes))) as $t) {
     $r = isset($reads[$t]) ? implode('<br>', array_map(fn($f) => "`$f`", array_keys($reads[$t]))) : '—';
     $w = isset($writes[$t]) ? implode('<br>', array_map(fn($f) => "`$f`", array_keys($writes[$t]))) : '—';
-    $owner = in_array($t, $ownTables, true) ? 'this module' : 'OpenEMR core';
+    $owner = in_array($t, $ownTables, true) ? 'this module' : ($t === 'information_schema' ? 'the database server (its catalog)' : 'OpenEMR core');
     $md[] = "| `$t` | $r | $w | $owner |";
 }
 $md[] = '';
