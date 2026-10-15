@@ -10,6 +10,9 @@
  *   declined), the code of a questionnaire answered (unless its encounter form
  *   was deleted), Observations, and lab results that weren't cancelled or
  *   entered in error.
+ * - SNOMED CT, CPT and HCPCS: care plan entries marked Completed, for the
+ *   support services and upstream drivers of health lines (35-42), whose
+ *   interventions are often recorded there rather than on the fee sheet.
  * Only the year's records are read. Each is tied to its encounter when it has
  * one.
  *
@@ -33,6 +36,30 @@ final readonly class ClinicalCodeRepository
 {
     public const RXNORM = 'rxnorm';
     public const LOINC = 'loinc';
+    public const SNOMED = 'snomed';
+    public const CPT = 'cpt';
+    public const HCPCS = 'hcpcs';
+
+    /** The prefixes a stored code may carry for each system, as OpenEMR's code types write them. */
+    private const PREFIXES = [
+        self::RXNORM => ['RXCUI', 'RXNORM'],
+        self::LOINC => ['LOINC', 'LN'],
+        self::SNOMED => ['SNOMED-CT', 'SNOMED', 'SNOMED-PR', 'SCT'],
+        self::CPT => ['CPT4', 'CPT'],
+        self::HCPCS => ['HCPCS'],
+    ];
+
+    /**
+     * Care plan entries marked Completed: services provided, not planned. Goals and health
+     * concerns aren't services. Rows of a deleted form, or marked inactive, are left out.
+     * The form stores each code as TYPE:code (SNOMED-CT by default).
+     */
+    private const CARE_PLANS = "SELECT fcp.pid, fcp.encounter, DATE(fcp.date) AS day, fcp.code
+               FROM form_care_plan AS fcp
+              WHERE fcp.date >= ? AND fcp.date < ? AND fcp.plan_status = 'completed'
+                AND COALESCE(fcp.care_plan_type, '') NOT IN ('goal', 'health_concern')
+                AND COALESCE(fcp.activity, 1) <> 0 AND COALESCE(fcp.code, '') <> ''
+                AND NOT EXISTS (SELECT 1 FROM forms AS f WHERE f.form_id = fcp.id AND f.formdir = 'care_plan' AND f.deleted = 1)";
 
     /** Each source: its query (pid, encounter, day, code in that order) and the code system it gives. */
     private const SOURCES = [
@@ -107,6 +134,23 @@ final readonly class ClinicalCodeRepository
                 }
             }
         }
+        $carePlanSystems = array_values(array_intersect([self::SNOMED, self::CPT, self::HCPCS], $systems));
+        if ($carePlanSystems !== []) {
+            foreach (QueryUtils::fetchRecords(self::CARE_PLANS, [$start, $end]) as $row) {
+                $day = DateTimeImmutable::createFromFormat('!Y-m-d', substr(Row::text($row, 'day'), 0, 10));
+                $pid = Row::nullableInt($row, 'pid') ?? 0;
+                if ($day === false || $pid <= 0) {
+                    continue;
+                }
+                // form_care_plan.encounter is text.
+                $encounter = max(0, Row::nullableInt($row, 'encounter') ?? 0);
+                foreach ($carePlanSystems as $system) {
+                    foreach (self::codes(Row::text($row, 'code'), $system, true) as $code) {
+                        $events[] = new CodedEvent($pid, $encounter, $day, $system, $code);
+                    }
+                }
+            }
+        }
         return $events;
     }
 
@@ -159,12 +203,13 @@ final readonly class ClinicalCodeRepository
      * The codes in a stored value: one code, or several separated by ; or
      * spaces, each perhaps prefixed with its system (RXCUI:, RXNORM:, LOINC:).
      * A code prefixed with another system is not one of this system's.
+     * With $prefixRequired, a code without a prefix is left out (care plans mix code types).
      *
      * @return list<string> normalized
      */
-    public static function codes(string $value, string $system): array
+    public static function codes(string $value, string $system, bool $prefixRequired = false): array
     {
-        $prefixes = $system === self::RXNORM ? ['RXCUI', 'RXNORM'] : ['LOINC', 'LN'];
+        $prefixes = self::PREFIXES[$system] ?? [];
         $codes = [];
         foreach (preg_split('/[;,\s]+/', trim($value)) ?: [] as $part) {
             if ($part === '') {
@@ -176,6 +221,8 @@ final readonly class ClinicalCodeRepository
                     continue;
                 }
                 $part = substr($part, $colon + 1);
+            } elseif ($prefixRequired) {
+                continue;
             }
             if ($part !== '') {
                 $codes[] = Table6aCode::normalize($part);

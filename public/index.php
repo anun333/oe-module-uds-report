@@ -356,7 +356,7 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
         echo xlt('Value sets: not fetched, so lines the manual defines by them count only the codes it lists, or are left blank.');
     } else {
         echo text(sprintf(
-            xl('Value sets: %1$d of %2$d fetched from VSAC, last on %3$s. Lines whose value sets are all fetched count their codes too: on the fee sheet, and for medications and screenings in prescriptions, medications given from inventory, SDOH assessments, questionnaires, Observations and lab results.'),
+            xl('Value sets: %1$d of %2$d fetched from VSAC, last on %3$s. Lines whose value sets are all fetched count their codes too: on the fee sheet, and for medications and screenings in prescriptions, medications given from inventory, SDOH assessments, questionnaires, Observations and lab results. Support services and upstream drivers of health (Lines 35 to 42) also count care plan entries marked Completed.'),
             $valueSetsFetched,
             count($valueSetOids),
             $valueSetsLatest,

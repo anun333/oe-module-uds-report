@@ -202,7 +202,7 @@ final class ValueSetTest extends TestCase
         $all = self::fetched(['snomed' => ['900001']], ...$line40->valueSets);
         $counted = self::line($table->withValueSets($all), '40');
         self::assertTrue($counted->isCounted());
-        self::assertSame(Table6aLine::COMPUTED_PARTIAL, $counted->computed);
+        self::assertSame(Table6aLine::COMPUTED_FULL, $counted->computed, 'from the fee sheet and completed care plan entries');
         self::assertTrue($counted->matches(['snomed' => ['900001']]));
         self::assertFalse($counted->matches(['snomed' => ['900002']]));
         self::assertFalse($counted->matches(['icd10' => ['900001']]), 'a code counts only in its own system');
@@ -257,6 +257,33 @@ final class ValueSetTest extends TestCase
         self::assertSame(['99999-9', '88888-8'], ClinicalCodeRepository::codes('LOINC:99999-9; LOINC:88888-8', 'loinc'));
         self::assertSame([], ClinicalCodeRepository::codes('SNOMED-CT:1234', 'loinc'));
         self::assertSame([], ClinicalCodeRepository::codes('', 'loinc'));
+    }
+
+    public function testCarePlanCodesNeedTheirCodeType(): void
+    {
+        self::assertSame(['900001'], ClinicalCodeRepository::codes('SNOMED-CT:900001', 'snomed', true));
+        self::assertSame(['900002'], ClinicalCodeRepository::codes('SNOMED-PR:900002', 'snomed', true));
+        self::assertSame(['99999'], ClinicalCodeRepository::codes('CPT4:99999', 'cpt', true));
+        self::assertSame(['Z9999'], ClinicalCodeRepository::codes('HCPCS:Z9999', 'hcpcs', true));
+        self::assertSame([], ClinicalCodeRepository::codes('CPT4:99999', 'snomed', true), 'a CPT code is not a SNOMED CT code');
+        self::assertSame([], ClinicalCodeRepository::codes('900001', 'snomed', true), 'an unprefixed care plan code has no known system');
+    }
+
+    public function testCarePlanInterventionsCountOnTheirLine(): void
+    {
+        $table = self::table();
+        $line41 = self::line($table, '41');
+        $fetched = $table->withValueSets(self::fetched(['snomed' => ['900001']], ...$line41->valueSets));
+        $encounters = [
+            // A completed care plan entry at a visit, and one with no encounter.
+            new EncounterCodes(1, 10, new DateTimeImmutable('2026-03-01'), true, true, null, ['snomed' => ['900001']]),
+            new EncounterCodes(1, 0, new DateTimeImmutable('2026-04-01'), false, true, null, ['snomed' => ['900001']]),
+        ];
+        $rows = [];
+        foreach ((new Table6A($fetched, $encounters, [1 => true]))->rows() as $row) {
+            $rows[$row['line']->line] = [$row['line']->computed, $row['visits'], $row['patients']];
+        }
+        self::assertSame(['full', 2, 1], $rows['41']);
     }
 
     public function testFromFhirNeedsAValueSet(): void

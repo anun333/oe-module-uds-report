@@ -88,7 +88,7 @@ The manual defines 7 lines only by value sets from the National Library of Medic
 Until then, those lines are left blank, or count only the codes the manual lists.
 
 Once all of a line's value sets are fetched, the line also counts:
-- **Codes on the fee sheet:** the value sets' ICD-10-CM, CPT, HCPCS and SNOMED CT codes. A code the line's own entry excludes still doesn't count: Line 9's value set includes gestational diabetes (O24.4-), which the manual excludes from Line 9.
+- **Codes on the fee sheet, and in care plans:** the value sets' ICD-10-CM, CPT, HCPCS and SNOMED CT codes. Care plan entries count when marked Completed (a service provided, not planned), and not goals or health concerns; this applies to the listed SNOMED CT codes of Lines 35 and 36 too, fetched or not. A code the line's own entry excludes still doesn't count: Line 9's value set includes gestational diabetes (O24.4-), which the manual excludes from Line 9.
 - **Medications (RxNorm), Lines 26c2 and 26c3:** prescriptions, by their start date, and medications given from OpenEMR's inventory.
 - **Screenings and tests (LOINC), Lines 21, 26f and 39:**
   - the screening instrument of an SDOH assessment in History, unless marked declined;
@@ -101,7 +101,7 @@ A record tied to an encounter counts at that visit. One with no encounter counts
 What it can't count yet (each line is marked on the report, with the reason):
 
 - **Medications coded by ingredient (Lines 26c2, 26c3).** A medication counts only when its RxNorm code is in the value set, which lists products. A prescription coded only by ingredient (OpenEMR's RxNorm lookup offers those), or with no code, isn't counted. For MOUD the manual counts buprenorphine, methadone and naltrexone in any form (FAQ 15). The record problems list names the patients with such a medication, so staff can choose the product instead.
-- **Interventions outside the fee sheet (Lines 37–42).** SNOMED CT interventions count only from the fee sheet, so ones recorded only in a care plan or a note aren't seen.
+- **Interventions not marked Completed (Lines 35–42).** A care plan entry still Active or Draft isn't counted, since the manual counts services provided; one written only in a note isn't seen.
 - **PrEP (Line 21e).** The manual also requires a prescription for specific drugs, which isn't checked.
 - **Codes outside the fee sheet on other lines.** For example, an immunization recorded only in the Immunizations screen isn't seen. The manual's preferred fix is to put the code on the encounter with a zero charge.
 - **Dental Lines 27–32** count the codes whoever recorded them; the manual limits them to dental providers (except fluoride).

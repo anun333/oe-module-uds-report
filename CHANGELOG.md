@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.11.0 — 2026-10-15
+
+- **Table 6A reads interventions recorded in care plans.** SDOH interventions are often written in the Care Plan form rather than on the fee sheet.
+  - **What counts:** entries marked **Completed** (a service provided, not planned), of any type except goals and health concerns, with SNOMED CT, CPT or HCPCS codes. Each counts at its visit, or as a visit of its own on its date when it has none.
+  - **Left out:** entries still Active or Draft, and rows of a deleted Care Plan form.
+  - **Lines affected:**
+    - Lines 37, 38 and 40–42 now count in full once their value sets are fetched.
+    - The SNOMED CT codes the manual lists for Lines 35 and 36 count from care plans as well, fetched or not.
+    - A visit counts on every line it matches: one of Line 36's codes is also in Line 42's value set.
+  - **Tested** on OpenEMR master with synthetic care plans. Exactly the predicted entries counted: Completed ones, at their visit or on their own date. The Active entry, the goal, and the deleted form's entry didn't count, and un-deleting that form made it count, as a control. The released 0.10.1 code counts none of them.
+
 ## 0.10.1 — 2026-10-15
 
 - **New record problem: a tobacco cessation or opioid use disorder medication Table 6A can't count.**

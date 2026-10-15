@@ -84,8 +84,13 @@ final class UdsReportService
     {
         $pids = $this->reportPids();
         $fetched = $this->valueSets();
-        $systems = array_values(array_intersect([ClinicalCodeRepository::RXNORM, ClinicalCodeRepository::LOINC], $fetched->systems()));
-        $events = $systems === [] ? [] : (new ClinicalCodeRepository())->forYear($this->year, $systems);
+        // Care plan entries carry the codes of support services (Lines 35-42) whether or not the value sets
+        // are fetched; medications (RxNorm) and screenings (LOINC) matter only for value set lines.
+        $systems = [
+            ClinicalCodeRepository::SNOMED, ClinicalCodeRepository::CPT, ClinicalCodeRepository::HCPCS,
+            ...array_intersect([ClinicalCodeRepository::RXNORM, ClinicalCodeRepository::LOINC], $fetched->systems()),
+        ];
+        $events = (new ClinicalCodeRepository())->forYear($this->year, $systems);
         $encounters = (new EncounterCodeRepository($this->patientRepository))->forYear($this->year, $this->settings, $events);
         return new Table6A($this->reference->table6a->withValueSets($fetched), $encounters, $pids);
     }
