@@ -42,6 +42,8 @@ final class Labels
             DataGap::AgricultureNotAsked => xl('Agricultural worker status (UDS) not recorded'),
             DataGap::VeteranNotAsked => xl('Military service (UDS) not recorded'),
             DataGap::MedicationNotCounted => xl('A prescription or dispensed medication named buprenorphine, methadone, naltrexone, nicotine or varenicline is not counted on Table 6A Line 26c2 or 26c3: its RxNorm code is missing or not in the value set. If it was for tobacco cessation or opioid use disorder, choose the product (strength and form) from the RxNorm list'),
+            DataGap::DentalServiceNotCounted => xl('A dental service on Table 6A Lines 27 to 32 is not counted: the visit was not with dental staff, as Table 5 places its provider (fluoride counts at a medical visit too). If a dentist, dental hygienist or dental therapist, or someone they supervise, provided it, choose a dental line for that provider in Settings or correct their NUCC taxonomy code; OpenEMR gives every new user the Family Medicine code'),
+            DataGap::PrepNotCounted => xl('A visit coded Z29.81 (PrEP) is not counted on Table 6A Line 21e: no prescription in the year, and no medication given from inventory, names emtricitabine with tenofovir, cabotegravir or lenacapavir (or Truvada, Descovy, Apretude or Yeztugo). Record the PrEP prescription, or check the code'),
         };
     }
 

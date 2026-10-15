@@ -37,6 +37,8 @@ enum DataGap: string
     case AgricultureNotAsked = 'agriculture_not_asked';
     case VeteranNotAsked = 'veteran_not_asked';
     case MedicationNotCounted = 'medication_not_counted';
+    case DentalServiceNotCounted = 'dental_service_not_counted';
+    case PrepNotCounted = 'prep_not_counted';
 
     /**
      * Blocking problems keep the patient off a table entirely, so the table
@@ -50,7 +52,8 @@ enum DataGap: string
             self::RaceUnreported, self::IncomeUnverified, self::IncomeNotRecorded, self::IncomeNotUnderstood,
             self::FamilySizeNotRecorded, self::FamilySizeNotUnderstood, self::ReviewDateMissing,
             self::ReviewDateNotSaved, self::ReviewDateOutsideWindow, self::NoInsuranceOnFile, self::NoZip,
-            self::HousingNotAsked, self::AgricultureNotAsked, self::VeteranNotAsked, self::MedicationNotCounted => false,
+            self::HousingNotAsked, self::AgricultureNotAsked, self::VeteranNotAsked, self::MedicationNotCounted,
+            self::DentalServiceNotCounted, self::PrepNotCounted => false,
         };
     }
 }

@@ -53,15 +53,22 @@ final class Table6ATest extends TestCase
                 CaseFile::bool($e['inScope'] ?? null),
                 $birth === null ? null : new DateTimeImmutable($birth),
                 $codes,
+                personnel: CaseFile::nullableString($e['personnel'] ?? null),
             );
         }
         $patients = [];
         foreach (CaseFile::list($case['patients'] ?? null) as $pid) {
             $patients[CaseFile::int($pid)] = true;
         }
+        $prescribed = [];
+        foreach (CaseFile::object($case['prescribed'] ?? []) as $line => $pids) {
+            foreach (CaseFile::list($pids) as $pid) {
+                $prescribed[(string) $line][CaseFile::int($pid)] = true;
+            }
+        }
         $expected = CaseFile::object($case['expected'] ?? null);
 
-        $table = new Table6A((new ReferenceDataLoader())->load()->table6a, $encounters, $patients);
+        $table = new Table6A((new ReferenceDataLoader())->load()->table6a, $encounters, $patients, $prescribed);
         $seen = [];
         foreach ($table->rows() as $row) {
             $line = $row['line']->line;
@@ -81,5 +88,48 @@ final class Table6ATest extends TestCase
         sort($wanted);
         sort($found);
         self::assertSame($wanted, $found, 'every expected line exists in table-6a.json');
+
+        if (isset($case['notCounted'])) {
+            $notCounted = [];
+            foreach (CaseFile::object($case['notCounted']) as $reason => $pids) {
+                $notCounted[(string) $reason] = array_map(CaseFile::int(...), CaseFile::list($pids));
+            }
+            self::assertSame($notCounted, $table->notCounted(), 'patients whose visits are not counted');
+        }
+    }
+
+    /**
+     * @return array<string, array{string, bool}>
+     *
+     * @codeCoverageIgnore Data providers run before coverage instrumentation starts.
+     */
+    public static function prepNames(): array
+    {
+        return [
+            'FTC/TDF by its RxNorm name' => ['emtricitabine 200 MG / tenofovir disoproxil fumarate 300 MG Oral Tablet', true],
+            'FTC/TAF by brand, in capitals' => ['DESCOVY 200-25 MG', true],
+            'Truvada' => ['Truvada', true],
+            'cabotegravir injection' => ['cabotegravir 600 MG in 3 ML Injection', true],
+            'Apretude' => ['Apretude', true],
+            'lenacapavir' => ['lenacapavir 463.5 MG/1.5ML', true],
+            'Yeztugo' => ['Yeztugo 300 mg tablet', true],
+            'emtricitabine alone is not PrEP' => ['emtricitabine 200 MG Oral Capsule', false],
+            'tenofovir alone is not PrEP' => ['tenofovir disoproxil fumarate 300 MG', false],
+            'another drug' => ['ibuprofen 200 MG', false],
+        ];
+    }
+
+    #[DataProvider('prepNames')]
+    public function testPrepPrescriptionNames(string $name, bool $expected): void
+    {
+        $line = null;
+        foreach ((new ReferenceDataLoader())->load()->table6a->lines as $candidate) {
+            if ($candidate->line === '21e') {
+                $line = $candidate;
+            }
+        }
+        self::assertNotNull($line);
+        self::assertTrue($line->needsPrescription());
+        self::assertSame($expected, $line->namesPrescription($name));
     }
 }

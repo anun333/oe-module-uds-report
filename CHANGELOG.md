@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.12.0 — 2026-10-15
+
+- **Table 6A's dental lines count only services by dental staff (Lines 27–32).** The manual allows only licensed dentists, dental hygienists and dental therapists, or staff working under their direct supervision, except that fluoride (Line 31) also counts at a medical visit.
+  - **Who counts as dental staff:** the visit's provider, placed as Table 5 places them: the line set for the visit category, else the line chosen in Settings, else the line their NUCC taxonomy code suggests. A dental assistant counts, though not a Table 5 provider.
+  - **Before upgrading, check the Table 5 provider list.** OpenEMR gives every new user the Family Medicine taxonomy code, so a dentist who still has it is a family physician to this report, and their dental services stop counting. Choose their line in Settings, or correct their taxonomy code.
+  - **New record problem:** a dental service on Lines 27–32 that isn't counted, because the visit wasn't with dental staff.
+- **Table 6A counts PrEP (Line 21e) only for patients prescribed a PrEP drug, as the manual asks.**
+  - **What counts:** a Z29.81 visit of a patient prescribed FTC/TDF, FTC/TAF, cabotegravir or lenacapavir in the year (a prescription started in the year, or earlier with an end date in the year or later), or given one from OpenEMR's inventory. Drugs are found by name, generic or brand (Truvada, Descovy, Apretude, Yeztugo).
+  - The line is no longer marked partial.
+  - **New record problem:** a Z29.81 visit with no such prescription.
+- **Tested** on OpenEMR 8.4.1 with synthetic users, patients, prescriptions and an inventory sale (`dev/uds_6a_staff_check.py` in the workspace):
+  - **Dental:** the dentist's and the dental assistant's services counted, and the family physician's fluoride. The physician's oral exam and the restorative service by a user with no taxonomy code didn't, and both patients were listed. Choosing Dentists for that user in Settings made the restorative service count, as a control.
+  - **PrEP:** of seven Z29.81 patients, the three with a 2026 prescription, a 2025 prescription ending in 2026, or an inventory sale counted. The four listed were: no prescription, a 2024 prescription with no end date, emtricitabine alone, and a prescription first written in 2027.
+  - **Control:** the released 0.11.0 code counted every one of these visits.
+- No database change.
+
 ## 0.11.0 — 2026-10-15
 
 - **Table 6A reads interventions recorded in care plans.** SDOH interventions are often written in the Care Plan form rather than on the fee sheet.

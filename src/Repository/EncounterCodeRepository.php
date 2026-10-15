@@ -123,6 +123,8 @@ final readonly class EncounterCodeRepository
                 $inScope,
                 self::date(Row::text($row, 'DOB')),
                 self::unique($entry['codes']),
+                Row::nullableInt($row, 'provider_id') ?? 0,
+                Row::nullableInt($row, 'pc_catid') ?? 0,
             );
         }
 

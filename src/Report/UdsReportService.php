@@ -16,9 +16,11 @@ namespace OpenEMR\Modules\UdsReport\Report;
 
 use OpenEMR\Modules\UdsReport\Enum\DataGap;
 use OpenEMR\Modules\UdsReport\Enum\GrantReport;
+use OpenEMR\Modules\UdsReport\Model\EncounterCodes;
 use OpenEMR\Modules\UdsReport\Model\Table5Visit;
 use OpenEMR\Modules\UdsReport\Model\UdsPatient;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceData;
+use OpenEMR\Modules\UdsReport\ReferenceData\Table6a as Table6aDefinition;
 use OpenEMR\Modules\UdsReport\Repository\ClinicalCodeRepository;
 use OpenEMR\Modules\UdsReport\Repository\EncounterCodeRepository;
 use OpenEMR\Modules\UdsReport\Repository\Table5VisitRepository;
@@ -33,6 +35,8 @@ final class UdsReportService
     private ?array $patients = null;
 
     private ?ValueSetCodes $valueSets = null;
+
+    private ?Table6A $table6A = null;
 
     /** @param ?GrantReport $grant null: the Universal Report; else that population's Grant Report */
     public function __construct(
@@ -78,9 +82,16 @@ final class UdsReportService
      * Table 6A, from the billing codes on the year's encounters. A line whose
      * value sets the site has fetched is counted from their codes too, read
      * from prescriptions, screenings and results where they are medications
-     * (RxNorm) or screenings and tests (LOINC).
+     * (RxNorm) or screenings and tests (LOINC). Each visit carries the kind of
+     * staff it was with, for the dental lines, and the lines that need a
+     * prescription get the patients who had one.
      */
     public function table6A(): Table6A
+    {
+        return $this->table6A ??= $this->buildTable6A();
+    }
+
+    private function buildTable6A(): Table6A
     {
         $pids = $this->reportPids();
         $fetched = $this->valueSets();
@@ -92,7 +103,45 @@ final class UdsReportService
         ];
         $events = (new ClinicalCodeRepository())->forYear($this->year, $systems);
         $encounters = (new EncounterCodeRepository($this->patientRepository))->forYear($this->year, $this->settings, $events);
-        return new Table6A($this->reference->table6a->withValueSets($fetched), $encounters, $pids);
+        $providerIds = array_values(array_unique(array_filter(
+            array_map(static fn(EncounterCodes $e): int => $e->providerId, $encounters),
+            static fn(int $id): bool => $id > 0,
+        )));
+        $personnel = new EncounterPersonnel(
+            $this->reference->table5,
+            $this->reference->providerTaxonomy,
+            (new Table5VisitRepository($this->patientRepository))->providers($providerIds),
+            $this->settings,
+        );
+        $encounters = array_map(
+            static fn(EncounterCodes $e): EncounterCodes => $e->withPersonnel($personnel->category($e->providerId, $e->categoryId)),
+            $encounters,
+        );
+        $definition = $this->reference->table6a->withValueSets($fetched);
+        return new Table6A($definition, $encounters, $pids, $this->prescribed($definition));
+    }
+
+    /**
+     * For each line that needs a prescription, the patients who had one in the year.
+     *
+     * @return array<string, array<int, true>>
+     */
+    private function prescribed(Table6aDefinition $definition): array
+    {
+        $prescribed = [];
+        foreach ($definition->lines as $line) {
+            if (!$line->needsPrescription()) {
+                continue;
+            }
+            $words = array_values(array_unique(array_merge(...$line->prescriptions)));
+            $prescribed[$line->line] = [];
+            foreach ((new ClinicalCodeRepository())->prescribedInYear($this->year, $words) as $medication) {
+                if ($line->namesPrescription($medication['name'])) {
+                    $prescribed[$line->line][$medication['pid']] = true;
+                }
+            }
+        }
+        return $prescribed;
     }
 
     /** The value sets fetched from VSAC, none until an administrator fetches them. */
@@ -150,6 +199,9 @@ final class UdsReportService
     {
         $gaps = (new DataGapFinder($this->reference->raceEthnicity))->byGap($this->reportPatients());
         $gaps[DataGap::MedicationNotCounted->value] = $this->medicationsNotCounted();
+        $notCounted = $this->table6A()->notCounted();
+        $gaps[DataGap::DentalServiceNotCounted->value] = $notCounted[Table6A::NOT_COUNTED_PERSONNEL];
+        $gaps[DataGap::PrepNotCounted->value] = $notCounted[Table6A::NOT_COUNTED_PRESCRIPTION];
         return $gaps;
     }
 

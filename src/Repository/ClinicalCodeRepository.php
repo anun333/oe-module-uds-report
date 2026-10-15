@@ -200,6 +200,53 @@ final readonly class ClinicalCodeRepository
     }
 
     /**
+     * Patients prescribed a drug whose name contains one of the words during the
+     * year, for the lines that need a prescription (PrEP, Line 21e): a
+     * prescription started in the year, or earlier with an end date in the year
+     * or later, and medications given from inventory in the year. A prescription
+     * started earlier with no end date isn't taken to have lasted into the year.
+     *
+     * @param list<string> $words lower case
+     * @return list<array{pid: int, name: string}>
+     */
+    public function prescribedInYear(int $year, array $words): array
+    {
+        if ($words === []) {
+            return [];
+        }
+        $start = sprintf('%04d-01-01', $year);
+        $end = sprintf('%04d-01-01', $year + 1);
+        $like = static fn(string $column): string => '(' . implode(' OR ', array_fill(0, count($words), "LOWER($column) LIKE ?")) . ')';
+        $patterns = array_map(static fn(string $w): string => '%' . $w . '%', $words);
+        $rows = [
+            ...QueryUtils::fetchRecords(
+                "SELECT p.pid, p.name
+                   FROM (SELECT rx.patient_id AS pid, COALESCE(NULLIF(rx.drug, ''), d.name, '') AS name, rx.end_date,
+                                CASE WHEN rx.start_date IS NULL OR rx.start_date < '1900-01-01' THEN DATE(rx.date_added) ELSE rx.start_date END AS day
+                           FROM prescriptions AS rx
+                           LEFT JOIN drugs AS d ON d.drug_id = rx.drug_id) AS p
+                  WHERE p.day < ? AND (p.day >= ? OR p.end_date >= ?) AND " . $like('p.name'),
+                [$end, $start, $start, ...$patterns],
+            ),
+            ...QueryUtils::fetchRecords(
+                "SELECT s.pid, d.name
+                   FROM drug_sales AS s
+                   JOIN drugs AS d ON d.drug_id = s.drug_id
+                  WHERE s.trans_type = 1 AND s.pid > 0 AND s.sale_date >= ? AND s.sale_date < ? AND " . $like('d.name'),
+                [$start, $end, ...$patterns],
+            ),
+        ];
+        $out = [];
+        foreach ($rows as $row) {
+            $pid = Row::nullableInt($row, 'pid') ?? 0;
+            if ($pid > 0) {
+                $out[] = ['pid' => $pid, 'name' => Row::text($row, 'name')];
+            }
+        }
+        return $out;
+    }
+
+    /**
      * The codes in a stored value: one code, or several separated by ; or
      * spaces, each perhaps prefixed with its system (RXCUI:, RXNORM:, LOINC:).
      * A code prefixed with another system is not one of this system's.

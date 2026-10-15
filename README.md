@@ -74,6 +74,8 @@ Counted from the billing codes on each encounter (the fee sheet's codes). The ma
 | Column B: a patient once per line | As stated |
 | Age limits use the age at the visit (Lines 15–17, 26, 26a, 26e) | `DOB`; an unknown birth date can't satisfy an age limit |
 | The codes for each line | [data/table-6a.json](data/table-6a.json), copied in the manual's own notation and checked against the manual code by code |
+| Dental services (Lines 27–32) only by licensed dentists, dental hygienists and dental therapists, or staff working under their direct supervision; fluoride also at a medical visit (page 73) | A visit counts on these lines only when its provider is dental staff, placed as Table 5 places them: the line set for the visit category, else the line chosen in Settings, else the one their NUCC taxonomy code suggests. A dental assistant counts as dental staff, though not a Table 5 provider. Fluoride (Line 31) counts at a medical visit too. The patients with a dental service that isn't counted are listed in Records to fix |
+| PrEP (Line 21e): Z29.81, only for patients with an active prescription for FTC/TDF, FTC/TAF, cabotegravir or lenacapavir (page 72) | Z29.81 at a visit of a patient prescribed one of those drugs in the year (started in the year, or earlier with an end date in the year or later) or given one from OpenEMR's inventory. Drugs are found by name, generic or brand (Truvada, Descovy, Apretude, Yeztugo). The patients with a Z29.81 visit and no such prescription are listed in Records to fix |
 
 ### Value sets
 
@@ -102,9 +104,7 @@ What it can't count yet (each line is marked on the report, with the reason):
 
 - **Medications coded by ingredient (Lines 26c2, 26c3).** A medication counts only when its RxNorm code is in the value set, which lists products. A prescription coded only by ingredient (OpenEMR's RxNorm lookup offers those), or with no code, isn't counted. For MOUD the manual counts buprenorphine, methadone and naltrexone in any form (FAQ 15). The record problems list names the patients with such a medication, so staff can choose the product instead.
 - **Interventions not marked Completed (Lines 35–42).** A care plan entry still Active or Draft isn't counted, since the manual counts services provided; one written only in a note isn't seen.
-- **PrEP (Line 21e).** The manual also requires a prescription for specific drugs, which isn't checked.
 - **Codes outside the fee sheet on other lines.** For example, an immunization recorded only in the Immunizations screen isn't seen. The manual's preferred fix is to put the code on the encounter with a zero charge.
-- **Dental Lines 27–32** count the codes whoever recorded them; the manual limits them to dental providers (except fluoride).
 - **Dental codes** are recognised by their shape (D plus four digits) under any code type except ICD, since OpenEMR has no CDT code type.
 
 ## Grant Reports

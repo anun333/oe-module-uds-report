@@ -22,6 +22,7 @@ use OpenEMR\Modules\UdsReport\ReferenceData\PovertyGuidelines;
 use OpenEMR\Modules\UdsReport\ReferenceData\RaceEthnicity;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataException;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataLoader;
+use OpenEMR\Modules\UdsReport\ReferenceData\Table6a;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -108,6 +109,14 @@ final class ReferenceDataTest extends TestCase
                 'claim type 1 is listed twice'],
             'unmapped is not a category a file can assign' => [InsuranceCategoryMap::FILE, static fn(array $d): array => self::with($d, ['claimTypes', 1, 'category'], 'unmapped'),
                 'claimTypes[1].category: must be one of'],
+            'dental line limited to staff Table 5 has no category for' => [Table6a::FILE, static fn(array $d): array => self::with($d, ['lines', 47, 'personnel', 0], 'dentists'),
+                'line 27 personnel[0]: must be one of medical, dental'],
+            'staff category listed twice' => [Table6a::FILE, static fn(array $d): array => self::with($d, ['lines', 50, 'personnel', 1], 'dental'),
+                'line 31 personnel[1]: names dental twice'],
+            'prescription word with a capital' => [Table6a::FILE, static fn(array $d): array => self::with($d, ['lines', 32, 'prescriptions', 2, 0], 'Lenacapavir'),
+                'line 21e prescriptions[2][0]: is not one lower case word'],
+            'prescription with no words' => [Table6a::FILE, static fn(array $d): array => self::with($d, ['lines', 32, 'prescriptions', 0], []),
+                'line 21e prescriptions[0]: is empty'],
         ];
     }
 
@@ -120,6 +129,7 @@ final class ReferenceDataTest extends TestCase
         $parse = match ($file) {
             PovertyGuidelines::FILE => PovertyGuidelines::fromData(...),
             RaceEthnicity::FILE => RaceEthnicity::fromData(...),
+            Table6a::FILE => Table6a::fromData(...),
             default => InsuranceCategoryMap::fromData(...),
         };
         $parse($data); // the shipped file itself is fine

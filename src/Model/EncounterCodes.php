@@ -23,6 +23,10 @@ final readonly class EncounterCodes
      * @param bool                        $countable a countable visit: has a provider, a countable category, an in-scope site
      * @param bool                        $inScope   at an in-scope site (or no scope set)
      * @param array<string, list<string>> $codes     normalized codes by Table 6A code system
+     * @param int                         $providerId the encounter's provider (0: none, or no encounter)
+     * @param int                         $categoryId the encounter's visit category
+     * @param ?string                     $personnel  the Table 5 service category of the staff the visit was with
+     *                                                (EncounterPersonnel); null when unknown
      */
     public function __construct(
         public int $pid,
@@ -32,6 +36,25 @@ final readonly class EncounterCodes
         public bool $inScope,
         public ?DateTimeImmutable $birthDate,
         public array $codes,
+        public int $providerId = 0,
+        public int $categoryId = 0,
+        public ?string $personnel = null,
     ) {
+    }
+
+    public function withPersonnel(?string $personnel): self
+    {
+        return new self(
+            $this->pid,
+            $this->encounter,
+            $this->date,
+            $this->countable,
+            $this->inScope,
+            $this->birthDate,
+            $this->codes,
+            $this->providerId,
+            $this->categoryId,
+            $personnel,
+        );
     }
 }

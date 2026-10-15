@@ -34,6 +34,11 @@ final readonly class Table6aLine
      * @param ?array{0: int, 1: int}           $ageMonths  inclusive age range in months at the visit
      * @param ?array{computed: string, limit: ?string} $withValueSets what is counted once all the value sets are fetched
      * @param array<string, array<string, true>> $valueSetCodes the fetched value sets' normalized codes by code system
+     * @param list<string>                     $personnel  the Table 5 service categories of the staff who may provide
+     *                                                     this line's services (dental lines); empty: anyone
+     * @param list<list<string>>               $prescriptions drug names one of which the patient must have been
+     *                                                     prescribed (PrEP): each lists words that all appear in
+     *                                                     the name, lower case; empty: no prescription needed
      */
     public function __construct(
         public string $line,
@@ -47,6 +52,8 @@ final readonly class Table6aLine
         public ?string $limit,
         public ?array $withValueSets = null,
         public array $valueSetCodes = [],
+        public array $personnel = [],
+        public array $prescriptions = [],
     ) {
     }
 
@@ -71,6 +78,8 @@ final readonly class Table6aLine
             $this->withValueSets['limit'],
             null,
             $fetched->codesFor($this->valueSets),
+            $this->personnel,
+            $this->prescriptions,
         );
     }
 
@@ -125,6 +134,32 @@ final readonly class Table6aLine
     {
         foreach ($this->codes[$system] ?? [] as $entry) {
             if ($entry->excludes($code)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Whether staff of this Table 5 service category may provide the line's
+     * services. Unknown staff (null) may provide only a line open to anyone.
+     */
+    public function allowsPersonnel(?string $category): bool
+    {
+        return $this->personnel === [] || ($category !== null && in_array($category, $this->personnel, true));
+    }
+
+    public function needsPrescription(): bool
+    {
+        return $this->prescriptions !== [];
+    }
+
+    /** Whether a drug name is one of the line's prescriptions, in any case. */
+    public function namesPrescription(string $drugName): bool
+    {
+        $name = strtolower($drugName);
+        foreach ($this->prescriptions as $words) {
+            if (array_filter($words, static fn(string $word): bool => !str_contains($name, $word)) === []) {
                 return true;
             }
         }

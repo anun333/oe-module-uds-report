@@ -41,7 +41,7 @@ final readonly class Table6a
         $seen = [];
         foreach (JsonShape::list($top['lines'], "$file lines") as $i => $raw) {
             $where = "$file lines[$i]";
-            $f = JsonShape::object($raw, $where, ['line', 'section', 'group', 'label', 'codes', 'computed'], ['valueSets', 'withValueSets', 'ages', 'limit']);
+            $f = JsonShape::object($raw, $where, ['line', 'section', 'group', 'label', 'codes', 'computed'], ['valueSets', 'withValueSets', 'ages', 'limit', 'personnel', 'prescriptions']);
             $id = JsonShape::text($f['line'], "$where line");
             $where = "$file line $id";
             if (isset($seen[$id])) {
@@ -92,6 +92,9 @@ final readonly class Table6a
                 $withValueSets = ['computed' => $withComputed, 'limit' => $withLimit];
             }
 
+            $personnel = isset($f['personnel']) ? self::personnel($f['personnel'], "$where personnel") : [];
+            $prescriptions = isset($f['prescriptions']) ? self::prescriptions($f['prescriptions'], "$where prescriptions") : [];
+
             $lines[] = new Table6aLine(
                 $id,
                 JsonShape::oneOf($f['section'], "$where section", [
@@ -105,6 +108,8 @@ final readonly class Table6a
                 $computed,
                 $limit,
                 $withValueSets,
+                personnel: $personnel,
+                prescriptions: $prescriptions,
             );
         }
         if ($lines === []) {
@@ -133,6 +138,55 @@ final readonly class Table6a
             }
         }
         return array_keys($oids);
+    }
+
+    /**
+     * Table 5 service categories, each once.
+     *
+     * @return list<string>
+     */
+    private static function personnel(mixed $value, string $where): array
+    {
+        $categories = [];
+        foreach (JsonShape::list($value, $where) as $i => $category) {
+            $category = JsonShape::oneOf($category, "{$where}[{$i}]", Table5::CATEGORIES);
+            if (in_array($category, $categories, true)) {
+                throw new ReferenceDataException("{$where}[{$i}]", "names $category twice");
+            }
+            $categories[] = $category;
+        }
+        if ($categories === []) {
+            throw new ReferenceDataException($where, 'is empty');
+        }
+        return $categories;
+    }
+
+    /**
+     * Drug names, each a list of lower case words that all appear in it.
+     *
+     * @return list<list<string>>
+     */
+    private static function prescriptions(mixed $value, string $where): array
+    {
+        $names = [];
+        foreach (JsonShape::list($value, $where) as $i => $raw) {
+            $words = [];
+            foreach (JsonShape::list($raw, "{$where}[{$i}]") as $j => $word) {
+                $word = JsonShape::text($word, "{$where}[{$i}][{$j}]");
+                if (preg_match('/^[a-z][a-z0-9-]*$/', $word) !== 1) {
+                    throw new ReferenceDataException("{$where}[{$i}][{$j}]", 'is not one lower case word');
+                }
+                $words[] = $word;
+            }
+            if ($words === []) {
+                throw new ReferenceDataException("{$where}[{$i}]", 'is empty');
+            }
+            $names[] = $words;
+        }
+        if ($names === []) {
+            throw new ReferenceDataException($where, 'is empty');
+        }
+        return $names;
     }
 
     /** @return array{0: int, 1: int} inclusive months */

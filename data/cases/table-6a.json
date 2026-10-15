@@ -1,5 +1,5 @@
 {
-    "about": "Table 6A results for synthetic encounters, worked out by hand from the 2026 UDS Manual (Table 6A and its instructions). Each encounter has the patient, the date, whether it is a countable visit, whether it is at an in-scope site, the patient's birth date (null: unknown) and its billing codes by code system, written as OpenEMR stores them. patients lists the UDS patients (at least one countable visit in the year). expected gives [visits (A), patients (B)] for the lines it names; null means the line is left blank. Every other counted line must come out [0, 0].",
+    "about": "Table 6A results for synthetic encounters, worked out by hand from the 2026 UDS Manual (Table 6A and its instructions). Each encounter has the patient, the date, whether it is a countable visit, whether it is at an in-scope site, the patient's birth date (null: unknown) and its billing codes by code system, written as OpenEMR stores them. patients lists the UDS patients (at least one countable visit in the year). expected gives [visits (A), patients (B)] for the lines it names; null means the line is left blank. Every other counted line must come out [0, 0]. personnel is the Table 5 service category of the staff the visit was with (absent: unknown); prescribed lists, by line, the patients with one of the line's prescriptions in the year; notCounted, where given, lists the UDS patients with a visit that has a line's codes but isn't counted on it, by reason (personnel or prescription).",
     "cases": [
         {
             "name": "A visit counts once on a line however many of its codes match, and once on every line it matches",
@@ -56,8 +56,8 @@
             "name": "Ranges, prefixes, the x wildcard, code systems, case and dots",
             "patients": [12],
             "encounters": [
-                {"pid": 12, "encounter": 1201, "date": "2026-01-10", "countable": false, "inScope": true, "birthDate": "2000-01-01", "codes": {"cdt": ["D2391", "D1206"]}},
-                {"pid": 12, "encounter": 1202, "date": "2026-02-10", "countable": false, "inScope": true, "birthDate": "2000-01-01", "codes": {"cpt": ["99188"]}},
+                {"pid": 12, "encounter": 1201, "date": "2026-01-10", "countable": false, "inScope": true, "birthDate": "2000-01-01", "codes": {"cdt": ["D2391", "D1206"]}, "personnel": "dental"},
+                {"pid": 12, "encounter": 1202, "date": "2026-02-10", "countable": false, "inScope": true, "birthDate": "2000-01-01", "codes": {"cpt": ["99188"]}, "personnel": "medical"},
                 {"pid": 12, "encounter": 1203, "date": "2026-03-10", "countable": false, "inScope": true, "birthDate": "2000-01-01", "codes": {"hcpcs": ["G0475"], "cpt": ["86701"]}},
                 {"pid": 12, "encounter": 1204, "date": "2026-04-10", "countable": false, "inScope": true, "birthDate": "2000-01-01", "codes": {"cpt": ["80074"]}},
                 {"pid": 12, "encounter": 1205, "date": "2026-05-10", "countable": true, "inScope": true, "birthDate": "2000-01-01", "codes": {"icd10": ["g80.1", "F84.0"]}},
@@ -73,6 +73,34 @@
                 {"pid": 13, "encounter": 1301, "date": "2026-01-10", "countable": true, "inScope": true, "birthDate": "2000-01-01", "codes": {"icd10": ["Z59.41"]}}
             ],
             "expected": {"26c2": null, "26c3": null, "38": null, "39": null, "40": null, "41": null, "42": null}
+        },
+        {
+            "name": "Dental services count only at a visit with dental staff; fluoride at a medical visit too (manual page 73)",
+            "patients": [14],
+            "encounters": [
+                {"pid": 14, "encounter": 1401, "date": "2026-01-10", "countable": true, "inScope": true, "birthDate": "2000-01-01", "codes": {"cdt": ["D0120"]}, "personnel": "dental"},
+                {"pid": 14, "encounter": 1402, "date": "2026-02-10", "countable": true, "inScope": true, "birthDate": "2000-01-01", "codes": {"cdt": ["D0150"]}, "personnel": "medical"},
+                {"pid": 14, "encounter": 1403, "date": "2026-03-10", "countable": true, "inScope": true, "birthDate": "2000-01-01", "codes": {"cdt": ["D1110"]}},
+                {"pid": 14, "encounter": 1404, "date": "2026-04-10", "countable": true, "inScope": true, "birthDate": "2000-01-01", "codes": {"cdt": ["D1206"]}, "personnel": "medical"},
+                {"pid": 14, "encounter": 1405, "date": "2026-05-10", "countable": false, "inScope": true, "birthDate": "2000-01-01", "codes": {"cpt": ["99188"]}},
+                {"pid": 14, "encounter": 1406, "date": "2026-06-10", "countable": false, "inScope": true, "birthDate": "2000-01-01", "codes": {"cdt": ["D2391"]}, "personnel": "dental"},
+                {"pid": 14, "encounter": 1407, "date": "2026-07-10", "countable": true, "inScope": true, "birthDate": "2000-01-01", "codes": {"cdt": ["D9110"]}, "personnel": "vision"},
+                {"pid": 15, "encounter": 1501, "date": "2026-08-10", "countable": false, "inScope": true, "birthDate": "2000-01-01", "codes": {"cdt": ["D0120"]}, "personnel": "medical"}
+            ],
+            "expected": {"28": [1, 1], "31": [1, 1], "32": [1, 1]},
+            "notCounted": {"personnel": [14], "prescription": []}
+        },
+        {
+            "name": "PrEP (Line 21e) counts only for a patient prescribed FTC/TDF, FTC/TAF, cabotegravir or lenacapavir (manual page 72)",
+            "patients": [16, 17],
+            "prescribed": {"21e": [16, 18]},
+            "encounters": [
+                {"pid": 16, "encounter": 1601, "date": "2026-02-01", "countable": true, "inScope": true, "birthDate": "1990-01-01", "codes": {"icd10": ["Z29.81"]}},
+                {"pid": 16, "encounter": 1602, "date": "2026-05-01", "countable": true, "inScope": true, "birthDate": "1990-01-01", "codes": {"icd10": ["Z29.81"]}},
+                {"pid": 17, "encounter": 1701, "date": "2026-03-01", "countable": true, "inScope": true, "birthDate": "1990-01-01", "codes": {"icd10": ["Z29.81"]}}
+            ],
+            "expected": {"21e": [2, 1]},
+            "notCounted": {"personnel": [], "prescription": [17]}
         }
     ]
 }
