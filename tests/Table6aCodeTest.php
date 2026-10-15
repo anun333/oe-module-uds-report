@@ -70,6 +70,15 @@ final class Table6aCodeTest extends TestCase
         self::assertSame('U071', $code->unless);
     }
 
+    public function testExcludesIsTheEntrysOwnExclusionOnly(): void
+    {
+        $code = Table6aCode::parse('O24- (exclude O24.4-)', 'test');
+        self::assertTrue($code->excludes('O24.41'));
+        self::assertFalse($code->excludes('O24.11'), 'in the entry, not excluded');
+        self::assertFalse($code->excludes('E11.9'), 'not in the entry at all');
+        self::assertFalse(Table6aCode::parse('E08- through E13-', 'test')->excludes('E11.9'));
+    }
+
     public function testTheShippedFileLoads(): void
     {
         $lines = (new ReferenceDataLoader())->load()->table6a->lines;
@@ -95,6 +104,10 @@ final class Table6aCodeTest extends TestCase
             'a partial line without a limit' => [static fn(array $d): array => $line($d, ['computed' => 'partial', 'limit' => null]), 'needs a limit'],
             'an uncounted line with codes' => [static fn(array $d): array => $line($d, ['computed' => 'none', 'limit' => 'x']), 'must have no codes'],
             'a duplicated line' => [static fn(array $d): array => ['lines' => [$d['lines'][0], $d['lines'][0]]] + $d, 'appears twice'],
+            'withValueSets with no value sets' => [static fn(array $d): array => $line($d, ['valueSets' => [], 'withValueSets' => ['computed' => 'full']]), 'needs valueSets'],
+            'withValueSets partial without a limit' => [static fn(array $d): array => $line($d, ['withValueSets' => ['computed' => 'partial']]), 'a partial line needs a limit'],
+            'withValueSets full with a limit' => [static fn(array $d): array => $line($d, ['withValueSets' => ['computed' => 'full', 'limit' => 'x']]), 'only a partial line has one'],
+            'withValueSets that counts nothing' => [static fn(array $d): array => $line($d, ['withValueSets' => ['computed' => 'none']]), 'must be one of full, partial'],
         ];
     }
 

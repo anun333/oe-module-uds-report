@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.10.0 — 2026-10-15
+
+- **Table 6A counts the lines the manual defines by value sets, from codes each site fetches with its own UMLS API key.** The module doesn't ship the codes: the UMLS licence doesn't allow passing CPT codes on (category 3), and its SNOMED CT terms require sub-licences and access controls a public repository can't give.
+  - **Fetching.** A new page (Settings › Table 6A value sets, `admin/super`), or `bin/uds-value-sets.php`, fetches the 21 value sets the 2026 manual names from VSAC's FHIR API. The key is used for the fetch and not saved. The page shows each set's version and fetch date, and the licence notices for the code systems fetched.
+  - **What counts once all of a line's value sets are fetched:**
+    - Lines 26c2, 26c3 and 38–42 are counted.
+    - Lines 1–9, 21, 26f and 37 count the value sets' codes as well as the listed ones.
+    - Medications come from prescriptions and inventory dispensing (RxNorm).
+    - Screenings and tests come from SDOH assessments, questionnaires, Observations and lab results (LOINC).
+    - Everything else comes from the fee sheet.
+  - **The manual's exclusions still hold.** Line 9's value set includes gestational diabetes (O24.4-), which the manual excludes from Line 9, so it still isn't counted. Line 3's value set adds Z86.11 (personal history of tuberculosis), which counts.
+  - **What isn't counted yet:** medications coded only by ingredient, and SNOMED CT interventions recorded only in a care plan or a note. The report says so line by line.
+- **Report and CSV:** both say how many value sets are fetched, and when.
+- **Upgrade:** new tables `uds_value_set` and `uds_value_set_code`, created by Module Manager's Upgrade (`sql/0_9_0-to-0_10_0_upgrade.sql`, run for 0.8.0 and 0.9.0).
+- **Outbound network:** the module now makes HTTPS requests to cts.nlm.nih.gov, only when an administrator fetches the value sets.
+
 ## 0.9.0 — 2026-10-13
 
 - **The eCQM readiness page counts more records the measures can't see.** No part of OpenEMR's eCQM builder reads the Vitals form, History or the PHQ-9 form, so a clinic using those everyday screens reports near zero on several Table 6B lines. New rows:

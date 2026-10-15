@@ -54,6 +54,10 @@ $t4 = $tables->table4();
 $check = $tables->crossCheck();
 $t5 = $report->table5()->result();
 $t6a = $report->table6A()->rows();
+$valueSetOids = $reference->table6a->valueSetOids();
+$fetchedSets = array_intersect_key($report->valueSets()->sets, array_flip($valueSetOids));
+$valueSetsFetched = count($fetchedSets);
+$valueSetsLatest = $fetchedSets === [] ? '' : substr(max(array_column($fetchedSets, 'fetchedAt')), 0, 10);
 $gaps = $report->gaps();
 $region = $report->settings->povertyRegion;
 $onePerson = $reference->povertyGuidelines->annualThreshold($year, $region, 1);
@@ -346,7 +350,21 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
     </details>
 
     <h2 class="h5 uds-section"><?php echo xlt('Table 6A: Selected Diagnoses and Services Rendered'); ?></h2>
-    <p class="small text-muted"><?php echo xlt('From the billing codes on each encounter (the fee sheet). Diagnoses count at countable visits; tests, screenings, dental and support services at any encounter in the year at an in-scope site, for UDS patients. * counts only the codes the manual lists; a dash is a line defined only by value sets, not counted yet.'); ?></p>
+    <p class="small text-muted"><?php echo xlt('From the billing codes on each encounter (the fee sheet). Diagnoses count at countable visits; tests, screenings, dental and support services at any encounter in the year at an in-scope site, for UDS patients. * marks a line counted in part; a dash is a line defined only by value sets not yet fetched.'); ?></p>
+    <p class="small text-muted"><?php
+    if ($valueSetsFetched === 0) {
+        echo xlt('Value sets: not fetched, so lines the manual defines by them count only the codes it lists, or are left blank.');
+    } else {
+        echo text(sprintf(
+            xl('Value sets: %1$d of %2$d fetched from VSAC, last on %3$s. Lines whose value sets are all fetched count their codes too: on the fee sheet, and for medications and screenings in prescriptions, medications given from inventory, SDOH assessments, questionnaires, Observations and lab results.'),
+            $valueSetsFetched,
+            count($valueSetOids),
+            $valueSetsLatest,
+        ));
+    }
+    if ($isAdmin) { ?>
+        <a href="<?php echo attr($moduleUrl . '/public/valuesets.php'); ?>"><?php echo $valueSetsFetched === 0 ? xlt('Fetch value sets') : xlt('Value sets'); ?></a>
+    <?php } ?></p>
     <table class="table table-sm table-bordered uds-table" style="max-width: 60rem">
         <thead class="thead-light"><tr><th><?php echo xlt('Line'); ?></th><th><?php echo xlt('Diagnosis or Service'); ?></th><th class="num"><?php echo xlt('Visits'); ?> (A)</th><th class="num"><?php echo xlt('Patients'); ?> (B)</th></tr></thead>
         <tbody>

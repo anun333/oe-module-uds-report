@@ -75,11 +75,35 @@ Counted from the billing codes on each encounter (the fee sheet's codes). The ma
 | Age limits use the age at the visit (Lines 15–17, 26, 26a, 26e) | `DOB`; an unknown birth date can't satisfy an age limit |
 | The codes for each line | [data/table-6a.json](data/table-6a.json), copied in the manual's own notation and checked against the manual code by code |
 
+### Value sets
+
+The manual defines 7 lines only by value sets from the National Library of Medicine's Value Set Authority Center (VSAC): 26c2, 26c3 and 38–42 (tobacco cessation drugs, medications for opioid use disorder, language assistance, and the upstream drivers of health lines). It adds value sets to 10 more lines, 21 value sets in all.
+
+**The module doesn't ship their codes.** The UMLS licence doesn't allow passing CPT codes on (category 3: internal use only), and its SNOMED CT terms require sub-licences and access controls a public repository can't give. So each site fetches the codes under its own UMLS licence:
+- an administrator does it in **Settings › Table 6A value sets**, or from the command line with `bin/uds-value-sets.php`;
+- it takes the site's UMLS API key (the account is free; apply at [uts.nlm.nih.gov](https://uts.nlm.nih.gov));
+- the key is used for the fetch and not saved, and the codes are kept in two module tables;
+- fetch again each year, when HRSA publishes a new manual.
+
+Until then, those lines are left blank, or count only the codes the manual lists.
+
+Once all of a line's value sets are fetched, the line also counts:
+- **Codes on the fee sheet:** the value sets' ICD-10-CM, CPT, HCPCS and SNOMED CT codes. A code the line's own entry excludes still doesn't count: Line 9's value set includes gestational diabetes (O24.4-), which the manual excludes from Line 9.
+- **Medications (RxNorm), Lines 26c2 and 26c3:** prescriptions, by their start date, and medications given from OpenEMR's inventory.
+- **Screenings and tests (LOINC), Lines 21, 26f and 39:**
+  - the screening instrument of an SDOH assessment in History, unless marked declined;
+  - questionnaires answered, unless their encounter form was deleted;
+  - Observations, unless deleted;
+  - lab results, unless cancelled or entered in error.
+
+A record tied to an encounter counts at that visit. One with no encounter counts as a visit of its own on its date.
+
 What it can't count yet (each line is marked on the report, with the reason):
 
-- **7 lines defined only by value sets** (26c2, 26c3, 38, 39, 40, 41, 42: tobacco cessation drugs, opioid use disorder medications, language assistance, and the upstream drivers of health lines) are left blank. Counting them needs the Value Set Authority Center's expansions.
-- **11 lines count the codes the manual lists but not their value sets.** On Line 21e (PrEP) the manual also requires a prescription for specific drugs, which isn't checked; on Line 26f (dementia screening) only CPT 99483 counts, not the screeners.
-- **Codes outside the fee sheet aren't seen:** a lab result returned without a billing code, or an immunization recorded only in the Immunizations screen. The manual's preferred fix is to put the code on the encounter with a zero charge.
+- **Medications coded by ingredient (Lines 26c2, 26c3).** A medication counts only when its RxNorm code is in the value set, which lists products. A prescription coded only by ingredient (OpenEMR's RxNorm lookup offers those), or with no code, isn't counted. For MOUD the manual counts buprenorphine, methadone and naltrexone in any form (FAQ 15).
+- **Interventions outside the fee sheet (Lines 37–42).** SNOMED CT interventions count only from the fee sheet, so ones recorded only in a care plan or a note aren't seen.
+- **PrEP (Line 21e).** The manual also requires a prescription for specific drugs, which isn't checked.
+- **Codes outside the fee sheet on other lines.** For example, an immunization recorded only in the Immunizations screen isn't seen. The manual's preferred fix is to put the code on the encounter with a zero charge.
 - **Dental Lines 27–32** count the codes whoever recorded them; the manual limits them to dental providers (except fluoride).
 - **Dental codes** are recognised by their shape (D plus four digits) under any code type except ICD, since OpenEMR has no CDT code type.
 
@@ -187,7 +211,7 @@ composer require anun333/oe-module-uds-report
 
 That places it in `interface/modules/custom_modules/oe-module-uds-report/`. Then go to Modules › Manage Modules and **Register**, **Install** and **Enable** UDS Report. Installing adds the settings tables and the three demographic fields. Uninstalling leaves them in place, because they hold data staff entered.
 
-Viewing needs `patients/demo`; the Table 9D worksheet needs `acct/rep_a`, as OpenEMR's Collections report does; Settings needs `admin/super`.
+Viewing needs `patients/demo`; the Table 9D worksheet needs `acct/rep_a`, as OpenEMR's Collections report does; Settings and the Table 6A value sets need `admin/super`. Fetching the value sets needs the site's UMLS API key, and HTTPS from the server to cts.nlm.nih.gov.
 
 ## Compatibility
 
@@ -199,6 +223,11 @@ Viewing needs `patients/demo`; the Table 9D worksheet needs `acct/rep_a`, as Ope
 | 8.0.0 and older | won't run: OpenEMR classes it uses don't exist there (`AccessDeniedHelper`, `BC\ServiceContainer`, and others) | | which classes exist at each release tag |
 
 PHP 8.3 or later is needed. On 8.1.0 to 8.3.0 the module reads the request itself, because OpenEMR's `CurrentRequest` only arrived in 8.4.0.
+
+The Table 6A value sets were checked on master (c9b422d608):
+- **Upgrade:** Module Manager's upgrade path (`SQLUpgradeService`) from 0.8.0 created the two tables.
+- **Fetch:** the page and the command line each fetched all 21 value sets from VSAC (1,548 codes). A wrong key stopped at the first one and left the stored sets as they were, and a form without a valid CSRF token was refused.
+- **Counting:** synthetic records of every kind the module reads were counted on the lines they belong to, at their visit or on their own date. Records left out on purpose weren't counted: a declined screening, an Observation on a deleted form, an ingredient-only prescription, gestational diabetes on Line 9, and a patient with no countable visit. With the value sets removed, the same records counted only Line 9's listed code.
 
 The 8.4.1 checks: Tables 5 and 6A from codes saved through OpenEMR's own billing functions, a Table 5 line chosen through the Settings page, and the Table 9D worksheet from payments and adjustments posted through OpenEMR's EOB posting screen. The eCQM readiness page was also checked against OpenEMR master (c11dd1b15c), where eCQMs are calculated in PHP, with and without a local fix for #14526. Tables 6B and 7 were checked on master (7001d5008b) with #14536's 2026 measures: the module's results for each patient are identical to OpenEMR's own `openemr:cqm-calculate`, and for 2,009 synthetic patients the CMS165 denominator (1,100) and numerator (443) match what each patient's records predict, by race and ethnicity too, calculated both from the page and from the command line.
 

@@ -106,6 +106,10 @@ foreach ($report->table6A()->rows() as $row) {
         $row['line']->computed . ($row['line']->limit === null ? '' : ': ' . $row['line']->limit),
     ]);
 }
+$valueSetOids = $reference->table6a->valueSetOids();
+$fetchedSets = array_intersect_key($report->valueSets()->sets, array_flip($valueSetOids));
+CsvRow::write($out, ['', '', 'Value sets fetched from VSAC: ' . count($fetchedSets) . ' of ' . count($valueSetOids)
+    . ($fetchedSets === [] ? '' : ', last on ' . substr(max(array_column($fetchedSets, 'fetchedAt')), 0, 10))]);
 $check = $tables->crossCheck();
 CsvRow::write($out, []);
 CsvRow::write($out, ['Cross-table check', $check['consistent'] ? 'totals agree' : 'TOTALS DO NOT AGREE', 'patients ' . $check['patients']]);

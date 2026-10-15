@@ -14,6 +14,8 @@ declare(strict_types=1);
 
 namespace OpenEMR\Modules\UdsReport\ReferenceData;
 
+use OpenEMR\Modules\UdsReport\ValueSet\ValueSetCodes;
+
 final readonly class Table6a
 {
     public const FILE = 'table-6a';
@@ -39,7 +41,7 @@ final readonly class Table6a
         $seen = [];
         foreach (JsonShape::list($top['lines'], "$file lines") as $i => $raw) {
             $where = "$file lines[$i]";
-            $f = JsonShape::object($raw, $where, ['line', 'section', 'group', 'label', 'codes', 'computed'], ['valueSets', 'ages', 'limit']);
+            $f = JsonShape::object($raw, $where, ['line', 'section', 'group', 'label', 'codes', 'computed'], ['valueSets', 'withValueSets', 'ages', 'limit']);
             $id = JsonShape::text($f['line'], "$where line");
             $where = "$file line $id";
             if (isset($seen[$id])) {
@@ -74,6 +76,22 @@ final readonly class Table6a
                     : 'a counted line needs codes');
             }
 
+            $withValueSets = null;
+            if (isset($f['withValueSets'])) {
+                if ($valueSets === []) {
+                    throw new ReferenceDataException("$where withValueSets", 'needs valueSets');
+                }
+                $w = JsonShape::object($f['withValueSets'], "$where withValueSets", ['computed'], ['limit']);
+                $withComputed = JsonShape::oneOf($w['computed'], "$where withValueSets computed", [
+                    Table6aLine::COMPUTED_FULL, Table6aLine::COMPUTED_PARTIAL,
+                ]);
+                $withLimit = isset($w['limit']) ? JsonShape::text($w['limit'], "$where withValueSets limit") : null;
+                if (($withComputed === Table6aLine::COMPUTED_PARTIAL) !== ($withLimit !== null)) {
+                    throw new ReferenceDataException("$where withValueSets", 'a partial line needs a limit, and only a partial line has one');
+                }
+                $withValueSets = ['computed' => $withComputed, 'limit' => $withLimit];
+            }
+
             $lines[] = new Table6aLine(
                 $id,
                 JsonShape::oneOf($f['section'], "$where section", [
@@ -86,12 +104,35 @@ final readonly class Table6a
                 isset($f['ages']) ? self::ages($f['ages'], "$where ages") : null,
                 $computed,
                 $limit,
+                $withValueSets,
             );
         }
         if ($lines === []) {
             throw new ReferenceDataException("$file lines", 'is empty');
         }
         return new self($lines);
+    }
+
+    /** The lines with every one of their value sets fetched counted from them as well. */
+    public function withValueSets(ValueSetCodes $fetched): self
+    {
+        return new self(array_map(static fn(Table6aLine $line): Table6aLine => $line->withValueSetCodes($fetched), $this->lines));
+    }
+
+    /**
+     * Every value set the lines name, each once, in line order.
+     *
+     * @return list<string>
+     */
+    public function valueSetOids(): array
+    {
+        $oids = [];
+        foreach ($this->lines as $line) {
+            foreach ($line->valueSets as $oid) {
+                $oids[$oid] = true;
+            }
+        }
+        return array_keys($oids);
     }
 
     /** @return array{0: int, 1: int} inclusive months */

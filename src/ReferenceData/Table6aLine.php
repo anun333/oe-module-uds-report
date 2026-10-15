@@ -16,6 +16,7 @@ declare(strict_types=1);
 namespace OpenEMR\Modules\UdsReport\ReferenceData;
 
 use DateTimeImmutable;
+use OpenEMR\Modules\UdsReport\ValueSet\ValueSetCodes;
 
 final readonly class Table6aLine
 {
@@ -31,6 +32,8 @@ final readonly class Table6aLine
      * @param array<string, list<Table6aCode>> $codes      by code system (icd10, cpt, hcpcs, cdt, snomed)
      * @param list<string>                     $valueSets  OIDs the manual lists
      * @param ?array{0: int, 1: int}           $ageMonths  inclusive age range in months at the visit
+     * @param ?array{computed: string, limit: ?string} $withValueSets what is counted once all the value sets are fetched
+     * @param array<string, array<string, true>> $valueSetCodes the fetched value sets' normalized codes by code system
      */
     public function __construct(
         public string $line,
@@ -42,7 +45,39 @@ final readonly class Table6aLine
         public ?array $ageMonths,
         public string $computed,
         public ?string $limit,
+        public ?array $withValueSets = null,
+        public array $valueSetCodes = [],
     ) {
+    }
+
+    /**
+     * This line counted from its value sets as well, once every one of them is
+     * fetched. A line the data file gives no withValueSets for is unchanged.
+     */
+    public function withValueSetCodes(ValueSetCodes $fetched): self
+    {
+        if ($this->withValueSets === null || !$fetched->hasAll($this->valueSets)) {
+            return $this;
+        }
+        return new self(
+            $this->line,
+            $this->section,
+            $this->group,
+            $this->label,
+            $this->codes,
+            $this->valueSets,
+            $this->ageMonths,
+            $this->withValueSets['computed'],
+            $this->withValueSets['limit'],
+            null,
+            $fetched->codesFor($this->valueSets),
+        );
+    }
+
+    /** Whether this line is counted from its value sets' codes. */
+    public function usesValueSets(): bool
+    {
+        return $this->valueSetCodes !== [];
     }
 
     /** Diagnoses count only at countable visits; services and dental at any in-scope encounter. */
@@ -74,6 +109,23 @@ final readonly class Table6aLine
                     }
                     return true;
                 }
+            }
+        }
+        foreach ($this->valueSetCodes as $system => $set) {
+            foreach ($visitCodes[$system] ?? [] as $code) {
+                if (isset($set[$code]) && !$this->excludedByManual($system, $code)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private function excludedByManual(string $system, string $code): bool
+    {
+        foreach ($this->codes[$system] ?? [] as $entry) {
+            if ($entry->excludes($code)) {
+                return true;
             }
         }
         return false;

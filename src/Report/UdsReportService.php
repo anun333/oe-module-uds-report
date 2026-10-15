@@ -18,15 +18,20 @@ use OpenEMR\Modules\UdsReport\Enum\GrantReport;
 use OpenEMR\Modules\UdsReport\Model\Table5Visit;
 use OpenEMR\Modules\UdsReport\Model\UdsPatient;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceData;
+use OpenEMR\Modules\UdsReport\Repository\ClinicalCodeRepository;
 use OpenEMR\Modules\UdsReport\Repository\EncounterCodeRepository;
 use OpenEMR\Modules\UdsReport\Repository\Table5VisitRepository;
 use OpenEMR\Modules\UdsReport\Repository\Table9DRepository;
 use OpenEMR\Modules\UdsReport\Repository\UdsPatientRepository;
+use OpenEMR\Modules\UdsReport\Repository\ValueSetRepository;
+use OpenEMR\Modules\UdsReport\ValueSet\ValueSetCodes;
 
 final class UdsReportService
 {
     /** @var ?list<UdsPatient> */
     private ?array $patients = null;
+
+    private ?ValueSetCodes $valueSets = null;
 
     /** @param ?GrantReport $grant null: the Universal Report; else that population's Grant Report */
     public function __construct(
@@ -68,12 +73,26 @@ final class UdsReportService
         return new DemographicTables($this->reportPatients(), $this->year, $this->settings, $this->reference);
     }
 
-    /** Table 6A, from the billing codes on the year's encounters. */
+    /**
+     * Table 6A, from the billing codes on the year's encounters. A line whose
+     * value sets the site has fetched is counted from their codes too, read
+     * from prescriptions, screenings and results where they are medications
+     * (RxNorm) or screenings and tests (LOINC).
+     */
     public function table6A(): Table6A
     {
         $pids = $this->reportPids();
-        $encounters = (new EncounterCodeRepository($this->patientRepository))->forYear($this->year, $this->settings);
-        return new Table6A($this->reference->table6a, $encounters, $pids);
+        $fetched = $this->valueSets();
+        $systems = array_values(array_intersect([ClinicalCodeRepository::RXNORM, ClinicalCodeRepository::LOINC], $fetched->systems()));
+        $events = $systems === [] ? [] : (new ClinicalCodeRepository())->forYear($this->year, $systems);
+        $encounters = (new EncounterCodeRepository($this->patientRepository))->forYear($this->year, $this->settings, $events);
+        return new Table6A($this->reference->table6a->withValueSets($fetched), $encounters, $pids);
+    }
+
+    /** The value sets fetched from VSAC, none until an administrator fetches them. */
+    public function valueSets(): ValueSetCodes
+    {
+        return $this->valueSets ??= (new ValueSetRepository())->load();
     }
 
     /** Table 5 visits and patients, from the year's countable visits and who provided them. */

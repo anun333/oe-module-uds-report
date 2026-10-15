@@ -79,6 +79,25 @@ final readonly class Table6aCode
         return true;
     }
 
+    /**
+     * Whether this entry's own "(exclude ...)" removes a code. The manual's
+     * exclusions hold for a line's value set codes too: line 9's value set
+     * has the gestational diabetes codes its O24- entry excludes.
+     */
+    public function excludes(string $code): bool
+    {
+        $code = self::normalize($code);
+        if ($code === '' || !$this->covers($code)) {
+            return false;
+        }
+        foreach ($this->exclusions as $exclusion) {
+            if ($exclusion->covers($code)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private function covers(string $code): bool
     {
         return match ($this->kind) {

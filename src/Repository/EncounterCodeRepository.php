@@ -7,7 +7,9 @@
  *
  * The codes are the fee sheet's (the billing table's active rows). The manual
  * names billing systems and health records as the sources, and its FAQ prefers
- * coding a service with a zero charge over finding it elsewhere.
+ * coding a service with a zero charge over finding it elsewhere. Lines defined
+ * by value sets of medications and screenings also need the codes recorded in
+ * prescriptions, screenings and results, which come in as events.
  *
  * @package   OpenEMR
  * @link      https://www.open-emr.org
@@ -22,6 +24,7 @@ namespace OpenEMR\Modules\UdsReport\Repository;
 
 use DateTimeImmutable;
 use OpenEMR\Common\Database\QueryUtils;
+use OpenEMR\Modules\UdsReport\Model\CodedEvent;
 use OpenEMR\Modules\UdsReport\Model\EncounterCodes;
 use OpenEMR\Modules\UdsReport\ReferenceData\Table6aCode;
 use OpenEMR\Modules\UdsReport\Report\UdsSettings;
@@ -42,8 +45,13 @@ final readonly class EncounterCodeRepository
     {
     }
 
-    /** @return list<EncounterCodes> */
-    public function forYear(int $year, UdsSettings $settings): array
+    /**
+     * @param list<CodedEvent> $events codes recorded outside the fee sheet (ClinicalCodeRepository).
+     *                                 One with an encounter joins that encounter's codes; one without
+     *                                 is a visit of its own on its date, not countable and in scope.
+     * @return list<EncounterCodes>
+     */
+    public function forYear(int $year, UdsSettings $settings, array $events = []): array
     {
         $categories = $settings->countableCategoryIds ?? $this->patients->defaultCountableCategories();
         $scope = $settings->inScopeFacilityIds;
@@ -67,7 +75,38 @@ final readonly class EncounterCodeRepository
             }
         }
 
+        // Encounters that have events but no billing codes.
+        $missing = [];
+        foreach ($events as $event) {
+            if ($event->encounter > 0 && !isset($byEncounter[$event->pid . ':' . $event->encounter])) {
+                $missing[$event->encounter] = true;
+            }
+        }
+        foreach (array_chunk(array_keys($missing), 500) as $chunk) {
+            $found = QueryUtils::fetchRecords(
+                'SELECT fe.pid, fe.encounter, fe.date, fe.provider_id, fe.pc_catid, fe.facility_id, pd.DOB
+                   FROM form_encounter AS fe
+                   JOIN patient_data AS pd ON pd.pid = fe.pid
+                  WHERE fe.encounter IN (' . implode(',', array_fill(0, count($chunk), '?')) . ')',
+                $chunk,
+            );
+            foreach ($found as $row) {
+                $byEncounter[Row::int($row, 'pid') . ':' . Row::int($row, 'encounter')] ??= ['row' => $row, 'codes' => []];
+            }
+        }
+
         $out = [];
+        $loose = [];
+        foreach ($events as $event) {
+            $key = $event->pid . ':' . $event->encounter;
+            if ($event->encounter > 0 && isset($byEncounter[$key])) {
+                $byEncounter[$key]['codes'][$event->system][] = $event->code;
+                continue;
+            }
+            $day = $event->date->format('Y-m-d');
+            $loose[$event->pid][$day][$event->system][] = $event->code;
+        }
+
         foreach ($byEncounter as $entry) {
             $row = $entry['row'];
             $date = self::date(Row::text($row, 'date'));
@@ -83,10 +122,38 @@ final readonly class EncounterCodeRepository
                 $inScope && Row::int($row, 'provider_id') > 0 && in_array(Row::int($row, 'pc_catid'), $categories, true),
                 $inScope,
                 self::date(Row::text($row, 'DOB')),
-                array_map(static fn(array $codes): array => array_values(array_unique($codes)), $entry['codes']),
+                self::unique($entry['codes']),
             );
         }
+
+        $births = [];
+        foreach (array_chunk(array_keys($loose), 500) as $chunk) {
+            $found = QueryUtils::fetchRecords(
+                'SELECT pid, DOB FROM patient_data WHERE pid IN (' . implode(',', array_fill(0, count($chunk), '?')) . ')',
+                $chunk,
+            );
+            foreach ($found as $row) {
+                $births[Row::int($row, 'pid')] = self::date(Row::text($row, 'DOB'));
+            }
+        }
+        foreach ($loose as $pid => $days) {
+            foreach ($days as $day => $codes) {
+                $date = self::date($day);
+                if ($date !== null) {
+                    $out[] = new EncounterCodes($pid, 0, $date, false, true, $births[$pid] ?? null, self::unique($codes));
+                }
+            }
+        }
         return $out;
+    }
+
+    /**
+     * @param array<string, list<string>> $codes
+     * @return array<string, list<string>>
+     */
+    private static function unique(array $codes): array
+    {
+        return array_map(static fn(array $list): array => array_values(array_unique($list)), $codes);
     }
 
     /**

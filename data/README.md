@@ -9,7 +9,7 @@ These files hold the published figures and code mappings the UDS Report uses. Th
 | [insurance-categories.json](insurance-categories.json) | The UDS insurance category for each payment typology group and OpenEMR claim type | A mapping turns out to be wrong, or HRSA changes the insurance lines |
 | [table-5.json](table-5.json) | The lines of Table 5, which report visits and patients, what makes a visit virtual, and the diagnoses that make a behavioral health visit a substance use disorder visit | HRSA publishes a new manual |
 | [table-5-taxonomy.json](table-5-taxonomy.json) | The Table 5 line suggested for each NUCC taxonomy code (from the manual's Appendix A) | NUCC publishes a new taxonomy (twice a year), or HRSA changes Appendix A |
-| [table-6a.json](table-6a.json) | The lines of Table 6A and the codes that put a visit on each, in the manual's notation | HRSA publishes a new manual (codes change every year) |
+| [table-6a.json](table-6a.json) | The lines of Table 6A and the codes that put a visit on each, in the manual's notation, with the value sets (OIDs only) each line names | HRSA publishes a new manual (codes change every year) |
 | [table-9d-adjustments.json](table-9d-adjustments.json) | Where the Table 9D worksheet suggests each adjustment reason goes: Column D, Line 15 (bad debt), or review | A clinic adds its own adjustment reasons, or a suggestion turns out to be wrong |
 | [ecqm-measures.json](ecqm-measures.json) | The eCQMs UDS Tables 6B and 7 use each year, with the line and the version the manual names | HRSA publishes a new manual (measure versions change every year) |
 
@@ -22,7 +22,7 @@ Reviews from people who prepare UDS submissions are the most useful. In particul
 - **insurance-categories.json:** do you agree with each category? A `null` category means undecided. Each null has a note saying why, and the clinic chooses in Settings.
 - **race-ethnicity.json:** does each subgroup and Hispanic origin go to the right line or column?
 - **table-5-taxonomy.json:** would you put each kind of provider on that line? Codes no rule covers (about 80 rare ones, such as art therapists or athletic trainers) get no suggestion, and the clinic chooses.
-- **table-6a.json:** does each line carry the codes your manual shows? The file was checked against the 2026 manual token by token, but a second reader is worth more. Lines marked `partial` or `none` say what is missing.
+- **table-6a.json:** does each line carry the codes your manual shows? The file was checked against the 2026 manual token by token, but a second reader is worth more. Lines marked `partial` or `none` say what is missing. The value sets' codes aren't here: each site fetches them with its own UMLS API key, because the UMLS licence doesn't allow passing CPT or SNOMED CT codes on.
 - **table-9d-adjustments.json:** would your auditor treat each reason that way? Small-balance write-offs, administrative adjustments and returned checks are left for review on purpose. Add a rule for each reason your clinic has added to OpenEMR's Adjustment Reasons list.
 - **poverty-guidelines.json:** the 2025 Alaska and Hawaii rows are empty because those figures haven't been checked against HHS yet. Filling them in takes the HHS notice and two numbers each.
 
