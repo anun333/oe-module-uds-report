@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.10.1 — 2026-10-15
+
+- **New record problem: a tobacco cessation or opioid use disorder medication Table 6A can't count.**
+  - **What it catches:** a prescription, or a medication given from inventory, named buprenorphine, methadone, naltrexone, nicotine or varenicline, whose RxNorm code is missing or not in the Line 26c2 or 26c3 value set. Usually it's coded only by ingredient.
+  - **The fix:** choose the product (strength and form) from the RxNorm list, so the code is in HRSA's value set.
+  - **When it runs:** only once those lines count from fetched value sets.
+  - **Wording:** methadone and naltrexone have other uses, so the row asks staff to check each one. Bupropion is left out, since it's mostly prescribed as an antidepressant.
+  - **Tested:** on OpenEMR master with synthetic records. It flagged exactly the ingredient-only, uncoded and uncoded-dispensed records, and nothing in the value set, no bupropion, and no patient without a countable visit.
+
 ## 0.10.0 — 2026-10-15
 
 - **Table 6A counts the lines the manual defines by value sets, from codes each site fetches with its own UMLS API key.** The module doesn't ship the codes: the UMLS licence doesn't allow passing CPT codes on (category 3), and its SNOMED CT terms require sub-licences and access controls a public repository can't give.

@@ -100,7 +100,7 @@ A record tied to an encounter counts at that visit. One with no encounter counts
 
 What it can't count yet (each line is marked on the report, with the reason):
 
-- **Medications coded by ingredient (Lines 26c2, 26c3).** A medication counts only when its RxNorm code is in the value set, which lists products. A prescription coded only by ingredient (OpenEMR's RxNorm lookup offers those), or with no code, isn't counted. For MOUD the manual counts buprenorphine, methadone and naltrexone in any form (FAQ 15).
+- **Medications coded by ingredient (Lines 26c2, 26c3).** A medication counts only when its RxNorm code is in the value set, which lists products. A prescription coded only by ingredient (OpenEMR's RxNorm lookup offers those), or with no code, isn't counted. For MOUD the manual counts buprenorphine, methadone and naltrexone in any form (FAQ 15). The record problems list names the patients with such a medication, so staff can choose the product instead.
 - **Interventions outside the fee sheet (Lines 37–42).** SNOMED CT interventions count only from the fee sheet, so ones recorded only in a care plan or a note aren't seen.
 - **PrEP (Line 21e).** The manual also requires a prescription for specific drugs, which isn't checked.
 - **Codes outside the fee sheet on other lines.** For example, an immunization recorded only in the Immunizations screen isn't seen. The manual's preferred fix is to put the code on the encounter with a zero charge.

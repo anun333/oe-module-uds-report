@@ -41,6 +41,7 @@ final class Labels
             DataGap::HousingNotAsked => xl('Housing status (UDS) not recorded'),
             DataGap::AgricultureNotAsked => xl('Agricultural worker status (UDS) not recorded'),
             DataGap::VeteranNotAsked => xl('Military service (UDS) not recorded'),
+            DataGap::MedicationNotCounted => xl('A prescription or dispensed medication named buprenorphine, methadone, naltrexone, nicotine or varenicline is not counted on Table 6A Line 26c2 or 26c3: its RxNorm code is missing or not in the value set. If it was for tobacco cessation or opioid use disorder, choose the product (strength and form) from the RxNorm list'),
         };
     }
 

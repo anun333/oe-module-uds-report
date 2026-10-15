@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace OpenEMR\Modules\UdsReport\Report;
 
+use OpenEMR\Modules\UdsReport\Enum\DataGap;
 use OpenEMR\Modules\UdsReport\Enum\GrantReport;
 use OpenEMR\Modules\UdsReport\Model\Table5Visit;
 use OpenEMR\Modules\UdsReport\Model\UdsPatient;
@@ -142,7 +143,39 @@ final class UdsReportService
     /** @return array<string, list<int>> DataGap value => pids */
     public function gaps(): array
     {
-        return (new DataGapFinder($this->reference->raceEthnicity))->byGap($this->reportPatients());
+        $gaps = (new DataGapFinder($this->reference->raceEthnicity))->byGap($this->reportPatients());
+        $gaps[DataGap::MedicationNotCounted->value] = $this->medicationsNotCounted();
+        return $gaps;
+    }
+
+    /**
+     * Report patients with a tobacco cessation or opioid use disorder medication
+     * that Table 6A can't count (MedicationCheck), once those lines count from
+     * their value sets.
+     *
+     * @return list<int>
+     */
+    private function medicationsNotCounted(): array
+    {
+        $lines = [];
+        foreach ($this->reference->table6a->withValueSets($this->valueSets())->lines as $line) {
+            if (isset(MedicationCheck::WORDS[$line->line]) && $line->usesValueSets()) {
+                $lines[$line->line] = $line;
+            }
+        }
+        if ($lines === []) {
+            return [];
+        }
+        $report = $this->reportPids();
+        $pids = [];
+        foreach ((new ClinicalCodeRepository())->namedMedications($this->year, MedicationCheck::allWords()) as $medication) {
+            if (isset($report[$medication['pid']]) && MedicationCheck::uncountedLine($medication['name'], $medication['codes'], $lines) !== null) {
+                $pids[$medication['pid']] = true;
+            }
+        }
+        $sorted = array_keys($pids);
+        sort($sorted);
+        return $sorted;
     }
 
     /** @return array<int, true> */
