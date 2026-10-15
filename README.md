@@ -241,6 +241,17 @@ vendor/bin/phpunit                 # the counting rules and data/cases/; no data
 php tools/footprint.php --check    # FOOTPRINT.md must match the source
 ```
 
+## Code systems
+
+[data/table-6a.json](data/table-6a.json) lists codes and code ranges as the 2026 UDS Manual prints them for Table 6A, without their descriptions. The module's own licence covers its code, not these code systems, which belong to their publishers:
+
+- **CPT®** codes are copyright the American Medical Association. All rights reserved. CPT is a registered trademark of the American Medical Association.
+- **CDT** codes (Current Dental Terminology) are copyright the American Dental Association. All rights reserved. CDT is a registered trademark of the American Dental Association.
+- **SNOMED CT®** is a registered trademark of SNOMED International.
+- **ICD-10-CM** (National Center for Health Statistics) and **HCPCS Level II** (CMS) are published by the U.S. government.
+
+The value sets that Table 6A names are not in the module: each site fetches them under its own UMLS licence ([Value sets](#value-sets)). The value-set page shows the notices that licence asks for, for the code systems fetched.
+
 ## License
 
 GPL-3.0-or-later.

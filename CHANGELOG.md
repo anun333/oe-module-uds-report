@@ -15,6 +15,7 @@
 - **Report and CSV:** both say how many value sets are fetched, and when.
 - **Upgrade:** new tables `uds_value_set` and `uds_value_set_code`, created by Module Manager's Upgrade (`sql/0_9_0-to-0_10_0_upgrade.sql`, run for 0.8.0 and 0.9.0).
 - **Outbound network:** the module now makes HTTPS requests to cts.nlm.nih.gov, only when an administrator fetches the value sets.
+- README: a Code systems section with the CPT, CDT and SNOMED CT notices for the codes `data/table-6a.json` copies from the manual.
 
 ## 0.9.0 — 2026-10-13
 
