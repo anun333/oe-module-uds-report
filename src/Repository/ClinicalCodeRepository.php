@@ -13,6 +13,10 @@
  * - SNOMED CT, CPT and HCPCS: care plan entries marked Completed, for the
  *   support services and upstream drivers of health lines (35-42), whose
  *   interventions are often recorded there rather than on the fee sheet.
+ * - CVX: vaccines recorded in the Immunizations screen as given here (Lines
+ *   24-24b): completed or with no status, from a new immunization record or
+ *   with no source, not refused, not marked as added in error. A historical
+ *   record (given elsewhere) isn't a service of the health center.
  * Only the year's records are read. Each is tied to its encounter when it has
  * one.
  *
@@ -39,6 +43,7 @@ final readonly class ClinicalCodeRepository
     public const SNOMED = 'snomed';
     public const CPT = 'cpt';
     public const HCPCS = 'hcpcs';
+    public const CVX = 'cvx';
 
     /** The prefixes a stored code may carry for each system, as OpenEMR's code types write them. */
     private const PREFIXES = [
@@ -47,6 +52,7 @@ final readonly class ClinicalCodeRepository
         self::SNOMED => ['SNOMED-CT', 'SNOMED', 'SNOMED-PR', 'SCT'],
         self::CPT => ['CPT4', 'CPT'],
         self::HCPCS => ['HCPCS'],
+        self::CVX => ['CVX'],
     ];
 
     /**
@@ -106,10 +112,17 @@ final readonly class ClinicalCodeRepository
                 AND COALESCE(res.result_status, '') NOT IN ('cancel', 'error')
                 AND COALESCE(res.date, rep.date_collected, ord.date_ordered) >= ?
                 AND COALESCE(res.date, rep.date_collected, ord.date_ordered) < ?"],
+        'immunizations' => [self::CVX,
+            "SELECT i.patient_id AS pid, COALESCE(i.encounter_id, 0) AS encounter, DATE(i.administered_date) AS day, i.cvx_code AS code
+               FROM immunizations AS i
+              WHERE i.administered_date >= ? AND i.administered_date < ? AND COALESCE(i.cvx_code, '') <> ''
+                AND COALESCE(i.added_erroneously, 0) = 0 AND COALESCE(i.refusal_reason, '') = ''
+                AND COALESCE(i.completion_status, '') IN ('', 'Completed')
+                AND COALESCE(i.information_source, '') IN ('', 'new_immunization_record')"],
     ];
 
     /**
-     * @param list<string> $systems the code systems wanted (rxnorm, loinc); others are ignored
+     * @param list<string> $systems the code systems wanted (rxnorm, loinc, cvx, ...); others are ignored
      * @return list<CodedEvent>
      */
     public function forYear(int $year, array $systems): array
@@ -270,6 +283,10 @@ final readonly class ClinicalCodeRepository
                 $part = substr($part, $colon + 1);
             } elseif ($prefixRequired) {
                 continue;
+            }
+            if ($system === self::CVX && ctype_digit($part)) {
+                // OpenEMR stores CVX codes without CDC's leading zero (8, not 08).
+                $part = (string) (int) $part;
             }
             if ($part !== '') {
                 $codes[] = Table6aCode::normalize($part);

@@ -259,6 +259,15 @@ final class ValueSetTest extends TestCase
         self::assertSame([], ClinicalCodeRepository::codes('', 'loinc'));
     }
 
+    public function testCvxCodesLoseCdcsLeadingZero(): void
+    {
+        self::assertSame(['8'], ClinicalCodeRepository::codes('08', 'cvx'), 'OpenEMR stores 8, CDC writes 08');
+        self::assertSame(['8'], ClinicalCodeRepository::codes('8', 'cvx'));
+        self::assertSame(['141'], ClinicalCodeRepository::codes('CVX:141', 'cvx'));
+        self::assertSame(['0'], ClinicalCodeRepository::codes('00', 'cvx'));
+        self::assertSame([], ClinicalCodeRepository::codes('CPT4:90686', 'cvx'), 'another system is not CVX');
+    }
+
     public function testCarePlanCodesNeedTheirCodeType(): void
     {
         self::assertSame(['900001'], ClinicalCodeRepository::codes('SNOMED-CT:900001', 'snomed', true));

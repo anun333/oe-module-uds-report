@@ -41,6 +41,15 @@ enum DataGap: string
     case PrepNotCounted = 'prep_not_counted';
 
     /**
+     * Fixed in the patient's Demographics. The others are fixed in a prescription, at the
+     * visit, or in Settings, as their label says.
+     */
+    public function isDemographic(): bool
+    {
+        return !in_array($this, [self::MedicationNotCounted, self::DentalServiceNotCounted, self::PrepNotCounted], true);
+    }
+
+    /**
      * Blocking problems keep the patient off a table entirely, so the table
      * totals can't agree. The others count the patient under an "unknown" line
      * or an assumption.

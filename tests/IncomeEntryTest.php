@@ -103,4 +103,11 @@ final class IncomeEntryTest extends TestCase
             self::assertFalse($gap->isBlocking(), "$gap->value counts the patient as Unknown; it must not block");
         }
     }
+
+    public function testOnlyChartProblemsSendStaffToDemographics(): void
+    {
+        $elsewhere = array_values(array_filter(DataGap::cases(), static fn(DataGap $g): bool => !$g->isDemographic()));
+        self::assertSame([DataGap::MedicationNotCounted, DataGap::DentalServiceNotCounted, DataGap::PrepNotCounted], $elsewhere);
+        self::assertTrue(DataGap::NoZip->isDemographic());
+    }
 }

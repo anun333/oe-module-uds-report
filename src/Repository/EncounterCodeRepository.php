@@ -11,6 +11,10 @@
  * by value sets of medications and screenings also need the codes recorded in
  * prescriptions, screenings and results, which come in as events.
  *
+ * An event with no encounter counts at the patient's encounter on its date
+ * when there is one, so a vaccine recorded without its visit isn't a second
+ * visit; only an event on a day with no encounter is a visit of its own.
+ *
  * @package   OpenEMR
  * @link      https://www.open-emr.org
  * @author    anun333 <anun333@posteo.net>
@@ -48,7 +52,9 @@ final readonly class EncounterCodeRepository
     /**
      * @param list<CodedEvent> $events codes recorded outside the fee sheet (ClinicalCodeRepository).
      *                                 One with an encounter joins that encounter's codes; one without
-     *                                 is a visit of its own on its date, not countable and in scope.
+     *                                 joins the patient's encounter that day (one at an in-scope site
+     *                                 first), or else is a visit of its own on its date, not countable
+     *                                 and in scope.
      * @return list<EncounterCodes>
      */
     public function forYear(int $year, UdsSettings $settings, array $events = []): array
@@ -107,6 +113,23 @@ final readonly class EncounterCodeRepository
             $loose[$event->pid][$day][$event->system][] = $event->code;
         }
 
+        foreach ($this->sameDayEncounters($year, array_keys($loose), $scope) as $pid => $days) {
+            foreach ($days as $day => $row) {
+                if (!isset($loose[$pid][$day])) {
+                    continue;
+                }
+                $key = $pid . ':' . Row::int($row, 'encounter');
+                $byEncounter[$key] ??= ['row' => $row, 'codes' => []];
+                foreach ($loose[$pid][$day] as $system => $codes) {
+                    foreach ($codes as $code) {
+                        $byEncounter[$key]['codes'][$system][] = $code;
+                    }
+                }
+                unset($loose[$pid][$day]);
+            }
+        }
+        $loose = array_filter($loose);
+
         foreach ($byEncounter as $entry) {
             $row = $entry['row'];
             $date = self::date(Row::text($row, 'date'));
@@ -144,6 +167,44 @@ final readonly class EncounterCodeRepository
                 if ($date !== null) {
                     $out[] = new EncounterCodes($pid, 0, $date, false, true, $births[$pid] ?? null, self::unique($codes));
                 }
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * Each patient's encounter on each day of the year: one at an in-scope site if any, then the
+     * lowest encounter number.
+     *
+     * @param list<int>  $pids
+     * @param ?list<int> $scope in-scope facility ids, null for all
+     * @return array<int, array<string, array<mixed>>> pid => Y-m-d => encounter row
+     */
+    private function sameDayEncounters(int $year, array $pids, ?array $scope): array
+    {
+        $chosen = [];
+        foreach (array_chunk($pids, 500) as $chunk) {
+            $rows = QueryUtils::fetchRecords(
+                'SELECT fe.pid, fe.encounter, fe.date, fe.provider_id, fe.pc_catid, fe.facility_id, pd.DOB
+                   FROM form_encounter AS fe
+                   JOIN patient_data AS pd ON pd.pid = fe.pid
+                  WHERE fe.pid IN (' . implode(',', array_fill(0, count($chunk), '?')) . ') AND fe.date >= ? AND fe.date < ?
+                  ORDER BY fe.pid, fe.encounter',
+                [...$chunk, sprintf('%04d-01-01 00:00:00', $year), sprintf('%04d-01-01 00:00:00', $year + 1)],
+            );
+            foreach ($rows as $row) {
+                $pid = Row::int($row, 'pid');
+                $day = substr(Row::text($row, 'date'), 0, 10);
+                $inScope = $scope === null || in_array(Row::nullableInt($row, 'facility_id') ?? 0, $scope, true);
+                if (!isset($chosen[$pid][$day]) || ($inScope && !$chosen[$pid][$day]['inScope'])) {
+                    $chosen[$pid][$day] = ['row' => $row, 'inScope' => $inScope];
+                }
+            }
+        }
+        $out = [];
+        foreach ($chosen as $pid => $days) {
+            foreach ($days as $day => $choice) {
+                $out[$pid][$day] = $choice['row'];
             }
         }
         return $out;

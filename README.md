@@ -75,6 +75,7 @@ Counted from the billing codes on each encounter (the fee sheet's codes). The ma
 | Age limits use the age at the visit (Lines 15–17, 26, 26a, 26e) | `DOB`; an unknown birth date can't satisfy an age limit |
 | The codes for each line | [data/table-6a.json](data/table-6a.json), copied in the manual's own notation and checked against the manual code by code |
 | Dental services (Lines 27–32) only by licensed dentists, dental hygienists and dental therapists, or staff working under their direct supervision; fluoride also at a medical visit (page 73) | A visit counts on these lines only when its provider is dental staff, placed as Table 5 places them: the line set for the visit category, else the line chosen in Settings, else the one their NUCC taxonomy code suggests. A dental assistant counts as dental staff, though not a Table 5 provider. Fluoride (Line 31) counts at a medical visit too. The patients with a dental service that isn't counted are listed in Records to fix |
+| Immunizations (Lines 24–24b), listed by CPT code | The CPT codes on the fee sheet, and vaccines in the Immunizations screen by their CVX code. Each line's CVX codes are those CDC's CPT-to-CVX crosswalk maps from its CPT codes. A vaccine counts when it was given here: completed or with no status, recorded as a new immunization (or with no source), not refused, and not marked as added in error. A historical record of a vaccine given elsewhere doesn't count. One recorded without an encounter counts at the patient's visit that day |
 | PrEP (Line 21e): Z29.81, only for patients with an active prescription for FTC/TDF, FTC/TAF, cabotegravir or lenacapavir (page 72) | Z29.81 at a visit of a patient prescribed one of those drugs in the year (started in the year, or earlier with an end date in the year or later) or given one from OpenEMR's inventory. Drugs are found by name, generic or brand (Truvada, Descovy, Apretude, Yeztugo). The patients with a Z29.81 visit and no such prescription are listed in Records to fix |
 
 ### Value sets
@@ -98,13 +99,13 @@ Once all of a line's value sets are fetched, the line also counts:
   - Observations, unless deleted;
   - lab results, unless cancelled or entered in error.
 
-A record tied to an encounter counts at that visit. One with no encounter counts as a visit of its own on its date.
+A record tied to an encounter counts at that visit. One with no encounter counts at the patient's visit that day, if there is one (one at an in-scope site first), so it isn't a second visit; otherwise it counts as a visit of its own on its date.
 
 What it can't count yet (each line is marked on the report, with the reason):
 
 - **Medications coded by ingredient (Lines 26c2, 26c3).** A medication counts only when its RxNorm code is in the value set, which lists products. A prescription coded only by ingredient (OpenEMR's RxNorm lookup offers those), or with no code, isn't counted. For MOUD the manual counts buprenorphine, methadone and naltrexone in any form (FAQ 15). The record problems list names the patients with such a medication, so staff can choose the product instead.
 - **Interventions not marked Completed (Lines 35–42).** A care plan entry still Active or Draft isn't counted, since the manual counts services provided; one written only in a note isn't seen.
-- **Codes outside the fee sheet on other lines.** For example, an immunization recorded only in the Immunizations screen isn't seen. The manual's preferred fix is to put the code on the encounter with a zero charge.
+- **Codes outside the fee sheet on other lines.** For example, a test recorded only in a note or a scanned document isn't seen. The manual's preferred fix is to put the code on the encounter with a zero charge.
 - **Dental codes** are recognised by their shape (D plus four digits) under any code type except ICD, since OpenEMR has no CDT code type.
 
 ## Grant Reports
@@ -249,6 +250,7 @@ php tools/footprint.php --check    # FOOTPRINT.md must match the source
 - **CDT** codes (Current Dental Terminology) are copyright the American Dental Association. All rights reserved. CDT is a registered trademark of the American Dental Association.
 - **SNOMED CT®** is a registered trademark of SNOMED International.
 - **ICD-10-CM** (National Center for Health Statistics) and **HCPCS Level II** (CMS) are published by the U.S. government.
+- **CVX** codes (vaccines administered) and the CPT-to-CVX crosswalk the module's CVX lists come from are published by the CDC.
 
 The value sets that Table 6A names are not in the module: each site fetches them under its own UMLS licence ([Value sets](#value-sets)). The value-set page shows the notices that licence asks for, for the code systems fetched.
 

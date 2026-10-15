@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.13.0 — 2026-10-15
+
+- **Table 6A counts vaccines recorded in the Immunizations screen (Lines 24, 24a and 24b).** Until now only vaccines billed on the fee sheet counted.
+  - **How they're matched:** by CVX code. Each line's CVX codes are the ones CDC's CPT-to-CVX crosswalk maps from the CPT codes the manual lists for it. Two old CPT codes, 90712 (oral poliovirus) and 90724 (a retired flu code), have no CVX code.
+  - **What counts:** a vaccine given here. That means completed or with no status, recorded as a new immunization record or with no source, not refused, and not marked as added in error.
+  - **What doesn't:** a historical record of a vaccine given elsewhere, and unspecified-formulation codes such as CVX 88, which are on no line.
+- **A record with no encounter now counts at the patient's visit that day.** Before, it always counted as a visit of its own on its date. Now it joins the patient's encounter that day if there is one, choosing one at an in-scope site first. It's a visit of its own only on a day with no encounter.
+  - **Why:** a vaccine billed at a visit and also recorded in the Immunizations screen without its encounter counted as two visits.
+  - **What else it affects:** the same applies to prescriptions, screenings, Observations, lab results and care plan entries without an encounter. Column A can go down where those were counted twice; Column B (patients) doesn't change.
+- **Records to fix:** the patient list no longer tells staff to fix the medication, dental and PrEP problems in Demographics.
+- **Tested** on OpenEMR 8.4.1 with nine synthetic patients (`dev/uds_6a_immunization_check.py` in the workspace). Every vaccine was saved through the Immunizations screen.
+  - **Counted:** Line 24a twice (the billed visit with its unlinked record counted once, plus a same-day record at a visit with only a diagnosis), Line 24b once (linked to its encounter), and Line 24 once (on a day with no visit).
+  - **Not counted:** the refused, historical, added-in-error and unspecified-formulation records, and the patient with only a No Show visit.
+  - **Controls:** the released 0.12.0 code counted only the billed vaccine. With the same-day rule taken out, the billed visit counted twice.
+- No database change.
+
 ## 0.12.0 — 2026-10-15
 
 - **Table 6A's dental lines count only services by dental staff (Lines 27–32).** The manual allows only licensed dentists, dental hygienists and dental therapists, or staff working under their direct supervision, except that fluoride (Line 31) also counts at a medical visit.

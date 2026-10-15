@@ -85,7 +85,9 @@ $moduleUrl = $webRoot . Bootstrap::MODULE_INSTALLATION_PATH;
     <a href="<?php echo attr($moduleUrl . '/public/index.php?year=' . $year . ($grant === null ? '' : '&grant=' . $grant->value)); ?>">&larr; <?php echo xlt('UDS Report'); ?> <?php echo text((string)$year); ?>, <?php echo text(Labels::report($grant)); ?></a>
     <h1 class="h5 mt-2"><?php echo text(Labels::gap($gap)); ?></h1>
     <p class="text-muted"><?php echo text((string)count($pids)); ?> <?php echo xlt('patients with countable visits in'); ?> <?php echo text((string)$year); ?>.
-        <?php echo xlt('Open a patient to fix the record in Demographics; the report reflects changes on reload.'); ?></p>
+        <?php echo $gap->isDemographic()
+            ? xlt('Open a patient to fix the record in Demographics; the report reflects changes on reload.')
+            : xlt('Open a patient to fix the record as described above; the report reflects changes on reload.'); ?></p>
     <table class="table table-sm table-hover" style="max-width: 48rem">
         <thead class="thead-light"><tr><th><?php echo xlt('Patient'); ?></th><th><?php echo xlt('DOB'); ?></th><th><?php echo xlt('ID'); ?></th></tr></thead>
         <tbody>

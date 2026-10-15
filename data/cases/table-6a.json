@@ -101,6 +101,17 @@
             ],
             "expected": {"21e": [2, 1]},
             "notCounted": {"personnel": [], "prescription": [17]}
+        },
+        {
+            "name": "Vaccines from the Immunizations screen count by their CVX code; an unspecified-formulation code is on no line",
+            "patients": [18],
+            "encounters": [
+                {"pid": 18, "encounter": 1801, "date": "2026-01-10", "countable": false, "inScope": true, "birthDate": "2025-06-01", "codes": {"cvx": ["8", "110"]}},
+                {"pid": 18, "encounter": 1802, "date": "2026-02-10", "countable": false, "inScope": true, "birthDate": "2025-06-01", "codes": {"cvx": ["141"]}},
+                {"pid": 18, "encounter": 1803, "date": "2026-03-10", "countable": false, "inScope": true, "birthDate": "2025-06-01", "codes": {"cvx": ["208"], "cpt": ["91303"]}},
+                {"pid": 18, "encounter": 1804, "date": "2026-04-10", "countable": false, "inScope": true, "birthDate": "2025-06-01", "codes": {"cvx": ["88", "45", "213"]}}
+            ],
+            "expected": {"24": [1, 1], "24a": [1, 1], "24b": [1, 1]}
         }
     ]
 }

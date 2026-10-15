@@ -19,7 +19,7 @@ use OpenEMR\Modules\UdsReport\ValueSet\ValueSetCodes;
 final readonly class Table6a
 {
     public const FILE = 'table-6a';
-    public const SYSTEMS = ['icd10', 'cpt', 'hcpcs', 'cdt', 'snomed'];
+    public const SYSTEMS = ['icd10', 'cpt', 'hcpcs', 'cdt', 'snomed', 'cvx'];
 
     /** @param list<Table6aLine> $lines */
     public function __construct(public array $lines)
