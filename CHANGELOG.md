@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.15.0 — 2026-10-18
+
+- **New page: Grant evidence** (Reports › UDS Report › Grant evidence). It gives the counts grant applications and reports ask for, from the same patients as the UDS Report, for the Universal Report or a Grant Report population, with a CSV download.
+  - **Who we serve:** patients by age band, sex at birth, insurance, income as a share of the poverty guideline, and ZIP code; homeless patients, migratory or seasonal agricultural workers, veterans, and patients best served in a language other than English.
+  - **Social needs screening:** Table 6A Lines 39 to 42 (screened, and positive for food, housing and financial insecurity), overall and by ZIP, age band and insurance. They're Table 6A's own counts, so they agree with it. Until the site fetches those lines' value sets, the page says they aren't counted.
+  - **Quality measures:** links to Tables 6B and 7 and to eCQM readiness.
+- **De-identified:** counts only. A count from 1 to 10 shows as "<11". Within a breakdown, when exactly one count is hidden, the next smallest is hidden too. ZIP codes with fewer than 11 patients are folded into "Other ZIP codes". The README says what this doesn't cover: figures for different populations or years can still be subtracted from each other.
+- **Tested** with unit tests for the suppression rule (including the extra hidden cell), each breakdown, the ZIP folding, and Table 6A's patients per line against its own counts. Also run on OpenEMR 8.4.1 with `dev/uds_grants_check.py` in the workspace:
+  - the page's total matches the UDS Report's;
+  - no count from 1 to 10 appears in the CSV;
+  - the three Grant Report populations load.
+  - **Social needs:** with synthetic value sets for Lines 39 to 42 and nothing billed, every line shows 0, as the control. After a screening billed for two patients and a food-insecurity diagnosis for one, Lines 39 and 40 show "<11" and Lines 41 and 42 stay at 0.
+- No database change.
+
 ## 0.14.0 — 2026-10-18
 
 - **eCQM readiness lists records the measures count that OpenEMR treats as deleted or wrong.** For the patients seen at countable visits, a new section counts:

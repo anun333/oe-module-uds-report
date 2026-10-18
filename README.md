@@ -4,7 +4,7 @@ This module produces the demographic part of the HRSA **Uniform Data System (UDS
 
 It doesn't submit anything. Health centers still enter the figures in HRSA's Electronic Handbooks (EHBs), and should check them against their own records first.
 
-> **Status: 0.7.0, pre-release.** The counting rules are tested against hand-worked synthetic cases only. They have not yet been compared with a health center's real UDS submission. If your health center uses OpenEMR and would compare this module's table totals with a report you have already filed (totals only, no patient data shared), please open an issue.
+> **Status: 0.15.0, pre-release.** The counting rules are tested against hand-worked synthetic cases only. They have not yet been compared with a health center's real UDS submission. If your health center uses OpenEMR and would compare this module's table totals with a report you have already filed (totals only, no patient data shared), please open an issue.
 
 What installing it changes in your database, what it reads and writes, and what it hooks into are listed in [FOOTPRINT.md](FOOTPRINT.md), generated from the source.
 
@@ -15,6 +15,7 @@ What installing it changes in your database, what it reads and writes, and what 
   - a CSV download, and
   - a "Records to fix" list. **Blocking** problems keep a patient off a table entirely. **Quality** problems push a patient into an "unknown" line.
 - **Grant Reports:** choose 330(g), 330(h) or 330(i) instead of the Universal Report, on the page and in the CSV. See [Grant Reports](#grant-reports).
+- **Grant evidence:** de-identified counts for grant applications: who the health center serves, and social-needs screening by ZIP, age and insurance. See [Grant evidence](#grant-evidence).
 - **Table 9D worksheet:** charges, collections and adjustments by payer line, reclassified as the manual asks, with each adjustment reason and where it suggests it goes. For staff who can open OpenEMR's Collections report. See [Table 9D worksheet](#table-9d-worksheet).
 - **eCQM readiness** (Tables 6B and 7): whether this OpenEMR can calculate the year's measures, and which records the calculation can't see, with how to fix each. See [eCQM readiness](#ecqm-readiness).
 - **Records to fix › patient list:** the patients behind each problem, each opening the chart. Viewing the list is written to OpenEMR's audit log.
@@ -119,6 +120,23 @@ A health center funded under more than one Health Center Program type files a Gr
 | Residents of Public Housing, 330(i) | Seen at a site marked in Settings as in or next to public housing; it is a site-based count, so where the patient lives doesn't matter | Table 4, Line 26 |
 
 Each covers those patients and **all** their in-scope visits and services, whatever paid for them (FAQ 2), on Tables 3A, 3B, 4, 5 and 6A. Table 5 has no FTEs, and the Patients by ZIP Code table isn't part of a Grant Report. The membership test is the one Table 4 uses, so a Grant Report's total patients equals the Universal Report's line for that population, and no Grant Report cell can be larger than the Universal Report's, as the manual requires.
+
+## Grant evidence
+
+**Reports › UDS Report › Grant evidence** gives the counts a grant application or report asks for, from the same patients as the UDS Report, for the Universal Report or any Grant Report population, with a CSV download:
+
+- **Who we serve:** patients by age band, sex at birth, insurance (the Patients by ZIP Code table's columns), income as a share of the poverty guideline (Table 4), and ZIP code; homeless patients, migratory or seasonal agricultural workers, veterans, and patients best served in a language other than English.
+- **Social needs screening:** patients screened for social needs (Table 6A Line 39) and those screened positive for food insecurity (40), housing instability (41) and financial insecurity (42), overall and by ZIP, age band and insurance. These are Table 6A's own counts, so they agree with it, and they show only once the site has [fetched the value sets](#value-sets) for those lines. A positive screen recorded only in a questionnaire, with no code, isn't counted.
+- **Quality measures:** links to [Tables 6B and 7](#tables-6b-and-7) and [eCQM readiness](#ecqm-readiness). The page doesn't recalculate the measures.
+
+The figures are de-identified for use outside the health center:
+
+- **Counts only:** no names, dates or record numbers.
+- **Small cells hidden:** a count from 1 to 10 shows as "<11", following CMS's cell-size rule. Within a breakdown, when exactly one count is hidden, the next smallest is hidden too, so the total can't give it away. A share is hidden with its count.
+- **ZIP codes with fewer than 11 patients** are folded into "Other ZIP codes".
+- **The limit:** suppression is per breakdown. Figures for different populations or years can still be subtracted from each other (the Universal Report's children less the homeless population's, say), so check what you publish together.
+
+Opening it takes the same permission as the UDS Report.
 
 ## Table 9D worksheet
 

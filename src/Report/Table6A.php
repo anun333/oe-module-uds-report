@@ -78,6 +78,32 @@ final readonly class Table6A
     }
 
     /**
+     * The patients counted on a line, as rows() counts them, or null when the line isn't counted
+     * (it needs value sets the site hasn't fetched, or the module doesn't count it).
+     *
+     * @return ?array<int, true>
+     */
+    public function patientsOnLine(string $lineId): ?array
+    {
+        foreach ($this->definition->lines as $line) {
+            if ($line->line !== $lineId) {
+                continue;
+            }
+            if (!$line->isCounted()) {
+                return null;
+            }
+            $patients = [];
+            foreach ($this->encounters as $encounter) {
+                if ($this->matches($line, $encounter) && $this->missing($line, $encounter) === null) {
+                    $patients[$encounter->pid] = true;
+                }
+            }
+            return $patients;
+        }
+        return null;
+    }
+
+    /**
      * Patients with a visit that has a line's codes but isn't counted on it,
      * because of who provided the service or a missing prescription.
      *

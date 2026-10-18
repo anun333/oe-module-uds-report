@@ -86,6 +86,19 @@ final class UdsReportService
      * staff it was with, for the dental lines, and the lines that need a
      * prescription get the patients who had one.
      */
+    /** The counts a grant application asks for (GrantEvidence), from this report's patients and Table 6A. */
+    public function grantEvidence(): GrantEvidence
+    {
+        $socialNeeds = [];
+        foreach (GrantEvidence::SOCIAL_NEEDS as $line) {
+            $patients = $this->table6A()->patientsOnLine($line);
+            if ($patients !== null) {
+                $socialNeeds[$line] = $patients;
+            }
+        }
+        return new GrantEvidence($this->reportPatients(), $this->year, $this->tables()->table4(), $socialNeeds);
+    }
+
     public function table6A(): Table6A
     {
         return $this->table6A ??= $this->buildTable6A();

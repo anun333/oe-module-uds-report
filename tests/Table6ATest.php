@@ -82,7 +82,11 @@ final class Table6ATest extends TestCase
             } else {
                 self::assertNull($got, "Line $line is not counted");
             }
+            // The patients a line names are the ones rows() counts on it.
+            $on = $table->patientsOnLine($line);
+            self::assertSame($row['patients'], $on === null ? null : count($on), "Line $line: patientsOnLine()");
         }
+        self::assertNull($table->patientsOnLine('no such line'));
         $wanted = array_map('strval', array_keys($expected));
         $found = array_map('strval', array_keys($seen));
         sort($wanted);
