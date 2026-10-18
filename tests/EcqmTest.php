@@ -147,4 +147,45 @@ final class EcqmTest extends TestCase
             self::assertCount(1, preg_grep('/^' . $read['measure'] . 'v\d+$/D', $measures) ?: [], "$kind: {$read['measure']} is a 2026 UDS measure");
         }
     }
+
+    /**
+     * Queries as OpenEMR master writes them (2026-10-18), and as they read once each kind is left
+     * out: whether the column is named decides the readiness rows.
+     *
+     * @return array<string, array{string, string, bool}>
+     */
+    public static function queries(): array
+    {
+        return [
+            'Diagnosis on master' => ["SELECT pid, begdate, enddate, `date`, diagnosis FROM lists WHERE `type` = 'medical_problem' AND subtype = 'diagnosis'", 'verification', false],
+            'Diagnosis leaving errors out' => ["SELECT pid FROM lists WHERE `type` = 'medical_problem' AND subtype = 'diagnosis' AND lists.`verification` NOT IN ('entered-in-error', 'refuted')", 'verification', true],
+            'immunizations on master' => ['SELECT patient_id, patient_id AS pid, administered_date, cvx_code, refusal_reason, reason_code FROM immunizations', 'added_erroneously', false],
+            'immunizations leaving errors out' => ['SELECT patient_id FROM immunizations WHERE added_erroneously = 0', 'added_erroneously', true],
+            'prescriptions on master' => ["SELECT patient_id AS pid, drug, rxnorm_drugcode, FL.title AS drug_interval, date_added, start_date, end_date FROM prescriptions P LEFT JOIN list_options FL ON P.interval = FL.option_id AND FL.list_id = 'drug_intervals'", 'active', false],
+            'not MedicationActive, inactive or activity' => ['SELECT 1 /* MedicationActive */ FROM t WHERE inactive = 0 AND activity = 1', 'active', false],
+            'prescriptions leaving inactive out' => ['SELECT patient_id FROM prescriptions P WHERE P.`active` = 1', 'active', true],
+            'observations on master' => ["SELECT `pid` FROM `form_observation` WHERE `ob_type` = 'physical_exam_performed'", 'deleted', false],
+            'observations with #14587' => ["SELECT `pid` FROM `form_observation` WHERE `ob_type` = 'x' AND COALESCE(`form_observation`.`activity`, 1) <> 0 AND NOT EXISTS (SELECT 1 FROM `forms` WHERE `forms`.`deleted` = 1)", 'deleted', true],
+            'lab results on master' => ["SELECT RES.result_code, RES.result FROM procedure_result RES WHERE O.procedure_order_type = 'laboratory_test' AND O.activity != 0", 'result_status', false],
+            'lab results leaving errors out' => ["SELECT RES.result FROM procedure_result RES WHERE RES.result_status NOT IN ('cancel', 'error')", 'result_status', true],
+        ];
+    }
+
+    #[DataProvider('queries')]
+    public function testAQueryNamesAColumnOnlyAsAWord(string $sql, string $column, bool $named): void
+    {
+        self::assertSame($named, EcqmChecks::queryNames($sql, $column));
+    }
+
+    public function testEveryKindNamesAQdmServiceAndAColumn(): void
+    {
+        self::assertSame(
+            ['problemsInError', 'immunizationsInError', 'inactivePrescriptions', 'deletedObservations', 'deletedCarePlans', 'deletedOrders', 'labResultsInError'],
+            array_keys(EcqmChecks::LEFT_OUT_BY)
+        );
+        foreach (EcqmChecks::LEFT_OUT_BY as $kind => $rule) {
+            self::assertMatchesRegularExpression('/^OpenEMR\\\\Services\\\\Qdm\\\\Services\\\\[A-Za-z]+Service$/', $rule['service'], $kind);
+            self::assertMatchesRegularExpression('/^[a-z_]+$/', $rule['column'], $kind);
+        }
+    }
 }

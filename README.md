@@ -146,12 +146,22 @@ It lists the 16 measures UDS 2026 uses ([data/ecqm-measures.json](data/ecqm-meas
 |---|---|
 | Visits with no coded Encounter Type | Visits are found only by the code of their Encounter Type, not by billing codes. OpenEMR's stock Encounter Types have no codes; the page lists those that don't |
 | Problems not classified as Diagnosis, or with no code | Problems are read only when their Classification Type is Diagnosis, which a new problem doesn't have |
-| Blood pressures only in the Vitals form | Blood pressure is read only from Observations of type Physical Exam Performed, a type the stock list has turned off |
+| Blood pressures only in the Vitals form | Blood pressure is read only from Observations of type Physical Exam Performed, a type the stock list has turned off. OpenEMR master reads the Vitals form too since 2026-10-18 ([openemr/openemr#14656](https://github.com/openemr/openemr/pull/14656)); there this row and the BMI one go away |
 | BMI only in the Vitals form | BMI (CMS69) and children's BMI percentile, height and weight (CMS155) are read the same way, only from Physical Exam Performed Observations |
 | Tobacco use only in History | Tobacco screening (CMS138) is read only from Observations of type Assessment coded 72166-2 (or 39240-7, 68535-4, 68536-2). The Tobacco field in History isn't read |
 | PHQ-9 forms with no depression screening the measure reads | Depression screening (CMS2) is read only from Assessment Observations coded 73832-8 (adults) or 73831-0 (adolescents), not from the PHQ-9 form. Shown when the PHQ-9 form is installed |
 | A measure's screening or exam code recorded where the measure doesn't read it | The codes above, and falls screening's (CMS139), count only as an Observation of the type named. The page names each kind found only as a lab result or as an Observation of another type |
 | Ongoing problems, and visits with no end time | OpenEMR treats a missing end date as unknown, so these never count ([openemr/openemr#14526](https://github.com/openemr/openemr/issues/14526)). The page asks OpenEMR's own builder, so the row goes away once OpenEMR is fixed. Adding end dates to ongoing problems isn't a fix: an end date marks a problem resolved |
+
+A second list covers records the calculation still counts that the rest of OpenEMR treats as deleted or wrong. Each row shows only while the installed OpenEMR's eCQM builder reads them, judged from its own query, and says how to fix the records where there's a way:
+
+| Records | What the measures do with them (OpenEMR master 44cbd6af98, 2026-10-18) |
+|---|---|
+| Problems marked Entered in Error or Refuted | Still read as diagnoses when classified Diagnosis. Clearing the Classification Type keeps them out |
+| Immunizations marked Entered in error | Still read, so Childhood Immunization Status (CMS117) can count a dose that wasn't given |
+| Prescriptions marked not active, with no end date | Read as still taken. Giving a stopped prescription its end date fixes it |
+| Observations, care plan entries and orders in forms deleted from the visit | Still read ([openemr/openemr#14587](https://github.com/openemr/openemr/pull/14587) covers the observations) |
+| Lab results reported as error or cancelled | Read whatever their status, for example an HbA1c in the diabetes measure (CMS122) |
 
 ## Tables 6B and 7
 

@@ -121,6 +121,96 @@ final readonly class EcqmReadinessRepository
         ];
     }
 
+    /**
+     * Which records OpenEMR's eCQM builder still reads that the rest of OpenEMR treats as deleted
+     * or wrong (EcqmChecks::LEFT_OUT_BY), asked of the installed QDM service's own query: true when
+     * it leaves them out, false when it reads them, null when it can't be asked.
+     *
+     * @return array<string, ?bool>
+     */
+    public static function engineLeavesOut(): array
+    {
+        $answers = [];
+        foreach (EcqmChecks::LEFT_OUT_BY as $kind => ['service' => $class, 'column' => $column]) {
+            try {
+                if (!class_exists($class) || !class_exists(QdmRequestSome::class)) {
+                    $answers[$kind] = null;
+                    continue;
+                }
+                $sql = (new $class(new QdmRequestSome([0]), new CodeTypesService()))->getSqlStatement();
+                $answers[$kind] = is_string($sql) ? EcqmChecks::queryNames($sql, $column) : null;
+            } catch (\Throwable) {
+                $answers[$kind] = null;
+            }
+        }
+        return $answers;
+    }
+
+    /**
+     * The records of the patients with countable visits that the rest of OpenEMR treats as deleted
+     * or wrong and the eCQM builder may still read, by kind (EcqmChecks::LEFT_OUT_BY). Problems
+     * are those classified Diagnosis and active in the year, as the measures read them; the rest
+     * are from any year, since the engine loads a patient's whole record. A deleted form's records
+     * are matched to it by its patient as well as its id.
+     *
+     * @return array<string, array{records: int, patients: int}>
+     */
+    public function wrongRecords(int $year, UdsSettings $settings): array
+    {
+        $counts = array_fill_keys(array_keys(self::WRONG_RECORDS), ['records' => 0, 'patients' => 0]);
+        $filter = CountableVisitFilter::fromSettings($settings, $this->patients);
+        if ($filter->matchesNothing()) {
+            return $counts;
+        }
+        [$where, $binds] = $filter->where($year);
+        $seen = "SELECT DISTINCT fe.pid FROM form_encounter AS fe WHERE $where";
+        foreach (self::WRONG_RECORDS as $kind => $sql) {
+            $period = $kind === 'problemsInError' ? [sprintf('%04d-01-01', $year + 1), sprintf('%04d-01-01', $year)] : [];
+            $row = QueryUtils::fetchRecords(sprintf($sql, $seen), [...$period, ...$binds])[0] ?? [];
+            $counts[$kind] = ['records' => Row::nullableInt($row, 'n') ?? 0, 'patients' => Row::nullableInt($row, 'p') ?? 0];
+        }
+        return $counts;
+    }
+
+    /**
+     * The count behind each wrongRecords() kind; %s is the patients seen at countable visits.
+     * Whole queries, so tools/footprint.php sees every table they read.
+     */
+    private const WRONG_RECORDS = [
+        'problemsInError' => "SELECT COUNT(*) AS n, COUNT(DISTINCT l.pid) AS p FROM lists AS l
+            WHERE l.type = 'medical_problem' AND l.subtype = 'diagnosis' AND l.activity = 1
+              AND l.verification IN ('entered-in-error', 'refuted')
+              AND (l.begdate IS NULL OR l.begdate < ?) AND (l.enddate IS NULL OR l.enddate < '1900-01-01' OR l.enddate >= ?)
+              AND l.pid IN (%s)",
+        'immunizationsInError' => "SELECT COUNT(*) AS n, COUNT(DISTINCT i.patient_id) AS p FROM immunizations AS i
+            WHERE i.added_erroneously = 1 AND i.patient_id IN (%s)",
+        'inactivePrescriptions' => "SELECT COUNT(*) AS n, COUNT(DISTINCT p.patient_id) AS p FROM prescriptions AS p
+            WHERE p.active = 0 AND p.end_date IS NULL AND p.patient_id IN (%s)",
+        'deletedObservations' => "SELECT COUNT(*) AS n, COUNT(DISTINCT o.pid) AS p FROM form_observation AS o
+            JOIN forms AS f ON f.form_id = o.form_id AND f.pid = o.pid AND f.formdir = 'observation'
+            WHERE f.deleted = 1 AND COALESCE(o.activity, 1) <> 0 AND o.pid IN (%s)",
+        'deletedCarePlans' => "SELECT COUNT(*) AS n, COUNT(DISTINCT c.pid) AS p FROM form_care_plan AS c
+            JOIN forms AS f ON f.form_id = c.id AND f.pid = c.pid AND f.formdir = 'care_plan'
+            WHERE f.deleted = 1 AND c.pid IN (%s)",
+        'deletedOrders' => "SELECT COUNT(*) AS n, COUNT(DISTINCT o.patient_id) AS p FROM procedure_order AS o
+            JOIN forms AS f ON f.form_id = o.procedure_order_id AND f.pid = o.patient_id AND f.formdir = 'procedure_order'
+            WHERE f.deleted = 1 AND o.activity <> 0 AND o.patient_id IN (%s)",
+        'labResultsInError' => "SELECT COUNT(*) AS n, COUNT(DISTINCT o.patient_id) AS p FROM procedure_result AS res
+            JOIN procedure_report AS rep ON rep.procedure_report_id = res.procedure_report_id
+            JOIN procedure_order AS o ON o.procedure_order_id = rep.procedure_order_id
+            WHERE o.procedure_order_type = 'laboratory_test' AND o.activity <> 0 AND res.result_status IN ('cancel', 'error')
+              AND o.patient_id IN (%s)",
+    ];
+
+    /**
+     * Whether this OpenEMR's eCQM builder reads vitals from the Vitals form (openemr/openemr
+     * #14656, OpenEMR master from 2026-10-18).
+     */
+    public static function vitalsFormRead(): bool
+    {
+        return class_exists('OpenEMR\\Services\\Qdm\\Services\\VitalSignsService');
+    }
+
     /** The HbA1c tests CMS122 reads (its "HbA1c Laboratory Test" value set). */
     private const HBA1C = ['LOINC:4548-4', 'LOINC:4549-2', 'LOINC:17856-6', 'LOINC:96595-4'];
 

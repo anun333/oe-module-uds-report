@@ -3,8 +3,9 @@
 /**
  * The rules behind the eCQM readiness page, kept apart from the database so they
  * can be tested: whether a UDS measure is installed at the version the manual
- * names, whether OpenEMR's QDM builder lets a record with no end date count, and
- * where the measures read screenings and exams from.
+ * names, whether OpenEMR's QDM builder lets a record with no end date count,
+ * where the measures read screenings and exams from, and which records it reads
+ * that the rest of OpenEMR treats as deleted or wrong.
  *
  * @package   OpenEMR
  * @link      https://www.open-emr.org
@@ -98,6 +99,34 @@ final class EcqmChecks
         'bmiPercentile' => ['type' => 'physical_exam_performed', 'measure' => 'CMS155', 'codes' => ['59574-4', '59575-1', '59576-9']],
         'bloodPressure' => ['type' => 'physical_exam_performed', 'measure' => 'CMS165', 'codes' => ['8480-6', '8462-4']],
     ];
+
+    /**
+     * Records OpenEMR's eCQM builder reads that the rest of OpenEMR leaves out, by kind: the QDM
+     * service that reads them, and the column its query names once it leaves them out. All of
+     * them were read through OpenEMR master 2026-10-18 at least (openemr/openemr #14587 for the
+     * observations). The page asks the installed service's own query, so a row goes away when
+     * OpenEMR changes.
+     *
+     * @var array<string, array{service: string, column: string}>
+     */
+    public const LEFT_OUT_BY = [
+        'problemsInError' => ['service' => 'OpenEMR\\Services\\Qdm\\Services\\DiagnosisService', 'column' => 'verification'],
+        'immunizationsInError' => ['service' => 'OpenEMR\\Services\\Qdm\\Services\\ImmunizationAdministeredService', 'column' => 'added_erroneously'],
+        'inactivePrescriptions' => ['service' => 'OpenEMR\\Services\\Qdm\\Services\\MedicationActiveService', 'column' => 'active'],
+        'deletedObservations' => ['service' => 'OpenEMR\\Services\\Qdm\\Services\\PhysicalExamService', 'column' => 'deleted'],
+        'deletedCarePlans' => ['service' => 'OpenEMR\\Services\\Qdm\\Services\\InterventionOrderedService', 'column' => 'deleted'],
+        'deletedOrders' => ['service' => 'OpenEMR\\Services\\Qdm\\Services\\ProcedureService', 'column' => 'deleted'],
+        'labResultsInError' => ['service' => 'OpenEMR\\Services\\Qdm\\Services\\LaboratoryTestService', 'column' => 'result_status'],
+    ];
+
+    /**
+     * Whether a QDM service's query names a column, as a whole word: "active" is not named by
+     * MedicationActive, inactive or activity.
+     */
+    public static function queryNames(string $sql, string $column): bool
+    {
+        return preg_match('/(?<![A-Za-z0-9_])' . preg_quote($column, '/') . '(?![A-Za-z0-9_])/', $sql) === 1;
+    }
 
     /**
      * Whether a History tobacco value records the patient's tobacco use.

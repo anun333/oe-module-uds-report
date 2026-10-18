@@ -59,6 +59,23 @@ $typeTitles = ['assessment' => xl('Assessment'), 'physical_exam_performed' => xl
 $openEnds = EcqmReadinessRepository::openEndsCount();
 $labs = $readiness->labResults($year, $settings);
 $decimalsKept = EcqmReadinessRepository::labDecimalsKept();
+$vitalsRead = EcqmReadinessRepository::vitalsFormRead();
+$leftOut = EcqmReadinessRepository::engineLeavesOut();
+$wrong = $readiness->wrongRecords($year, $settings);
+$wrongWhy = [
+    'problemsInError' => [xl('Problems marked Entered in Error or Refuted'), xl('The measures still read a problem classified as Diagnosis whatever its Verification Status, so these patients can be counted with a condition they do not have, as in Controlling High Blood Pressure and the diabetes measure (Table 7). Until OpenEMR leaves them out, clear the Classification Type of these problems: the measures read only problems classified as Diagnosis.')],
+    'immunizationsInError' => [xl('Immunizations marked Entered in error'), xl('The measures still read an immunization marked Entered in error, so Childhood Immunization Status (CMS117, Table 6B Line 10) can count a dose that was not given. Until OpenEMR leaves them out, only deleting the record keeps it out of the measures.')],
+    'inactivePrescriptions' => [xl('Prescriptions marked not active, with no end date'), xl('The measures read a prescription with Currently Active unticked as still taken, because it has no end date, so statin therapy (CMS347, Table 6B Line 17a) and other measures can count a medication that was stopped. Give a stopped prescription its end date.')],
+    'deletedObservations' => [xl('Observations in forms deleted from the visit'), xl('The measures still read the observations of an Observation form deleted from its visit, screenings and exams among them (openemr/openemr pull request 14587). Nothing to fix in the records: the count is what the measures can read wrongly.')],
+    'deletedCarePlans' => [xl('Care plan entries in forms deleted from the visit'), xl('The measures still read the entries of a Care Plan form deleted from its visit as ordered or recommended interventions, medications and tests, which the follow-up plans of the BMI, tobacco and depression measures (Table 6B Lines 13, 14a and 21) can count. Nothing to fix in the records.')],
+    'deletedOrders' => [xl('Orders in forms deleted from the visit'), xl('The measures still read a procedure, intervention or lab order whose form was deleted from its visit, with its results. Nothing to fix in the records.')],
+    'labResultsInError' => [xl('Lab results reported as error or cancelled'), xl('The measures read every lab result whatever its status, so a result the lab reported in error or cancelled can count, as an HbA1c can in the diabetes measure (CMS122, Table 7). Nothing to fix in the records.')],
+];
+$wrongRows = array_filter(
+    $wrongWhy,
+    static fn(string $kind): bool => ($leftOut[$kind] ?? null) === false && $wrong[$kind]['records'] > 0,
+    ARRAY_FILTER_USE_KEY
+);
 $moduleUrl = OEGlobalsBag::getInstance()->getWebRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
 $n = static fn(int $v): string => number_format($v);
 $ready = 0;
@@ -124,6 +141,7 @@ foreach ($measures as $m) {
                 <td class="num"><?php echo text($n($problems['uncoded'])); ?> / <?php echo text($n($problems['problems'])); ?></td>
                 <td class="small"><?php echo xlt('Give each problem an ICD-10 or SNOMED CT code; the measures match codes, not titles.'); ?></td>
             </tr>
+            <?php if (!$vitalsRead) { ?>
             <tr>
                 <td><?php echo xlt('Patients whose blood pressure is only in the Vitals form'); ?></td>
                 <td class="num"><?php echo text($n($pressures['vitalsOnly'])); ?> / <?php echo text($n($pressures['patients'])); ?></td>
@@ -144,6 +162,7 @@ foreach ($measures as $m) {
                     <?php } ?>
                 </td>
             </tr>
+            <?php } ?>
             <tr>
                 <td><?php echo xlt('Patients whose tobacco use is only in History'); ?></td>
                 <td class="num"><?php echo text($n($tobacco['historyOnly'])); ?> / <?php echo text($n($tobacco['patients'])); ?></td>
@@ -192,7 +211,7 @@ foreach ($measures as $m) {
             <tr class="table-warning">
                 <td><?php echo xlt('Patients with an HbA1c between 9.0 and 10.0 in the year'); ?></td>
                 <td class="num"><?php echo text($n($labs['a1cNineToTen'])); ?></td>
-                <td class="small"><?php echo xlt('This OpenEMR reads lab results as whole numbers, so an HbA1c of 9.4 reaches the diabetes measure (CMS122, Table 6B Line 15) as 9, which is not over 9.0: these patients are not counted as poorly controlled. Nothing to fix in the records; the count is how many patients the measure can miss.'); ?></td>
+                <td class="small"><?php echo xlt('This OpenEMR reads lab results as whole numbers, so an HbA1c of 9.4 reaches the diabetes measure (CMS122, Table 7) as 9, which is not over 9.0: these patients are not counted as poorly controlled. Nothing to fix in the records; the count is how many patients the measure can miss.'); ?></td>
             </tr>
             <?php }
             foreach ($endRows as [$counts, $label, $count, $of, $why]) {
@@ -208,6 +227,28 @@ foreach ($measures as $m) {
             </tbody>
         </table>
     </div>
+
+    <?php if ($wrongRows !== []) { ?>
+    <h2 class="h5 uds-section"><?php echo xlt('Records the measures count that OpenEMR treats as deleted or wrong'); ?></h2>
+    <p class="text-muted small"><?php echo xlt('Asked of the eCQM builder in this OpenEMR: a row goes away once it leaves these records out. Counted: the records of the patients seen at countable visits, from any year, since the measures read the whole record; problems are those active in the year.'); ?></p>
+    <div class="table-responsive">
+        <table class="table table-sm table-bordered uds-table">
+            <thead class="thead-light"><tr>
+                <th><?php echo xlt('Records'); ?></th><th class="num"><?php echo xlt('Count'); ?></th><th class="num"><?php echo xlt('Patients'); ?></th><th><?php echo xlt('Why, and how to fix'); ?></th>
+            </tr></thead>
+            <tbody>
+            <?php foreach ($wrongRows as $kind => [$label, $why]) { ?>
+            <tr class="table-warning">
+                <td><?php echo text($label); ?></td>
+                <td class="num"><?php echo text($n($wrong[$kind]['records'])); ?></td>
+                <td class="num"><?php echo text($n($wrong[$kind]['patients'])); ?></td>
+                <td class="small"><?php echo text($why); ?></td>
+            </tr>
+            <?php } ?>
+            </tbody>
+        </table>
+    </div>
+    <?php } ?>
 
     <h2 class="h5 uds-section"><?php echo xlt('Measures'); ?></h2>
     <p class="text-muted small">

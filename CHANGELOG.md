@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.14.0 — 2026-10-18
+
+- **eCQM readiness lists records the measures count that OpenEMR treats as deleted or wrong.** For the patients seen at countable visits, a new section counts:
+  - problems marked Entered in Error or Refuted (those classified Diagnosis);
+  - immunizations marked Entered in error;
+  - prescriptions with Currently Active unticked and no end date;
+  - observations, care plan entries and orders in forms deleted from the visit;
+  - lab results reported as error or cancelled.
+
+  Each row says how to fix the records where there's a way: clear the problem's Classification Type, or give a stopped prescription its end date.
+- **Asked of OpenEMR itself.** A row shows only while the installed OpenEMR's eCQM builder still reads those records, judged from the query of the QDM service that reads them. With openemr/openemr#14587, for example, the observations row goes away.
+- **The Vitals-form rows go away on an OpenEMR that reads the Vitals form.** OpenEMR master does since 2026-10-18 (openemr/openemr#14656).
+- **The HbA1c row names Table 7** for the diabetes measure (CMS122). It said Table 6B Line 15.
+- **Tested** on OpenEMR 8.4.1 with `dev/uds_ecqm_check.py` in the workspace.
+  - **Counted:** one record of each kind.
+  - **Not counted (decoys):**
+    - an unclassified problem in error;
+    - a stopped prescription with an end date;
+    - another patient's deleted form sharing an observation's form id;
+    - a final lab result;
+    - records of a patient with no 2026 visit.
+  - **The engine was asked** on master 44cbd6af98 and on #14587's branch: the observations row is needed on master and not with #14587.
+- No database change.
+
 ## 0.13.0 — 2026-10-15
 
 - **Table 6A counts vaccines recorded in the Immunizations screen (Lines 24, 24a and 24b).** Until now only vaccines billed on the fee sheet counted.
