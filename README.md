@@ -253,6 +253,8 @@ Viewing needs `patients/demo`; the Table 9D worksheet needs `acct/rep_a`, as Ope
 
 PHP 8.3 or later is needed. On 8.1.0 to 8.3.0 the module reads the request itself, because OpenEMR's `CurrentRequest` only arrived in 8.4.0.
 
+The Grant evidence page (0.15.0) passes `dev/uds_grants_check.py` in the openhealthcare repository on 8.4.1 and on master 1faefbbeb9 (2026-10-18). That covers the total matching the UDS Report, no count from 1 to 10 in the CSV, and the social-needs lines from synthetic value sets.
+
 The Table 6A value sets were checked on master (c9b422d608):
 - **Upgrade:** Module Manager's upgrade path (`SQLUpgradeService`) from 0.8.0 created the two tables.
 - **Fetch:** the page and the command line each fetched all 21 value sets from VSAC (1,548 codes). A wrong key stopped at the first one and left the stored sets as they were, and a form without a valid CSRF token was refused.
