@@ -34,4 +34,16 @@ final class SqlUpgradeTest extends TestCase
             }
         }
     }
+
+    public function testTheUdsFieldsComeAfterTheStockStatsFields(): void
+    {
+        // The stock Demographics Stats group (5) ends with Religion (15) and Tribal Affiliations (16)
+        // in OpenEMR 7.0 to 8.5. Before 0.15.1 two of ours shared those positions.
+        $install = (string)file_get_contents(dirname(__DIR__) . '/sql/install.sql');
+        preg_match_all("/VALUES \\('DEM', '(uds_\\w+)', '5', '[^']*', (\\d+),/", $install, $rows, PREG_SET_ORDER);
+        self::assertCount(3, $rows, 'the three UDS fields are inserted');
+        $positions = array_map(static fn(array $row): int => (int)$row[2], $rows);
+        self::assertSame($positions, array_values(array_unique($positions)), 'each has a position of its own');
+        self::assertGreaterThan(16, min($positions), 'after Tribal Affiliations (16)');
+    }
 }

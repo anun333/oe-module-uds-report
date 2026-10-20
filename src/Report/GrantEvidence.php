@@ -3,7 +3,7 @@
 /**
  * The counts a grant application or report asks for, from the UDS patient universe:
  * who the health center serves, and how many were screened for social needs and
- * screened positive, by ZIP, age and insurance. Counts only, with small cells
+ * given services for food, housing or financial insecurity, by ZIP, age and insurance. Counts only, with small cells
  * hidden (SmallCells). The social needs are Table 6A's Lines 39 to 42, as Table 6A
  * counts them, so the figures agree with it.
  *
@@ -26,7 +26,7 @@ use OpenEMR\Modules\UdsReport\Model\UdsPatient;
 
 final class GrantEvidence
 {
-    /** Table 6A's social-needs lines: screening, then each need screened positive. */
+    /** Table 6A's upstream drivers of health lines: screening, then services for each need (not positive screens). */
     public const SOCIAL_NEEDS = ['39', '40', '41', '42'];
 
     public const OTHER_ZIPS = 'other';
@@ -98,7 +98,7 @@ final class GrantEvidence
     }
 
     /**
-     * Social-needs screening and positives, overall and by ZIP, age band or insurance: for each group,
+     * Social-needs screening and services, overall and by ZIP, age band or insurance: for each group,
      * the patients in it and the count on each counted line. Each column is its own breakdown for
      * suppression, since a line's counts add up to that line's total.
      *

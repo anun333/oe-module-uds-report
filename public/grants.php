@@ -64,7 +64,7 @@ $titles = [
     'age' => xl('Age at the end of the year'), 'sex' => xl('Sex at birth'), 'insurance' => xl('Insurance at the last visit'),
     'income' => xl('Income as a share of the federal poverty guideline'), 'zip' => xl('ZIP code of residence'),
 ];
-$needs = ['39' => xl('Screened for social needs'), '40' => xl('Food insecurity'), '41' => xl('Housing instability'), '42' => xl('Financial insecurity')];
+$needs = ['39' => xl('Screened for social needs'), '40' => xl('Food insecurity services'), '41' => xl('Housing instability services'), '42' => xl('Financial insecurity services')];
 $groupLabel = static function (string $by, int|string $group) use ($labels): string {
     if ($by === 'zip') {
         return match ((string)$group) {
@@ -98,14 +98,13 @@ if ($counted) {
                 if (!array_key_exists($line, $cells)) {
                     continue;
                 }
-                $denominator = $line === '39' ? $cells['patients'] : ($cells['39'] ?? null);
                 $rows[] = [
                     xl('Social needs'),
                     $by === null ? xl('All patients') : $titles[$by],
                     $by === null ? xl('All patients') : $groupLabel($by, $group),
                     $label,
                     $show($cells[$line]),
-                    $pct(SmallCells::percent($cells[$line], $denominator)),
+                    $pct(SmallCells::percent($cells[$line], $cells['patients'])),
                 ];
             }
         }
@@ -202,14 +201,14 @@ $moduleUrl = OEGlobalsBag::getInstance()->getWebRoot() . Bootstrap::MODULE_INSTA
         </div>
     </div>
 
-    <h2 class="h5 uds-section"><?php echo xlt('Social needs screening'); ?> <small class="text-muted"><?php echo xlt('Table 6A, Lines 39 to 42'); ?></small></h2>
+    <h2 class="h5 uds-section"><?php echo xlt('Social needs: screening and services'); ?> <small class="text-muted"><?php echo xlt('Table 6A, Lines 39 to 42'); ?></small></h2>
     <?php if (!$counted) { ?>
         <div class="alert alert-warning small">
             <?php echo xlt('Not counted yet: Table 6A defines these lines by value sets, and this site has not fetched them.'); ?>
             <a href="<?php echo attr($moduleUrl . '/public/valuesets.php'); ?>"><?php echo xlt('Fetch the value sets'); ?></a>
         </div>
     <?php } else { ?>
-        <p class="small text-muted"><?php echo xlt('Patients with a social-needs screening, and those screened positive, as Table 6A counts them: from coded screenings and diagnoses (such as the Z59 codes), not from questionnaire answers alone. A positive need is shown as a share of those screened.'); ?></p>
+        <p class="small text-muted"><?php echo xlt('Patients screened for social needs, and patients given services for food insecurity, housing instability or financial insecurity, as Table 6A counts them, each as a share of all patients. A screening counts when it is coded: a screening code on the fee sheet, or a questionnaire answered with its LOINC code. A service counts when it is coded on the fee sheet or in a completed care plan entry. Table 6A does not count positive screens or diagnoses such as the Z59 codes on these lines.'); ?></p>
         <?php foreach (['all' => xl('All patients'), 'zip' => $titles['zip'], 'age' => $titles['age'], 'insurance' => $titles['insurance']] as $key => $heading) { ?>
         <table class="table table-sm table-bordered uds-table">
             <thead class="thead-light"><tr>
@@ -223,7 +222,7 @@ $moduleUrl = OEGlobalsBag::getInstance()->getWebRoot() . Bootstrap::MODULE_INSTA
                     <td class="num"><?php echo text($show($cells['patients'])); ?></td>
                     <?php foreach ($needs as $line => $label) {
                         $value = $cells[$line] ?? null;
-                        $share = SmallCells::percent($value, $line === '39' ? $cells['patients'] : ($cells['39'] ?? null)); ?>
+                        $share = SmallCells::percent($value, $cells['patients']); ?>
                         <td class="num"><?php echo array_key_exists($line, $cells) ? text($show($value) . ($share === null ? '' : ' (' . $share . '%)')) : '—'; ?></td>
                     <?php } ?>
                 </tr>

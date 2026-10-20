@@ -202,11 +202,13 @@ $install = (string) file_get_contents($root . '/sql/install.sql');
 // changes nothing" line below would be a claim rather than a fact.
 $depth = 0;
 $unguarded = [];
+$guards = [];
 $inStatement = false;
 foreach (explode("\n", $install) as $n => $line) {
     $t = trim($line);
     if (str_starts_with($t, '#If')) {
         $depth++;
+        $guards[strtok($t, " \t")] = true;
     } elseif (str_starts_with($t, '#EndIf')) {
         $depth--;
     } elseif ($t !== '' && !str_starts_with($t, '--') && !str_starts_with($t, '#')) {
@@ -224,6 +226,7 @@ if ($statements === []) {
 $ownTables = [];
 $alters = [];
 $inserts = [];
+$updates = [];
 $id = '`?([A-Za-z_][A-Za-z0-9_]*)`?';
 foreach ($statements as $st) {
     if (preg_match('/^CREATE TABLE\s+(?:IF NOT EXISTS\s+)?' . $id . '/i', $st, $m)) {
@@ -232,6 +235,9 @@ foreach ($statements as $st) {
         $alters[$m[1]][] = ['column' => $m[2], 'type' => trim($m[3])];
     } elseif (preg_match('/^INSERT INTO\s+' . $id . '/i', $st, $m)) {
         $inserts[$m[1]][] = $st;
+    } elseif (preg_match('/^UPDATE\s+' . $id . '\s+SET\s+[\s\S]*\bWHERE\b[\s\S]*\bfield_id`?\s*=\s*\'(uds_[A-Za-z0-9_]+)\'/i', $st, $m)) {
+        // Only an update of one of the module's own fields (moving it in its layout) is expected here.
+        $updates[$m[1]][] = $m[2];
     } else {
         fail('unclassified statement in sql/install.sql: ' . substr(preg_replace('/\s+/', ' ', $st) ?? '', 0, 80));
     }
@@ -354,7 +360,7 @@ $md[] = '';
 $md[] = '## What installing it changes in the database';
 $md[] = '';
 $md[] = count($statements) . ' statements in `sql/install.sql`, every one classified below. ' . ($unguarded === []
-    ? 'Each sits inside an `#If…` guard (`#IfNotTable`, `#IfMissingColumn`, `#IfNotRow2D`), so re-running the install changes nothing.'
+    ? 'Each sits inside an `#If…` guard (' . implode(', ', array_map(fn($g) => "`$g`", array_keys($guards))) . '), so re-running the install changes nothing.'
     : '**Not guarded, so a re-run would repeat them:** statements starting on line ' . implode(', ', $unguarded) . '.');
 $md[] = '';
 if ($coreAlters === []) {
@@ -375,6 +381,9 @@ if ($installWrites === []) {
     if ($layoutFields !== []) {
         $forms = array_unique(array_column($layoutFields, 'form'));
         $md[] = '  - `layout_options`: ' . count($layoutFields) . ' fields added to the ' . implode(', ', array_map(fn($f) => "`$f`", $forms)) . ' layout' . ($forms === ['DEM'] ? ' (patient Demographics), so every user of that form sees them' : '') . ': ' . implode(', ', array_map(fn($f) => "{$f['title']} (`{$f['field']}`, group {$f['group']})", $layoutFields)) . '.';
+    }
+    foreach ($updates as $table => $fields) {
+        $md[] = "  - `$table`: updates only the module's own rows (" . implode(', ', array_map(fn($f) => "`$f`", array_values(array_unique($fields)))) . '), moving them in the layout where they are still where the module put them.';
     }
 }
 $md[] = '';

@@ -75,20 +75,36 @@ ALTER TABLE `patient_data` ADD `uds_agricultural_worker` VARCHAR(31) NOT NULL DE
 ALTER TABLE `patient_data` ADD `uds_veteran_status` VARCHAR(31) NOT NULL DEFAULT '';
 #EndIf
 
--- Demographics layout, "Stats" group (5), after the stock Homeless and Migrant/Seasonal fields.
+-- Demographics layout, "Stats" group (5), after the stock fields, which end with Religion (15) and
+-- Tribal Affiliations (16) in OpenEMR 7.0 to 8.5.
 #IfNotRow2D layout_options form_id DEM field_id uds_housing_status
 INSERT INTO `layout_options` (`form_id`, `field_id`, `group_id`, `title`, `seq`, `data_type`, `uor`, `fld_length`, `max_length`, `list_id`, `titlecols`, `datacols`, `default_value`, `edit_options`, `description`, `fld_rows`)
-VALUES ('DEM', 'uds_housing_status', '5', 'Housing Status (UDS)', 15, 1, 1, 0, 0, 'uds_housing_status', 1, 1, '', '', 'Where the patient stayed last night; homeless arrangements are reported on UDS Table 4, Lines 17-23. The UDS report reads this field, not the free-text Homeless field.', 0);
+VALUES ('DEM', 'uds_housing_status', '5', 'Housing Status (UDS)', 17, 1, 1, 0, 0, 'uds_housing_status', 1, 1, '', '', 'Where the patient stayed last night; homeless arrangements are reported on UDS Table 4, Lines 17-23. The UDS report reads this field, not the free-text Homeless field.', 0);
 #EndIf
 
 #IfNotRow2D layout_options form_id DEM field_id uds_agricultural_worker
 INSERT INTO `layout_options` (`form_id`, `field_id`, `group_id`, `title`, `seq`, `data_type`, `uor`, `fld_length`, `max_length`, `list_id`, `titlecols`, `datacols`, `default_value`, `edit_options`, `description`, `fld_rows`)
-VALUES ('DEM', 'uds_agricultural_worker', '5', 'Agricultural Worker (UDS)', 16, 1, 1, 0, 0, 'uds_agricultural_worker', 1, 1, '', '', 'Principal employment in agriculture within 24 months of the last visit; UDS Table 4, Lines 14-16. The UDS report reads this field, not the free-text Migrant/Seasonal field.', 0);
+VALUES ('DEM', 'uds_agricultural_worker', '5', 'Agricultural Worker (UDS)', 18, 1, 1, 0, 0, 'uds_agricultural_worker', 1, 1, '', '', 'Principal employment in agriculture within 24 months of the last visit; UDS Table 4, Lines 14-16. The UDS report reads this field, not the free-text Migrant/Seasonal field.', 0);
 #EndIf
 
 #IfNotRow2D layout_options form_id DEM field_id uds_veteran_status
 INSERT INTO `layout_options` (`form_id`, `field_id`, `group_id`, `title`, `seq`, `data_type`, `uor`, `fld_length`, `max_length`, `list_id`, `titlecols`, `datacols`, `default_value`, `edit_options`, `description`, `fld_rows`)
-VALUES ('DEM', 'uds_veteran_status', '5', 'Military Service (UDS)', 17, 1, 1, 0, 0, 'uds_veteran_status', 1, 1, '', '', 'Ask: "Have you served in the U.S. military, armed forces, or uniformed services?" UDS Table 4, Line 25', 0);
+VALUES ('DEM', 'uds_veteran_status', '5', 'Military Service (UDS)', 19, 1, 1, 0, 0, 'uds_veteran_status', 1, 1, '', '', 'Ask: "Have you served in the U.S. military, armed forces, or uniformed services?" UDS Table 4, Line 25', 0);
+#EndIf
+
+-- Before 0.15.1 the three fields took positions 15 to 17, sharing 15 and 16 with Religion and Tribal
+-- Affiliations. Move them after the stock fields, only where they are still where the module put them,
+-- so a site's own order is kept. Veteran first, so no two of ours share a position on the way.
+#IfRow3D layout_options form_id DEM field_id uds_veteran_status seq 17
+UPDATE `layout_options` SET `seq` = 19 WHERE `form_id` = 'DEM' AND `field_id` = 'uds_veteran_status' AND `seq` = 17;
+#EndIf
+
+#IfRow3D layout_options form_id DEM field_id uds_agricultural_worker seq 16
+UPDATE `layout_options` SET `seq` = 18 WHERE `form_id` = 'DEM' AND `field_id` = 'uds_agricultural_worker' AND `seq` = 16;
+#EndIf
+
+#IfRow3D layout_options form_id DEM field_id uds_housing_status seq 15
+UPDATE `layout_options` SET `seq` = 17 WHERE `form_id` = 'DEM' AND `field_id` = 'uds_housing_status' AND `seq` = 15;
 #EndIf
 
 #IfNotTable uds_quality_run
