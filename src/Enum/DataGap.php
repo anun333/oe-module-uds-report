@@ -34,7 +34,9 @@ enum DataGap: string
     case NoInsuranceOnFile = 'no_insurance_on_file';
     case NoZip = 'no_zip';
     case HousingNotAsked = 'housing_not_asked';
+    case HousingInCoreField = 'housing_in_core_field';
     case AgricultureNotAsked = 'agriculture_not_asked';
+    case AgricultureInCoreField = 'agriculture_in_core_field';
     case VeteranNotAsked = 'veteran_not_asked';
     case MedicationNotCounted = 'medication_not_counted';
     case DentalServiceNotCounted = 'dental_service_not_counted';
@@ -62,7 +64,7 @@ enum DataGap: string
             self::RaceUnreported, self::IncomeUnverified, self::IncomeNotRecorded, self::IncomeNotUnderstood,
             self::FamilySizeNotRecorded, self::FamilySizeNotUnderstood, self::ReviewDateMissing,
             self::ReviewDateNotSaved, self::ReviewDateOutsideWindow, self::NoInsuranceOnFile, self::NoZip,
-            self::HousingNotAsked, self::AgricultureNotAsked, self::VeteranNotAsked, self::MedicationNotCounted,
+            self::HousingNotAsked, self::HousingInCoreField, self::AgricultureNotAsked, self::AgricultureInCoreField, self::VeteranNotAsked, self::MedicationNotCounted,
             self::DentalServiceNotCounted, self::PrepNotCounted, self::SdohFormNotCounted => false,
         };
     }

@@ -4,7 +4,7 @@ This module produces the demographic part of the HRSA **Uniform Data System (UDS
 
 It doesn't submit anything. Health centers still enter the figures in HRSA's Electronic Handbooks (EHBs), and should check them against their own records first.
 
-> **Status: 0.16.0, pre-release.** The counting rules are tested against hand-worked synthetic cases only. They have not yet been compared with a health center's real UDS submission. If your health center uses OpenEMR and would compare this module's table totals with a report you have already filed (totals only, no patient data shared), please open an issue.
+> **Status: 0.16.1, pre-release.** The counting rules are tested against hand-worked synthetic cases only. They have not yet been compared with a health center's real UDS submission. If your health center uses OpenEMR and would compare this module's table totals with a report you have already filed (totals only, no patient data shared), please open an issue.
 
 What installing it changes in your database, what it reads and writes, and what it hooks into are listed in [FOOTPRINT.md](FOOTPRINT.md), generated from the source.
 
@@ -30,7 +30,7 @@ What installing it changes in your database, what it reads and writes, and what 
   - **Agricultural Worker (UDS):** migratory, seasonal, aged or disabled former migratory worker, or declined.
   - **Military Service (UDS):** served (not on active duty now), active duty, has not served, or declined.
 
-  OpenEMR's own "Homeless" and "Migrant/Seasonal" fields are free text, which the UDS can't use. They are left untouched.
+  OpenEMR's own "Homeless" and "Migrant/Seasonal" fields are free text, which the UDS can't use. They are left untouched and never counted. From 0.16.1, when one of them holds something and the UDS field is empty, Records to fix says so ("the Homeless, etc. field of Demographics has something in it"), in place of "not recorded", so staff record the UDS field from it.
 
 ## How it counts
 

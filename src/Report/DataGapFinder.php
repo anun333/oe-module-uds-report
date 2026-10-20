@@ -54,11 +54,13 @@ final readonly class DataGapFinder
         if ($p->zip === null && !$p->isHomeless()) {
             $gaps[] = DataGap::NoZip;
         }
+        // OpenEMR's own Demographics fields for the same facts are free text, so they aren't read as a
+        // status; when one holds something, the gap says so, for staff to record the UDS field from it.
         if ($p->housingStatus === null) {
-            $gaps[] = DataGap::HousingNotAsked;
+            $gaps[] = $p->coreHomeless !== '' ? DataGap::HousingInCoreField : DataGap::HousingNotAsked;
         }
         if ($p->agriculturalWorker === null) {
-            $gaps[] = DataGap::AgricultureNotAsked;
+            $gaps[] = $p->coreMigrantSeasonal !== '' ? DataGap::AgricultureInCoreField : DataGap::AgricultureNotAsked;
         }
         if ($p->veteranStatus === null) {
             $gaps[] = DataGap::VeteranNotAsked;

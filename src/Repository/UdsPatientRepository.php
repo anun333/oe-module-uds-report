@@ -68,7 +68,7 @@ final readonly class UdsPatientRepository
             $rows = QueryUtils::fetchRecords(
                 "SELECT pid, DOB, sex, race, ethnicity, language, interpreter_needed, postal_code,
                         monthly_income, family_size, financial_review,
-                        uds_housing_status, uds_agricultural_worker, uds_veteran_status
+                        uds_housing_status, uds_agricultural_worker, uds_veteran_status, homeless, migrantseasonal
                    FROM patient_data WHERE pid IN ($placeholders)",
                 $pids,
             );
@@ -108,6 +108,8 @@ final readonly class UdsPatientRepository
                         Row::text($row, 'financial_review'),
                         $visit['last'],
                     ),
+                    coreHomeless: trim(Row::text($row, 'homeless')),
+                    coreMigrantSeasonal: trim(Row::text($row, 'migrantseasonal')),
                 );
             }
         }

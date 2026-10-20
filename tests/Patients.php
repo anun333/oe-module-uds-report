@@ -42,6 +42,8 @@ final class Patients
         ?VeteranStatus $veteran = VeteranStatus::NotVeteran,
         array $sites = [3],
         array $incomeGaps = [],
+        string $coreHomeless = '',
+        string $coreMigrantSeasonal = '',
     ): UdsPatient {
         return new UdsPatient(
             pid: $pid,
@@ -64,6 +66,8 @@ final class Patients
             visitSiteIds: $sites,
             lastVisit: new \DateTimeImmutable('2026-09-01'),
             incomeGaps: $incomeGaps,
+            coreHomeless: $coreHomeless,
+            coreMigrantSeasonal: $coreMigrantSeasonal,
         );
     }
 }

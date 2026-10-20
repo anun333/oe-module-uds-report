@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.16.1 — 2026-10-20
+
+- **Records to fix: OpenEMR's own Homeless and Migrant/Seasonal fields.** The stock Demographics form has "Homeless, etc." (`patient_data.homeless`) and "Migrant/Seasonal" (`migrantseasonal`), both free text, which the UDS never reads. A patient with the UDS housing status or agricultural worker status empty, and something in the matching OpenEMR field, is now listed under its own entry that says so, in place of "not recorded". Nothing is counted from the free text. Found in an audit of where two modules or core record the same fact.
+
 ## 0.16.0 — 2026-10-20
 
 - **Table 5: telehealth visits by their visit category.** Settings has a new list, "Visit categories that are virtual visits (Table 5, Column B2)".

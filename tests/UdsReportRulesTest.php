@@ -54,6 +54,20 @@ final class UdsReportRulesTest extends TestCase
         );
     }
 
+    public function testCoresOwnHomelessAndMigrantFieldsAreNamedNotRead(): void
+    {
+        // OpenEMR's Demographics "Homeless, etc." and "Migrant/Seasonal" are free text: the gap says they hold
+        // something, in place of "not recorded", and nothing is counted from them.
+        $patient = Patients::make(housing: null, agriculture: null, coreHomeless: 'yes, shelter', coreMigrantSeasonal: 'seasonal');
+        $gaps = self::gapFinder()->forPatient($patient);
+        self::assertContains(DataGap::HousingInCoreField, $gaps);
+        self::assertContains(DataGap::AgricultureInCoreField, $gaps);
+        self::assertNotContains(DataGap::HousingNotAsked, $gaps, 'not counted twice');
+        self::assertNotContains(DataGap::AgricultureNotAsked, $gaps);
+        self::assertFalse($patient->isHomeless(), 'free text is never read as a housing status');
+        self::assertNotContains(DataGap::HousingInCoreField, self::gapFinder()->forPatient(Patients::make(coreHomeless: 'yes')), 'a UDS status recorded is no gap');
+    }
+
     public function testHomelessWithoutZipIsNotAGap(): void
     {
         self::assertNotContains(DataGap::NoZip, self::gapFinder()->forPatient(Patients::make(zip: null, housing: HousingStatus::Street)));

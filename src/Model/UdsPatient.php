@@ -46,6 +46,8 @@ final readonly class UdsPatient
      * @param ?AgriculturalWorker $agriculturalWorker null: not recorded
      * @param ?VeteranStatus      $veteranStatus      null: not recorded
      * @param list<int>    $visitSiteIds       facility ids of the year's countable visits
+     * @param string $coreHomeless        OpenEMR's own Demographics field "Homeless, etc." (patient_data.homeless), free text
+     * @param string $coreMigrantSeasonal OpenEMR's own "Migrant/Seasonal" field (patient_data.migrantseasonal), free text
      */
     public function __construct(
         public int $pid,
@@ -68,6 +70,8 @@ final readonly class UdsPatient
         public array $visitSiteIds,
         public DateTimeImmutable $lastVisit,
         public array $incomeGaps = [],
+        public string $coreHomeless = '',
+        public string $coreMigrantSeasonal = '',
     ) {
     }
 
