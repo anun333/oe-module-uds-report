@@ -30,6 +30,8 @@ final readonly class UdsSettings
      * @param array<int, InsuranceCategory> $insuranceOverrides insurance company id => the clinic's choice
      * @param array<int, string> $providerLines user id => the Table 5 line the clinic chose, or NOT_A_PROVIDER
      * @param array<int, string> $categoryLines visit category id => the Table 5 line every visit in it goes on
+     * @param ?list<int> $virtualCategoryIds       visit categories whose visits are virtual (Table 5 Column B2); null: the
+     *                                             reference data's by constant id (Comlink's telehealth categories)
      */
     public function __construct(
         public ?array $countableCategoryIds = null,
@@ -40,6 +42,7 @@ final readonly class UdsSettings
         public array $insuranceOverrides = [],
         public array $providerLines = [],
         public array $categoryLines = [],
+        public ?array $virtualCategoryIds = null,
     ) {
     }
 }

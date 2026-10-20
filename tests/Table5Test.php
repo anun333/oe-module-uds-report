@@ -84,6 +84,7 @@ final class Table5Test extends TestCase
                 categoryLines: self::lineMap($settings['categoryLines'] ?? []),
             ),
             $patients,
+            CaseFile::ints($settings['virtualCategoryIds'] ?? []),
         ))->result();
 
         $expected = CaseFile::object($case['expected'] ?? null);

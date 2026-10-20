@@ -25,8 +25,10 @@ final class SettingsRepository
     public const IN_SCOPE_FACILITIES = 'in_scope_facility_ids';
     public const SCHOOL_BASED_FACILITIES = 'school_based_facility_ids';
     public const PUBLIC_HOUSING_FACILITIES = 'public_housing_facility_ids';
+    public const VIRTUAL_CATEGORIES = 'virtual_category_ids';
     private const LIST_SETTINGS = [
         self::COUNTABLE_CATEGORIES, self::IN_SCOPE_FACILITIES, self::SCHOOL_BASED_FACILITIES, self::PUBLIC_HOUSING_FACILITIES,
+        self::VIRTUAL_CATEGORIES,
     ];
     private const POVERTY_REGION = 'poverty_region';
     public const PROVIDER_LINES = 'table5_provider_lines';
@@ -59,6 +61,7 @@ final class SettingsRepository
             insuranceOverrides: $overrides,
             providerLines: self::lineMap($values[self::PROVIDER_LINES] ?? null),
             categoryLines: self::lineMap($values[self::CATEGORY_LINES] ?? null),
+            virtualCategoryIds: self::intListOrNull($values[self::VIRTUAL_CATEGORIES] ?? null),
         );
     }
 

@@ -48,6 +48,7 @@ final readonly class Table5
      * @param list<Table5Visit>    $visits    the year's countable visits
      * @param array<int, Provider> $providers the providers on them
      * @param array<int, true>     $patients  pids of UDS patients (the Tables 3A-4 population)
+     * @param list<int>            $virtualCategoryIds visit categories whose visits are virtual (UdsReportService::virtualCategoryIds)
      */
     public function __construct(
         private Table5Definition $definition,
@@ -56,6 +57,7 @@ final readonly class Table5
         private array $providers,
         private UdsSettings $settings,
         private array $patients,
+        private array $virtualCategoryIds = [],
     ) {
     }
 
@@ -229,6 +231,9 @@ final readonly class Table5
 
     private function isVirtual(Table5Visit $visit): bool
     {
+        if (in_array($visit->categoryId, $this->virtualCategoryIds, true)) {
+            return true;
+        }
         if ($visit->placeOfService !== null && in_array($visit->placeOfService, $this->definition->virtualPlaces, true)) {
             return true;
         }

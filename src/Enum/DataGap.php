@@ -39,6 +39,7 @@ enum DataGap: string
     case MedicationNotCounted = 'medication_not_counted';
     case DentalServiceNotCounted = 'dental_service_not_counted';
     case PrepNotCounted = 'prep_not_counted';
+    case SdohFormNotCounted = 'sdoh_form_not_counted';
 
     /**
      * Fixed in the patient's Demographics. The others are fixed in a prescription, at the
@@ -46,7 +47,7 @@ enum DataGap: string
      */
     public function isDemographic(): bool
     {
-        return !in_array($this, [self::MedicationNotCounted, self::DentalServiceNotCounted, self::PrepNotCounted], true);
+        return !in_array($this, [self::MedicationNotCounted, self::DentalServiceNotCounted, self::PrepNotCounted, self::SdohFormNotCounted], true);
     }
 
     /**
@@ -62,7 +63,7 @@ enum DataGap: string
             self::FamilySizeNotRecorded, self::FamilySizeNotUnderstood, self::ReviewDateMissing,
             self::ReviewDateNotSaved, self::ReviewDateOutsideWindow, self::NoInsuranceOnFile, self::NoZip,
             self::HousingNotAsked, self::AgricultureNotAsked, self::VeteranNotAsked, self::MedicationNotCounted,
-            self::DentalServiceNotCounted, self::PrepNotCounted => false,
+            self::DentalServiceNotCounted, self::PrepNotCounted, self::SdohFormNotCounted => false,
         };
     }
 }

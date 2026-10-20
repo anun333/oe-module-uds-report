@@ -120,6 +120,25 @@ final readonly class UdsPatientRepository
      *
      * @return list<int>
      */
+    /**
+     * The visit categories with these constant ids (pc_constant_id), such as the two telehealth categories
+     * OpenEMR's Comlink module creates.
+     *
+     * @param list<string> $constantIds
+     * @return list<int>
+     */
+    public function categoriesByConstant(array $constantIds): array
+    {
+        if ($constantIds === []) {
+            return [];
+        }
+        $rows = QueryUtils::fetchRecords(
+            'SELECT pc_catid FROM openemr_postcalendar_categories WHERE pc_constant_id IN (' . implode(', ', array_fill(0, count($constantIds), '?')) . ')',
+            $constantIds,
+        );
+        return array_map(static fn(array $row): int => Row::int($row, 'pc_catid'), $rows);
+    }
+
     public function defaultCountableCategories(): array
     {
         $rows = QueryUtils::fetchRecords(

@@ -108,6 +108,22 @@
                 "1": [1, 0, null], "8": [1, 0, null], "9a": [1, 0, null], "10a": [1, 0, null], "15": [2, 0, 1], "34": [2, 0, 1]
             },
             "review": {"notCounted": 0, "merged": 0, "behavioralWithoutDiagnosis": 0, "patientsWithoutVisit": []}
+        },
+        {
+            "name": "A visit in a category the site marks as virtual (by default the two telehealth categories of the Comlink module) is virtual with nothing else on it; the same physician's visit in another category stays in person",
+            "providers": [
+                {"id": 1, "name": "Family, Physician", "taxonomy": "207QA0505X"}
+            ],
+            "patients": [1, 2],
+            "visits": [
+                {"pid": 1, "encounter": 10, "day": "2026-04-01", "site": 3, "provider": 1, "category": 5},
+                {"pid": 2, "encounter": 20, "day": "2026-04-02", "site": 3, "provider": 1, "category": 16}
+            ],
+            "settings": {"virtualCategoryIds": [16]},
+            "expected": {
+                "1": [1, 1, null], "8": [1, 1, null], "15": [1, 1, 2], "34": [1, 1, 2]
+            },
+            "review": {"notCounted": 0, "merged": 0, "behavioralWithoutDiagnosis": 0, "patientsWithoutVisit": []}
         }
     ]
 }

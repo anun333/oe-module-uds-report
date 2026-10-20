@@ -168,6 +168,29 @@ final readonly class ClinicalCodeRepository
     }
 
     /**
+     * Patients screened in the year with OpenEMR's older Social Screening Tool encounter form
+     * (interface/forms/sdoh, table form_sdoh, 2022), not deleted. It records no screening instrument
+     * code, so Line 39 can't count it (DataGap::SdohFormNotCounted). Empty when the form's table
+     * doesn't exist, as on a site that never registered the form.
+     *
+     * @return list<int>
+     */
+    public function sdohFormPatients(int $year): array
+    {
+        $exists = QueryUtils::fetchRecords("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'form_sdoh'");
+        if ($exists === []) {
+            return [];
+        }
+        $rows = QueryUtils::fetchRecords(
+            "SELECT DISTINCT s.pid FROM form_sdoh AS s
+               JOIN forms AS f ON f.form_id = s.id AND f.formdir = 'sdoh' AND f.pid = s.pid AND f.deleted = 0
+              WHERE s.date >= ? AND s.date < ?",
+            [sprintf('%04d-01-01', $year), sprintf('%04d-01-01', $year + 1)],
+        );
+        return array_map(static fn(array $row): int => Row::int($row, 'pid'), $rows);
+    }
+
+    /**
      * The year's prescriptions and medications given from inventory whose drug
      * name contains one of the words, with their RxNorm codes, for the check
      * that finds medications Table 6A can't count (MedicationCheck).

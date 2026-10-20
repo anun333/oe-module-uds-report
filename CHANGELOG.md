@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.16.0 — 2026-10-20
+
+- **Table 5: telehealth visits by their visit category.** Settings has a new list, "Visit categories that are virtual visits (Table 5, Column B2)".
+  - A visit in a ticked category is virtual even with nothing else on it that says so.
+  - By default the two telehealth categories that OpenEMR's Comlink telehealth module creates are ticked. Its encounters carry the AMB class and the site's own place of service, so before this a Comlink visit counted as in person unless billing added modifier 95 or 93 or a telehealth code.
+  - A site that uses its own telehealth categories ticks them.
+- **Records to fix: a social needs screen Line 39 can't count.** OpenEMR's older Social Screening Tool encounter form (`form_sdoh`, 2022) records no screening instrument code. Once Line 39 is counted (its value sets fetched), the patients screened only with that form are listed, with how to record the screen so it counts.
+- `tools/footprint.php` refuses web requests. A test now fails on any translated string with an apostrophe or quote mark, which OpenEMR's `xl()` would show as a backtick (none were found here).
+
 ## 0.15.1 — 2026-10-19
 
 - **Fixed: the Grant evidence page described Table 6A Lines 40 to 42 wrongly.**

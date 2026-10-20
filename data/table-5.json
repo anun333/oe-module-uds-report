@@ -14,7 +14,7 @@
         "central_support": "Facility and support services"
     },
     "virtual": {
-        "about": "A visit is virtual (Column B2) when any of these is on it. The manual's list (page 60): telehealth CPT and HCPCS codes, modifier 95 or 93, place of service 02. Added here, marked so they can be checked: place of service 10 (telehealth in the patient's home, introduced after the manual's list was written) and OpenEMR's encounter class VR (Virtual Encounter).",
+        "about": "A visit is virtual (Column B2) when any of these is on it. The manual's list (page 60): telehealth CPT and HCPCS codes, modifier 95 or 93, place of service 02. Added here, marked so they can be checked: place of service 10 (telehealth in the patient's home, introduced after the manual's list was written) and OpenEMR's encounter class VR (Virtual Encounter). Also virtual: a visit in a visit category the site marks as virtual in Settings; by default, the two telehealth categories of OpenEMR's Comlink telehealth module, which creates its encounters with the AMB class and the site's own place of service, so nothing else on them says virtual.",
         "placeOfService": [
             "02",
             "10"
@@ -26,6 +26,7 @@
             "95",
             "93"
         ],
+        "categories": ["comlink_telehealth_new_patient", "comlink_telehealth_established_patient"],
         "codes": {
             "cpt": [
                 "98008 through 98015",

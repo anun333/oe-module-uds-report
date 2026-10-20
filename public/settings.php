@@ -98,6 +98,12 @@ if ($request->getMethod() === 'POST') {
     sort($countable);
     sort($defaultCountable);
     $repo->saveList(SettingsRepository::COUNTABLE_CATEGORIES, $countable === $defaultCountable ? null : $countable, $userId);
+    // The default (Comlink's telehealth categories) is stored as null, so it follows those categories if they're added later.
+    $virtual = $postedIds('virtual', $allCategoryIds);
+    $defaultVirtual = $patientRepository->categoriesByConstant($reference->table5->virtualCategories);
+    sort($virtual);
+    sort($defaultVirtual);
+    $repo->saveList(SettingsRepository::VIRTUAL_CATEGORIES, $virtual === $defaultVirtual ? null : $virtual, $userId);
     $repo->saveList(SettingsRepository::IN_SCOPE_FACILITIES, count($inScope) === count($allFacilityIds) ? null : $inScope, $userId);
     $repo->saveList(SettingsRepository::SCHOOL_BASED_FACILITIES, $postedIds('school_based', $allFacilityIds), $userId);
     $repo->saveList(SettingsRepository::PUBLIC_HOUSING_FACILITIES, $postedIds('public_housing', $allFacilityIds), $userId);
@@ -130,6 +136,7 @@ if ($request->getMethod() === 'POST') {
 
 $settings = $repo->load();
 $countable = $settings->countableCategoryIds ?? $patientRepository->defaultCountableCategories();
+$virtualIds = $settings->virtualCategoryIds ?? $patientRepository->categoriesByConstant($reference->table5->virtualCategories);
 $csrf = CsrfUtils::collectCsrfToken(session: $session);
 $checked = static fn(bool $on): string => $on ? 'checked' : '';
 ?>
@@ -157,6 +164,16 @@ $checked = static fn(bool $on): string => $on ? 'checked' : '';
             <div class="form-check form-check-inline">
                 <input class="form-check-input" type="checkbox" name="countable[]" id="cat<?php echo attr((string)$id); ?>" value="<?php echo attr((string)$id); ?>" <?php echo $checked(in_array($id, $countable, true)); ?>>
                 <label class="form-check-label" for="cat<?php echo attr((string)$id); ?>"><?php echo text(xl_appt_category(Row::text($c, 'pc_catname'))); ?></label>
+            </div>
+        <?php } ?>
+
+        <h2 class="h6 mt-4"><?php echo xlt('Visit categories that are virtual visits (Table 5, Column B2)'); ?></h2>
+        <p class="small text-muted"><?php echo xlt('A visit is also virtual when it has a telehealth code, modifier 95 or 93, place of service 02 or 10, or the Virtual encounter class. Tick the categories you use for telehealth visits that carry none of those. By default, the two telehealth categories of the Comlink telehealth module are ticked, since its visits carry the site place of service.'); ?></p>
+        <?php foreach ($categories as $c) {
+            $id = Row::int($c, 'pc_catid'); ?>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" name="virtual[]" id="virtual<?php echo attr((string)$id); ?>" value="<?php echo attr((string)$id); ?>" <?php echo $checked(in_array($id, $virtualIds, true)); ?>>
+                <label class="form-check-label" for="virtual<?php echo attr((string)$id); ?>"><?php echo text(xl_appt_category(Row::text($c, 'pc_catname'))); ?></label>
             </div>
         <?php } ?>
 

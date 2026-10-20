@@ -181,7 +181,14 @@ final class UdsReportService
             $repository->providers($providerIds),
             $this->settings,
             $pids,
+            $this->virtualCategoryIds(),
         );
+    }
+
+    /** The visit categories whose visits are virtual: the site's choice, else Comlink's telehealth categories. */
+    public function virtualCategoryIds(): array
+    {
+        return $this->settings->virtualCategoryIds ?? $this->patientRepository->categoriesByConstant($this->reference->table5->virtualCategories);
     }
 
     /**
@@ -216,7 +223,30 @@ final class UdsReportService
         $notCounted = $this->table6A()->notCounted();
         $gaps[DataGap::DentalServiceNotCounted->value] = $notCounted[Table6A::NOT_COUNTED_PERSONNEL];
         $gaps[DataGap::PrepNotCounted->value] = $notCounted[Table6A::NOT_COUNTED_PRESCRIPTION];
+        $gaps[DataGap::SdohFormNotCounted->value] = $this->sdohFormsNotCounted();
         return $gaps;
+    }
+
+    /**
+     * Report patients screened with OpenEMR's older Social Screening Tool encounter form, which Line 39
+     * can't count, and not counted on Line 39 another way. Empty while Line 39 isn't counted (its value
+     * sets not fetched), as nobody is counted on it then.
+     *
+     * @return list<int>
+     */
+    private function sdohFormsNotCounted(): array
+    {
+        $counted = $this->table6A()->patientsOnLine('39');
+        if ($counted === null) {
+            return [];
+        }
+        $report = $this->reportPids();
+        $pids = array_values(array_filter(
+            (new ClinicalCodeRepository())->sdohFormPatients($this->year),
+            static fn(int $pid): bool => isset($report[$pid]) && !isset($counted[$pid]),
+        ));
+        sort($pids);
+        return $pids;
     }
 
     /**

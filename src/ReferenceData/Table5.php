@@ -46,6 +46,7 @@ final readonly class Table5
      * @param list<string>                     $virtualModifiers
      * @param array<string, list<Table6aCode>> $virtualCodes     by code system (cpt, hcpcs)
      * @param list<Table6aCode>                $substanceUse     ICD-10 codes
+     * @param list<string>                     $virtualCategories visit category constant ids virtual by default (Comlink's telehealth ones)
      */
     public function __construct(
         public array $lines,
@@ -55,6 +56,7 @@ final readonly class Table5
         public array $virtualModifiers,
         public array $virtualCodes,
         public array $substanceUse,
+        public array $virtualCategories = [],
     ) {
         $byId = [];
         foreach ($lines as $line) {
@@ -100,11 +102,12 @@ final readonly class Table5
             $categories[$key] = JsonShape::text($name, "$file categories.$key");
         }
 
-        $virtual = JsonShape::object($top['virtual'], "$file virtual", ['about', 'placeOfService', 'encounterClass', 'modifiers', 'codes']);
+        $virtual = JsonShape::object($top['virtual'], "$file virtual", ['about', 'placeOfService', 'encounterClass', 'modifiers', 'categories', 'codes']);
         JsonShape::text($virtual['about'], "$file virtual.about");
         $places = self::codes($virtual['placeOfService'], "$file virtual.placeOfService", '/^\d{2}$/');
         $classes = self::codes($virtual['encounterClass'], "$file virtual.encounterClass", '/^[A-Z]{1,10}$/');
         $modifiers = self::codes($virtual['modifiers'], "$file virtual.modifiers", '/^[A-Z0-9]{2}$/');
+        $virtualCategories = self::codes($virtual['categories'], "$file virtual.categories", '/^[a-z0-9_]{1,64}$/');
         $virtualCodes = [];
         foreach (JsonShape::object($virtual['codes'], "$file virtual.codes", [], self::VIRTUAL_SYSTEMS) as $system => $list) {
             foreach (JsonShape::list($list, "$file virtual.codes.$system") as $j => $spec) {
@@ -177,7 +180,7 @@ final readonly class Table5
             $lines[] = new Table5Line($id, $label, $category, $visits, $sum, $patients);
         }
 
-        $definition = new self($lines, $categories, $places, $classes, $modifiers, $virtualCodes, $substanceUse);
+        $definition = new self($lines, $categories, $places, $classes, $modifiers, $virtualCodes, $substanceUse, $virtualCategories);
         foreach ($lines as $line) {
             if ($line->visits && $line->category !== null && !isset($patientsFor[$line->category])) {
                 throw new ReferenceDataException("$file line {$line->line}", "reports {$line->category} visits, but no line reports {$line->category} patients");
