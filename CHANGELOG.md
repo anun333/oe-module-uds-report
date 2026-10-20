@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.15.1 — 2026-10-19
+
+- **Fixed: the Grant evidence page described Table 6A Lines 40 to 42 wrongly.**
+  - It called them patients "screened positive" for food, housing and financial insecurity, counted from diagnoses such as the Z59 codes. They are patients **given services** for each need: the lines' value sets list interventions (CPT, HCPCS and SNOMED CT), not diagnoses or screening results.
+  - The page now labels them food, housing and financial insecurity services. Like Line 39, each is a share of all patients, not of the patients screened, since a service can be given without a coded screening.
+  - It also said a screening counted "not from questionnaire answers alone". A questionnaire answered with its LOINC code does count on Line 39, as the module has read since 0.10.0.
+  - Grant figures copied from 0.15.0 for Lines 40 to 42 are counts of services given, whatever the page called them.
+- **Fixed: the three UDS fields on the Demographics form shared positions with stock fields.**
+  - Housing Status and Agricultural Worker took positions 15 and 16 in the Stats group, the same as Religion and Tribal Affiliations, and Military Service took 17.
+  - New installs place them at 17 to 19. Upgrading through Module Manager moves them there too, only where they are still at the module's positions, so a site's own order is kept.
+  - Tested by upgrading a site on OpenEMR 8.4.1, then running the install again: 17, 18, 19, with no field moved twice.
+- `info.txt` says the module's version. It said 1.0.0 from the first release.
+- `FOOTPRINT.md` names the guards `install.sql` actually uses, and describes the field moves.
+
 ## 0.15.0 — 2026-10-18
 
 - **New page: Grant evidence** (Reports › UDS Report › Grant evidence). It gives the counts grant applications and reports ask for, from the same patients as the UDS Report, for the Universal Report or a Grant Report population, with a CSV download.

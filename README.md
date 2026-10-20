@@ -4,7 +4,7 @@ This module produces the demographic part of the HRSA **Uniform Data System (UDS
 
 It doesn't submit anything. Health centers still enter the figures in HRSA's Electronic Handbooks (EHBs), and should check them against their own records first.
 
-> **Status: 0.15.0, pre-release.** The counting rules are tested against hand-worked synthetic cases only. They have not yet been compared with a health center's real UDS submission. If your health center uses OpenEMR and would compare this module's table totals with a report you have already filed (totals only, no patient data shared), please open an issue.
+> **Status: 0.15.1, pre-release.** The counting rules are tested against hand-worked synthetic cases only. They have not yet been compared with a health center's real UDS submission. If your health center uses OpenEMR and would compare this module's table totals with a report you have already filed (totals only, no patient data shared), please open an issue.
 
 What installing it changes in your database, what it reads and writes, and what it hooks into are listed in [FOOTPRINT.md](FOOTPRINT.md), generated from the source.
 
@@ -126,7 +126,7 @@ Each covers those patients and **all** their in-scope visits and services, whate
 **Reports › UDS Report › Grant evidence** gives the counts a grant application or report asks for, from the same patients as the UDS Report, for the Universal Report or any Grant Report population, with a CSV download:
 
 - **Who we serve:** patients by age band, sex at birth, insurance (the Patients by ZIP Code table's columns), income as a share of the poverty guideline (Table 4), and ZIP code; homeless patients, migratory or seasonal agricultural workers, veterans, and patients best served in a language other than English.
-- **Social needs screening:** patients screened for social needs (Table 6A Line 39) and those screened positive for food insecurity (40), housing instability (41) and financial insecurity (42), overall and by ZIP, age band and insurance. These are Table 6A's own counts, so they agree with it, and they show only once the site has [fetched the value sets](#value-sets) for those lines. A positive screen recorded only in a questionnaire, with no code, isn't counted.
+- **Social needs screening and services:** patients screened for social needs (Table 6A Line 39), and patients given services for food insecurity (40), housing instability (41) and financial insecurity (42), overall and by ZIP, age band and insurance, each as a share of all patients. These are Table 6A's own counts, so they agree with it, and they show only once the site has [fetched the value sets](#value-sets) for those lines. A screening counts when it is coded, including a questionnaire answered with its LOINC code. Lines 40 to 42 count services given (coded on the fee sheet or in a completed care plan entry), not positive screens or Z59 diagnoses.
 - **Quality measures:** links to [Tables 6B and 7](#tables-6b-and-7) and [eCQM readiness](#ecqm-readiness). The page doesn't recalculate the measures.
 
 The figures are de-identified for use outside the health center:
