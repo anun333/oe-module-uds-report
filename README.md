@@ -284,6 +284,18 @@ php tools/footprint.php --check    # FOOTPRINT.md must match the source
 
 The value sets that Table 6A names are not in the module: each site fetches them under its own UMLS licence ([Value sets](#value-sets)). The value-set page shows the notices that licence asks for, for the code systems fetched.
 
+## Other modules for OpenEMR
+
+From the same project. Each installs with `composer require anun333/<module>` and is then enabled in Modules › Manage Modules.
+
+| Module | What it does |
+|---|---|
+| [Clinic Forms](https://github.com/anun333/oe-module-clinic-forms) | Printable clinic paperwork: consents, privacy notices, referral letters and validated screening questionnaires, with the clinic's own details, in English and Spanish |
+| [Staff Worklist](https://github.com/anun333/oe-module-staff-worklist) | One queue of outstanding staff work: unsigned results, orders with no result, referrals with no reply, screening and claims follow-up |
+| [Sliding Fee Discount](https://github.com/anun333/oe-module-sliding-fee) | HRSA's sliding fee discount program: the schedule checked against Chapter 9, income assessments, and the discount applied |
+| [Care Management](https://github.com/anun333/oe-module-care-management) | CCM, PCM and BHI enrollment with CMS's consent elements, monthly time logging, and the codes each month meets |
+| [Migration](https://github.com/anun333/oe-module-migration) | Records from another EHR, read from the FHIR export certified EHRs offer, checked before import and safe to rerun |
+
 ## License
 
 GPL-3.0-or-later.
