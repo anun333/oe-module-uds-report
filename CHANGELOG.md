@@ -3,6 +3,7 @@
 ## 0.17.1 (unreleased)
 
 - Development: the test for translated strings with an apostrophe or quote mark uses [openhealthcare-common](https://github.com/anun333/openhealthcare-common)'s scan, the same one every openhealthcare module runs. It is a development dependency only; nothing installed changes.
+- **Accessibility (WCAG 2.1 AA):** every page declares its language (`<html lang>`). The settings page labels each checkbox and select by its column and row, and the poverty guidelines select has a label. Lines 14-22's grey text is now 7.6:1 on white (it was 2.5:1, from the theme's `--gray`). Links in running text are underlined.
 
 ## 0.17.0 (2026-10-23)
 

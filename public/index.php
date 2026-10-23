@@ -70,16 +70,18 @@ $n = static fn(int $v): string => number_format($v);
 $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('patients');
 ?>
 <!DOCTYPE html>
-<html>
+<?php // The module's own text is written in English. ?>
+<html lang="en">
 <head>
     <title><?php echo xlt('UDS Report'); ?></title>
     <?php Header::setupHeader(['common']); ?>
     <style>
         .uds-table td.num, .uds-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
         .uds-table .subtotal td { font-weight: 600; background: var(--light, #f8f9fa); }
-        .uds-table .grant-only td { color: var(--gray, #6c757d); }
+        .uds-table .grant-only td { color: #4b5563; } /* the theme's --gray is 2.5:1 on white; this is 7.6:1 */
         .uds-section { margin-top: 2rem; }
     </style>
+    <style>/* Links in running text are underlined, not told apart by colour alone (WCAG 1.4.1). */ p a, li a { text-decoration: underline; }</style>
 </head>
 <body class="body_top">
 <div class="container-fluid py-3">

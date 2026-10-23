@@ -75,7 +75,8 @@ $webRoot = OEGlobalsBag::getInstance()->getWebRoot();
 $moduleUrl = $webRoot . Bootstrap::MODULE_INSTALLATION_PATH;
 ?>
 <!DOCTYPE html>
-<html>
+<?php // The module's own text is written in English. ?>
+<html lang="en">
 <head>
     <title><?php echo xlt('UDS record gaps'); ?></title>
     <?php Header::setupHeader(['common']); ?>

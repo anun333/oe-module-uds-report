@@ -84,7 +84,8 @@ foreach ($measures as $m) {
 }
 ?>
 <!DOCTYPE html>
-<html>
+<?php // The module's own text is written in English. ?>
+<html lang="en">
 <head>
     <title><?php echo xlt('UDS eCQM readiness'); ?></title>
     <?php Header::setupHeader(['common']); ?>

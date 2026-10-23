@@ -146,7 +146,8 @@ $csrf = CsrfUtils::collectCsrfToken(session: $session);
 $checked = static fn(bool $on): string => $on ? 'checked' : '';
 ?>
 <!DOCTYPE html>
-<html>
+<?php // The module's own text is written in English. ?>
+<html lang="en">
 <head>
     <title><?php echo xlt('UDS Settings'); ?></title>
     <?php Header::setupHeader(['common']); ?>
@@ -190,19 +191,20 @@ $checked = static fn(bool $on): string => $on ? 'checked' : '';
                 <th><?php echo xlt('School-based site'); ?></th><th><?php echo xlt('In or next to public housing'); ?></th></tr></thead>
             <tbody>
             <?php foreach ($facilities as $f) {
-                $id = Row::int($f, 'id'); ?>
+                $id = Row::int($f, 'id');
+                $facilityName = Row::text($f, 'name'); ?>
                 <tr>
-                    <td><?php echo text(Row::text($f, 'name')); ?><?php echo Row::nullableInt($f, 'inactive') === 1 ? ' <span class="text-muted">(' . xlt('inactive') . ')</span>' : ''; ?></td>
-                    <td><input type="checkbox" name="in_scope[]" value="<?php echo attr((string)$id); ?>" <?php echo $checked($settings->inScopeFacilityIds === null || in_array($id, $settings->inScopeFacilityIds, true)); ?>></td>
-                    <td><input type="checkbox" name="school_based[]" value="<?php echo attr((string)$id); ?>" <?php echo $checked(in_array($id, $settings->schoolBasedFacilityIds, true)); ?>></td>
-                    <td><input type="checkbox" name="public_housing[]" value="<?php echo attr((string)$id); ?>" <?php echo $checked(in_array($id, $settings->publicHousingFacilityIds, true)); ?>></td>
+                    <td><?php echo text($facilityName); ?><?php echo Row::nullableInt($f, 'inactive') === 1 ? ' <span class="text-muted">(' . xlt('inactive') . ')</span>' : ''; ?></td>
+                    <td><input type="checkbox" name="in_scope[]" value="<?php echo attr((string)$id); ?>" aria-label="<?php echo xla('In scope of project'); ?>: <?php echo attr($facilityName); ?>" <?php echo $checked($settings->inScopeFacilityIds === null || in_array($id, $settings->inScopeFacilityIds, true)); ?>></td>
+                    <td><input type="checkbox" name="school_based[]" value="<?php echo attr((string)$id); ?>" aria-label="<?php echo xla('School-based site'); ?>: <?php echo attr($facilityName); ?>" <?php echo $checked(in_array($id, $settings->schoolBasedFacilityIds, true)); ?>></td>
+                    <td><input type="checkbox" name="public_housing[]" value="<?php echo attr((string)$id); ?>" aria-label="<?php echo xla('In or next to public housing'); ?>: <?php echo attr($facilityName); ?>" <?php echo $checked(in_array($id, $settings->publicHousingFacilityIds, true)); ?>></td>
                 </tr>
             <?php } ?>
             </tbody>
         </table>
 
-        <h2 class="h6 mt-4"><?php echo xlt('Poverty guidelines'); ?></h2>
-        <select class="form-control form-control-sm" name="poverty_region" style="max-width: 24rem">
+        <h2 class="h6 mt-4"><label for="poverty_region"><?php echo xlt('Poverty guidelines'); ?></label></h2>
+        <select class="form-control form-control-sm" id="poverty_region" name="poverty_region" style="max-width: 24rem">
             <?php foreach (PovertyRegion::cases() as $region) { ?>
                 <option value="<?php echo attr($region->value); ?>" <?php echo $settings->povertyRegion === $region ? 'selected' : ''; ?>><?php echo text(Labels::povertyRegion($region)); ?></option>
             <?php } ?>
@@ -226,7 +228,7 @@ $checked = static fn(bool $on): string => $on ? 'checked' : '';
                     <td><?php echo text(Row::text($company, 'name')); ?></td>
                     <td><?php echo text(Labels::insuranceCategory($automatic)); ?></td>
                     <td>
-                        <select class="form-control form-control-sm" name="insurance[<?php echo attr((string)$id); ?>]">
+                        <select class="form-control form-control-sm" name="insurance[<?php echo attr((string)$id); ?>]" aria-label="<?php echo xla('UDS category used'); ?>: <?php echo attr(Row::text($company, 'name')); ?>">
                             <option value=""><?php echo xlt('Use automatic'); ?></option>
                             <?php foreach (InsuranceCategory::assignable() as $category) { ?>
                                 <option value="<?php echo attr($category->value); ?>" <?php echo $override === $category ? 'selected' : ''; ?>><?php echo text(Labels::insuranceCategory($category)); ?></option>
@@ -261,7 +263,7 @@ $checked = static fn(bool $on): string => $on ? 'checked' : '';
                         echo $suggestion['provider'] ? '' : ' <span class="text-muted">(' . xlt('not a provider') . ')</span>';
                     } ?></td>
                     <td>
-                        <select class="form-control form-control-sm" name="provider_line[<?php echo attr((string)$id); ?>]">
+                        <select class="form-control form-control-sm" name="provider_line[<?php echo attr((string)$id); ?>]" aria-label="<?php echo xla('Line used'); ?>: <?php echo attr(trim(Row::text($person, 'lname') . ', ' . Row::text($person, 'fname'), ', ')); ?>">
                             <option value=""><?php echo xlt('Use the suggestion'); ?></option>
                             <?php foreach ($visitLines as $l) { ?>
                                 <option value="<?php echo attr($l->line); ?>" <?php echo $choice === $l->line ? 'selected' : ''; ?>><?php echo text($lineOption($l)); ?></option>
@@ -283,7 +285,7 @@ $checked = static fn(bool $on): string => $on ? 'checked' : '';
                 <tr>
                     <td><?php echo text(xl_appt_category(Row::text($c, 'pc_catname'))); ?></td>
                     <td>
-                        <select class="form-control form-control-sm" name="category_line[<?php echo attr((string)$id); ?>]">
+                        <select class="form-control form-control-sm" name="category_line[<?php echo attr((string)$id); ?>]" aria-label="<?php echo xla('Line'); ?>: <?php echo attr(xl_appt_category(Row::text($c, 'pc_catname'))); ?>">
                             <option value=""><?php echo xlt('The line of whoever saw the patient'); ?></option>
                             <?php foreach ($visitLines as $l) { ?>
                                 <option value="<?php echo attr($l->line); ?>" <?php echo $choice === $l->line ? 'selected' : ''; ?>><?php echo text($lineOption($l)); ?></option>

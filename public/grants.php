@@ -132,7 +132,8 @@ if (Request::get()->query->getString('format') === 'csv') {
 $moduleUrl = OEGlobalsBag::getInstance()->getWebRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
 ?>
 <!DOCTYPE html>
-<html>
+<?php // The module's own text is written in English. ?>
+<html lang="en">
 <head>
     <title><?php echo xlt('UDS grant evidence'); ?></title>
     <?php Header::setupHeader(['common']); ?>
@@ -140,6 +141,7 @@ $moduleUrl = OEGlobalsBag::getInstance()->getWebRoot() . Bootstrap::MODULE_INSTA
         .uds-table td.num, .uds-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
         .uds-section { margin-top: 2rem; }
     </style>
+    <style>/* Links in running text are underlined, not told apart by colour alone (WCAG 1.4.1). */ p a, li a { text-decoration: underline; }</style>
 </head>
 <body class="body_top">
 <div class="container-fluid py-3">

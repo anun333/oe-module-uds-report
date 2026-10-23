@@ -145,7 +145,8 @@ if (Request::get()->query->getString('format') === 'csv') {
 }
 ?>
 <!DOCTYPE html>
-<html>
+<?php // The module's own text is written in English. ?>
+<html lang="en">
 <head>
     <title><?php echo xlt('UDS Table 9D worksheet'); ?></title>
     <?php Header::setupHeader(['common']); ?>

@@ -68,7 +68,8 @@ if (!QueryUtils::existsTable('uds_quality_run') || !QueryUtils::existsTable('uds
     }
     ?>
 <!DOCTYPE html>
-<html>
+<?php // The module's own text is written in English. ?>
+<html lang="en">
 <head>
     <title><?php echo xlt('UDS Tables 6B and 7'); ?></title>
     <?php Header::setupHeader(['common']); ?>
@@ -233,7 +234,8 @@ $engine = EcqmReadinessRepository::phpEngine();
 $openEnds = EcqmReadinessRepository::openEndsCount();
 ?>
 <!DOCTYPE html>
-<html>
+<?php // The module's own text is written in English. ?>
+<html lang="en">
 <head>
     <title><?php echo xlt('UDS Tables 6B and 7'); ?></title>
     <?php Header::setupHeader(['common']); ?>

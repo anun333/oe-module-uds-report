@@ -83,7 +83,8 @@ $systemsUsed = $fetched->systems();
 $csrf = CsrfUtils::collectCsrfToken(session: $session);
 ?>
 <!DOCTYPE html>
-<html>
+<?php // The module's own text is written in English. ?>
+<html lang="en">
 <head>
     <title><?php echo xlt('UDS Value Sets'); ?></title>
     <?php Header::setupHeader(['common']); ?>
