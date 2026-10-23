@@ -4,6 +4,9 @@
 
 - Development: the test for translated strings with an apostrophe or quote mark uses [openhealthcare-common](https://github.com/anun333/openhealthcare-common)'s scan, the same one every openhealthcare module runs. It is a development dependency only; nothing installed changes.
 - **Accessibility (WCAG 2.1 AA):** every page declares its language (`<html lang>`). The settings page labels each checkbox and select by its column and row, and the poverty guidelines select has a label. Lines 14-22's grey text is now 7.6:1 on white (it was 2.5:1, from the theme's `--gray`). Links in running text are underlined.
+- **README:** run OpenEMR on a PHP with PHP's php2shell fix (2026-10-21: 8.2.35, 8.3.36, 8.4.27, 8.5.12 or later). The official OpenEMR 7.0.2 and 7.0.3 Docker images can't get it.
+- **FOOTPRINT.md** now comes from openhealthcare-common's footprint tool (1.1), the one every module shares; `tools/footprint.php` only loads it. The sheet's closing notes, what it can't show, are this module's own (in composer.json). The sheet now lists the module's permission checks, the OpenEMR functions it calls and its audit event, which its old copy of the tool left out.
+- **Checked:** unit tests; the nightly matrix on 8.4.1 and master (the UDS smoke, eCQM, 6A, 9D, grant evidence and Table 5 checks); fresh official 8.1.0, 8.3.0 and 8.5.0 images, with every module enabled and with it alone (on 7.0.2 and 7.0.3 it stays switched off, as designed).
 
 ## 0.17.0 (2026-10-23)
 
