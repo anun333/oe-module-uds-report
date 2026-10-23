@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.17.1 (unreleased)
+
+- Development: the test for translated strings with an apostrophe or quote mark uses [openhealthcare-common](https://github.com/anun333/openhealthcare-common)'s scan, the same one every openhealthcare module runs. It is a development dependency only; nothing installed changes.
+
 ## 0.17.0 (2026-10-23)
 
 - **Service area check** (HRSA Scope of Project Policy Manual, 2026, Chapter 2: the service area includes at least the ZIP codes where 75% of current patients live, from UDS patient origin).
