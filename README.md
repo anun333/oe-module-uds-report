@@ -245,6 +245,8 @@ Viewing needs `patients/demo`; the Table 9D worksheet needs `acct/rep_a`, as Ope
 
 ## Compatibility
 
+**Older OpenEMR:** on 7.0.3 and older (no `OEGlobalsBag`), the module stays switched off rather than stop OpenEMR's pages; it hasn't been tested from 7.0.4 to 8.3. Checked on a fresh 7.0.2 install with every module enabled (`dev/module_compat_check.sh`).
+
 | OpenEMR | Tables, Grant Reports, 9D worksheet, eCQM readiness | Tables 6B and 7 | How it was checked |
 |---|---|---|---|
 | master (8.5.0-dev) | works | works: the 2026 measures are in master since 2026-10-13 ([#14536](https://github.com/openemr/openemr/pull/14536)). Ongoing problems and visits with no end time don't count until [#14526](https://github.com/openemr/openemr/issues/14526) is fixed | end to end, synthetic patients; rechecked on master 76fa2f1e88 (2026-10-13): CMS165v14 for nine synthetic patients matched each one's prediction |

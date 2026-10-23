@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.16.2 (unreleased)
+
+- **No longer stops an older OpenEMR.** OpenEMR loads a module's bootstrap on every request, the login page included. This module's used `OEGlobalsBag`, which came with OpenEMR 7.0.4 and 8.0, so on 7.0.3 or older, enabling it made every page fail (HTTP 500), login included, until the module was switched off in the database. It now stays switched off there instead. Found by the nightly matrix's new fresh 7.0.2 install (`dev/module_compat_check.sh`).
+
 ## 0.16.1 — 2026-10-20
 
 - **Records to fix: OpenEMR's own Homeless and Migrant/Seasonal fields.** The stock Demographics form has "Homeless, etc." (`patient_data.homeless`) and "Migrant/Seasonal" (`migrantseasonal`), both free text, which the UDS never reads. A patient with the UDS housing status or agricultural worker status empty, and something in the matching OpenEMR field, is now listed under its own entry that says so, in place of "not recorded". Nothing is counted from the free text. Found in an audit of where two modules or core record the same fact.
