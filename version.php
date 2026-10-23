@@ -11,7 +11,7 @@
  */
 
 $v_major = '0';
-$v_minor = '16';
-$v_patch = '2';
+$v_minor = '17';
+$v_patch = '0';
 $v_tag   = '';
 $v_database = 1;

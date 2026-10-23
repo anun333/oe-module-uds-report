@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.17.0 (unreleased)
+## 0.17.0 (2026-10-23)
 
 - **Service area check** (HRSA Scope of Project Policy Manual, 2026, Chapter 2: the service area includes at least the ZIP codes where 75% of current patients live, from UDS patient origin).
   - Under the Patients by ZIP Code table: the fewest ZIP codes reaching 75% of the year's patients with a known ZIP, each with its running share. Every ZIP code counts, including those folded into Other ZIP Codes; unknown residence is left out and its number shown.
