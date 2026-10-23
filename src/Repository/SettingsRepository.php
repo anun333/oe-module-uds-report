@@ -26,6 +26,7 @@ final class SettingsRepository
     public const SCHOOL_BASED_FACILITIES = 'school_based_facility_ids';
     public const PUBLIC_HOUSING_FACILITIES = 'public_housing_facility_ids';
     public const VIRTUAL_CATEGORIES = 'virtual_category_ids';
+    public const SERVICE_AREA_ZIPS = 'service_area_zips';
     private const LIST_SETTINGS = [
         self::COUNTABLE_CATEGORIES, self::IN_SCOPE_FACILITIES, self::SCHOOL_BASED_FACILITIES, self::PUBLIC_HOUSING_FACILITIES,
         self::VIRTUAL_CATEGORIES,
@@ -62,6 +63,7 @@ final class SettingsRepository
             providerLines: self::lineMap($values[self::PROVIDER_LINES] ?? null),
             categoryLines: self::lineMap($values[self::CATEGORY_LINES] ?? null),
             virtualCategoryIds: self::intListOrNull($values[self::VIRTUAL_CATEGORIES] ?? null),
+            serviceAreaZips: self::zipList($values[self::SERVICE_AREA_ZIPS] ?? null),
         );
     }
 
@@ -88,6 +90,12 @@ final class SettingsRepository
         }
         ksort($map);
         $this->save($name, $map === [] ? null : $map, $userId);
+    }
+
+    /** @param list<string> $zips five-digit ZIP codes; empty clears the setting */
+    public function saveServiceAreaZips(array $zips, int $userId): void
+    {
+        $this->save(self::SERVICE_AREA_ZIPS, $zips === [] ? null : array_values($zips), $userId);
     }
 
     public function savePovertyRegion(PovertyRegion $region, int $userId): void
@@ -148,6 +156,16 @@ final class SettingsRepository
     /**
      * @return ?list<int>
      */
+    /** @return list<string> the saved five-digit ZIP codes; anything else is dropped */
+    private static function zipList(mixed $value): array
+    {
+        if (!is_array($value)) {
+            return [];
+        }
+        return array_values(array_filter(array_map(static fn($z): string => is_scalar($z) ? (string)$z : '', $value),
+            static fn(string $z): bool => preg_match('/^\d{5}$/', $z) === 1));
+    }
+
     private static function intListOrNull(mixed $value): ?array
     {
         if (!is_array($value)) {

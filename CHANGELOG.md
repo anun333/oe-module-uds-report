@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.17.0 (unreleased)
+
+- **Service area check** (HRSA Scope of Project Policy Manual, 2026, Chapter 2: the service area includes at least the ZIP codes where 75% of current patients live, from UDS patient origin).
+  - Under the Patients by ZIP Code table: the fewest ZIP codes reaching 75% of the year's patients with a known ZIP, each with its running share. Every ZIP code counts, including those folded into Other ZIP Codes; unknown residence is left out and its number shown.
+  - **Settings:** the service area ZIP codes on Form 5B. The report names the 75% ZIP codes missing from Form 5B, how many patients live inside it, and Form 5B ZIP codes with no patient. Anything entered that isn't a five-digit ZIP code is named and left out.
+- **Checked against master** a10ebfa8d3, with every UDS check in the nightly matrix on both stacks. The manual changes nothing in what the tables count (Chapter 8, footnote 111).
+
 ## 0.16.2 (2026-10-22)
 
 - **No longer stops an older OpenEMR.** OpenEMR loads a module's bootstrap on every request, the login page included. This module's used `OEGlobalsBag`, which came with OpenEMR 7.0.4 and 8.0, so on 7.0.3 or older, enabling it made every page fail (HTTP 500), login included, until the module was switched off in the database. It now stays switched off there instead. Found by the nightly matrix's new fresh 7.0.2 install (`dev/module_compat_check.sh`).

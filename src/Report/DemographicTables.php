@@ -99,6 +99,29 @@ final readonly class DemographicTables
     }
 
     /**
+     * Every residence ZIP code and its patients, for the service area (ServiceArea): the ZIP code the
+     * table would place each patient in, the visit site's for people experiencing homelessness with
+     * none. Unlike the table, ZIP codes with 10 or fewer patients aren't folded together, and
+     * patients whose insurance has no UDS column still count: they live somewhere.
+     *
+     * @return array{zips: array<string, int>, unknown: int}
+     */
+    public function zipCounts(): array
+    {
+        $zips = [];
+        $unknown = 0;
+        foreach ($this->patients as $p) {
+            $zip = $p->zip ?? ($p->isHomeless() ? $p->visitSiteZip : null);
+            if ($zip === null) {
+                $unknown++;
+                continue;
+            }
+            $zips[$zip] = ($zips[$zip] ?? 0) + 1;
+        }
+        return ['zips' => $zips, 'unknown' => $unknown];
+    }
+
+    /**
      * Lines 1-38 by age on December 31, columns male (A) and female (B).
      * The table has no unknown column, so patients without a recorded birth
      * sex or date of birth can't be placed; they are counted separately.

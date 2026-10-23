@@ -47,6 +47,16 @@ What installing it changes in your database, what it reads and writes, and what 
 | Lines 24 (school-based) and 26 (public housing) depend on the visit site | Sites marked in Settings |
 | Line 25 counts only an affirmative answer, never active duty | "Served" only |
 
+## Service area (0.17.0)
+
+HRSA's Scope of Project Policy Manual (2026, Chapter 2) says a health center's service area "includes, at a minimum, those ZIP Codes where at least 75 percent of current health center patients reside", from the patient origin it reports in UDS. Under the Patients by ZIP Code table, the report lists the fewest ZIP codes that reach 75% of the year's patients:
+
+- **How they're chosen:** most patients first, and ZIP codes with the same count in ZIP order.
+- **What counts:** every ZIP code, including those the table folds into Other ZIP Codes (10 or fewer patients), and patients whose insurance has no UDS column. People experiencing homelessness count at the visit site's ZIP code, as on the table. Unknown residence is left out of both the count and the total, and its number is shown.
+- **Against your Form 5B:** enter the service area ZIP codes from your Form 5B in Settings. The report then names any of the 75% ZIP codes that aren't on Form 5B (a change in scope to request, Chapter 10), how many patients live inside Form 5B, and Form 5B ZIP codes where no patient lives (for information: the manual sets a minimum, not a maximum).
+
+The manual changes nothing in what the tables count: its definitions of patient and visit are for scope of project only (Chapter 8, footnote 111).
+
 ## Table 5: Staffing and Utilization
 
 Visits (Columns B and B2) and patients (Column C) by type of service and personnel. FTEs (Column A) come from HR records, which OpenEMR doesn't hold, so the column is left for the health center to enter in EHB.

@@ -30,6 +30,7 @@ use OpenEMR\Modules\UdsReport\Report\Labels;
 use OpenEMR\Modules\UdsReport\Report\ReportYear;
 use OpenEMR\Modules\UdsReport\Report\Table5;
 use OpenEMR\Modules\UdsReport\Report\UdsReportService;
+use OpenEMR\Modules\UdsReport\Report\ServiceArea;
 use OpenEMR\Modules\UdsReport\Repository\SettingsRepository;
 use OpenEMR\Modules\UdsReport\Repository\UdsPatientRepository;
 
@@ -45,9 +46,12 @@ $now = ServiceContainer::getClock()->now();
 $year = ReportYear::fromQuery(Request::get()->query->getString('year'), $now);
 $grant = GrantReport::tryFrom(Request::get()->query->getString('grant'));
 $query = 'year=' . $year . ($grant === null ? '' : '&grant=' . $grant->value);
-$report = new UdsReportService($year, (new SettingsRepository())->load(), $reference, new UdsPatientRepository($reference->insuranceCategories), $grant);
+$settings = (new SettingsRepository())->load();
+$report = new UdsReportService($year, $settings, $reference, new UdsPatientRepository($reference->insuranceCategories), $grant);
 $tables = $report->tables();
 $zip = $tables->zipTable();
+$origin = $tables->zipCounts();
+$area = ServiceArea::from($origin['zips'], $origin['unknown'], $settings->serviceAreaZips);
 $t3a = $tables->table3A();
 $t3b = $tables->table3B();
 $t4 = $tables->table4();
@@ -193,6 +197,38 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
             </tr>
             </tbody>
         </table>
+    </div>
+
+    <?php // HRSA Scope of Project Policy Manual (2026), Chapter 2: the service area includes the ZIP codes where 75% of patients live. ?>
+    <h3 class="h6 mt-3" id="service-area"><?php echo xlt('Service area (HRSA Scope of Project Policy Manual, Chapter 2)'); ?></h3>
+    <div data-service-area data-known="<?php echo attr((string)$area->known); ?>" data-minimum="<?php echo attr(implode(' ', array_column($area->minimum, 'zip'))); ?>" data-missing="<?php echo attr(implode(' ', $area->missing)); ?>">
+        <p class="small"><?php echo text(sprintf(xl('The service area has to include at least the ZIP codes where 75%% of current patients live, from this report. For %1$s, of the %2$s patients with a known ZIP code, these are the fewest that reach 75%%: most patients first, and ZIP codes with the same count in ZIP order. Every ZIP code counts here, including those folded into Other ZIP Codes above.'), (string)$year, $n($area->known))); ?></p>
+        <?php if ($area->minimum !== []) { ?>
+        <table class="table table-sm table-bordered uds-table" style="max-width: 30rem">
+            <thead class="thead-light"><tr><th><?php echo xlt('ZIP Code'); ?></th><th class="num"><?php echo xlt('Patients'); ?></th><th class="num"><?php echo xlt('Running share'); ?></th></tr></thead>
+            <tbody>
+            <?php foreach ($area->minimum as $row) { ?>
+                <tr><td><?php echo text($row['zip']); ?></td><td class="num"><?php echo text($n($row['patients'])); ?></td><td class="num"><?php echo text(number_format($row['cumulative'], 1)); ?>%</td></tr>
+            <?php } ?>
+            </tbody>
+        </table>
+        <?php } ?>
+        <?php if ($area->unknown > 0) { ?>
+        <p class="small text-muted"><?php echo text(sprintf(xl('Not counted: %1$s patients with no residence ZIP code (Unknown Residence).'), $n($area->unknown))); ?></p>
+        <?php } ?>
+        <?php if ($area->form5b === []) { ?>
+        <p class="small"><a href="<?php echo attr($moduleUrl . '/public/settings.php'); ?>"><?php echo xlt('Enter your Form 5B service area ZIP codes in Settings'); ?></a> <?php echo xlt('to compare them with these.'); ?></p>
+        <?php } elseif ($area->missing !== []) { ?>
+        <div class="alert alert-warning py-2" data-service-area-missing><?php echo text(sprintf(xl('Not on your Form 5B: %1$s. The service area has to include them, so they are a change in scope to request (Chapter 10).'), implode(', ', $area->missing))); ?></div>
+        <?php } else { ?>
+        <div class="alert alert-success py-2" data-service-area-ok><?php echo xlt('Your Form 5B includes every one of them.'); ?></div>
+        <?php } ?>
+        <?php if ($area->form5b !== [] && $area->known > 0) { ?>
+        <p class="small text-muted"><?php echo text(sprintf(xl('%1$s of those patients (%2$s%%) live in a Form 5B ZIP code.'), $n($area->inForm5b), number_format($area->inForm5b * 100 / $area->known, 1))); ?>
+        <?php if ($area->noPatients !== []) {
+            echo text(' ' . sprintf(xl('On Form 5B with no patient this year: %1$s.'), implode(', ', $area->noPatients)));
+        } ?></p>
+        <?php } ?>
     </div>
     <?php } ?>
 

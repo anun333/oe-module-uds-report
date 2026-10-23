@@ -31,6 +31,7 @@ use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataGuard;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataLoader;
 use OpenEMR\Modules\UdsReport\ReferenceData\Table5Line;
 use OpenEMR\Modules\UdsReport\Report\Labels;
+use OpenEMR\Modules\UdsReport\Report\ServiceArea;
 use OpenEMR\Modules\UdsReport\Report\UdsSettings;
 use OpenEMR\Modules\UdsReport\Repository\Row;
 use OpenEMR\Modules\UdsReport\Repository\SettingsRepository;
@@ -87,6 +88,7 @@ $postedIds = static function (string $field, array $known) use ($request): array
 };
 
 $saved = false;
+$rejectedZips = [];
 if ($request->getMethod() === 'POST') {
     if (!CsrfUtils::verifyCsrfToken($request->request->getString('csrf_token_form'), $session)) {
         CsrfUtils::csrfNotVerified();
@@ -108,6 +110,9 @@ if ($request->getMethod() === 'POST') {
     $repo->saveList(SettingsRepository::SCHOOL_BASED_FACILITIES, $postedIds('school_based', $allFacilityIds), $userId);
     $repo->saveList(SettingsRepository::PUBLIC_HOUSING_FACILITIES, $postedIds('public_housing', $allFacilityIds), $userId);
     $repo->savePovertyRegion(PovertyRegion::tryFrom($request->request->getString('poverty_region')) ?? PovertyRegion::Contiguous, $userId);
+    $zips = ServiceArea::parse($request->request->getString('service_area_zips'));
+    $repo->saveServiceAreaZips($zips['zips'], $userId);
+    $rejectedZips = $zips['rejected'];
     $providerLines = [];
     $postedProviderLines = $request->request->all('provider_line');
     foreach ($allPeopleIds as $personId) {
@@ -153,6 +158,8 @@ $checked = static fn(bool $on): string => $on ? 'checked' : '';
     <p class="small"><a href="<?php echo attr($moduleUrl . '/public/valuesets.php'); ?>"><?php echo xlt('Table 6A value sets (fetched with your UMLS API key)'); ?></a></p>
     <?php if ($saved) {
         ?><div class="alert alert-success py-2"><?php echo xlt('Saved.'); ?></div><?php } ?>
+    <?php if ($rejectedZips !== []) {
+        ?><div class="alert alert-warning py-2" data-rejected-zips><?php echo text(xl('Not five-digit ZIP codes, so left out of the service area') . ': ' . implode(', ', $rejectedZips)); ?></div><?php } ?>
 
     <form method="post">
         <input type="hidden" name="csrf_token_form" value="<?php echo attr($csrf); ?>">
@@ -201,6 +208,10 @@ $checked = static fn(bool $on): string => $on ? 'checked' : '';
             <?php } ?>
         </select>
         <p class="small text-muted"><?php echo xlt('Use the guidelines for where the health center is located.'); ?></p>
+
+        <h2 class="h6 mt-4"><label for="service_area_zips"><?php echo xlt('Service area ZIP codes (Form 5B)'); ?></label></h2>
+        <textarea class="form-control form-control-sm" id="service_area_zips" name="service_area_zips" rows="3" style="max-width: 40rem" aria-describedby="service-area-help"><?php echo text(implode(' ', $settings->serviceAreaZips)); ?></textarea>
+        <p class="small text-muted" id="service-area-help"><?php echo xlt('The service area ZIP codes on your Form 5B, separated by spaces, commas or lines. The report compares them with the ZIP codes where 75% of the patients seen in the year live, which the service area has to include (HRSA Scope of Project Policy Manual, Chapter 2).'); ?></p>
 
         <h2 class="h6 mt-4"><?php echo xlt('Insurance companies'); ?></h2>
         <p class="small text-muted"><?php echo xlt('The automatic category comes from the payer typology or claim type set on the insurance company. Override it where it is wrong, for example a Medicaid managed care plan run by a private insurer, or a CHIP plan.'); ?></p>

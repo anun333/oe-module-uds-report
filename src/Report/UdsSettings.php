@@ -32,6 +32,7 @@ final readonly class UdsSettings
      * @param array<int, string> $categoryLines visit category id => the Table 5 line every visit in it goes on
      * @param ?list<int> $virtualCategoryIds       visit categories whose visits are virtual (Table 5 Column B2); null: the
      *                                             reference data's by constant id (Comlink's telehealth categories)
+     * @param list<string> $serviceAreaZips        the service area's ZIP codes on the health center's Form 5B, as entered
      */
     public function __construct(
         public ?array $countableCategoryIds = null,
@@ -43,6 +44,7 @@ final readonly class UdsSettings
         public array $providerLines = [],
         public array $categoryLines = [],
         public ?array $virtualCategoryIds = null,
+        public array $serviceAreaZips = [],
     ) {
     }
 }
