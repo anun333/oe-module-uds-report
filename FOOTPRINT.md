@@ -107,6 +107,10 @@ As written in the source; whether they behave correctly for a given user is not 
 
 - None.
 
+## Programs it runs
+
+- None: no `proc_open()`, `exec()`, `shell_exec()`, `system()`, `passthru()` or `popen()` in the module's PHP.
+
 ## Outbound network
 
 - `src/ValueSet/VsacClient.php`: GuzzleHttp
