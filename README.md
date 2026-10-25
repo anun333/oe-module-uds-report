@@ -8,6 +8,8 @@ It doesn't submit anything. Health centers still enter the figures in HRSA's Ele
 
 What installing it changes in your database, what it reads and writes, and what it hooks into are listed in [FOOTPRINT.md](FOOTPRINT.md), generated from the source.
 
+Using the module day to day, task by task for each role: see [GUIDE.md](GUIDE.md).
+
 ## What it gives you
 
 - **Reports › UDS Report:** the tables for a chosen year, in the manual's layout and line numbering. Also:
