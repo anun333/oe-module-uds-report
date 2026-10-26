@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.17.2 (2026-10-25)
+
+- **A questionnaire saved as a draft no longer counts as a screening done** (Table 6A's LOINC lines). OpenEMR's questionnaire runtime 0.4.0 (in master and, by backport, 8.5.0) saves a submitted response as completed; before it, every response was saved in-progress. The rule is openhealthcare-common's `QuestionnaireStatus`: until a site's first completed response every response counts; after it, earlier responses count whatever their status and later ones only when completed or amended. A site on an older OpenEMR counts exactly as before.
+- **The report keeps running when a Demographics column is gone.** OpenEMR's Layout Editor drops an empty column when its field is deleted, stock ones included ([openemr/openemr#14742](https://github.com/openemr/openemr/issues/14742)), and an administrator can delete this module's own three fields. Each optional column the report reads (race, ethnicity, language, interpreter needed, ZIP, income, family size, financial review date, the three UDS fields, Homeless and Migrant/Seasonal) is read as empty when it's missing, instead of stopping the report.
+- **Help** on every page opens [GUIDE.md](GUIDE.md), the staff guide by role, at this version's tag, in a new window.
+- **The guide's labels are checked:** every label GUIDE.md quotes in bold is a string the pages show, or one of the three Demographics field titles `sql/install.sql` writes (named in composer.json). A renamed button fails the tests.
+- **README:** the 2026 measure files ([#14536](https://github.com/openemr/openemr/pull/14536)) are in OpenEMR 8.5.0, not 8.4.1; the compatibility table names 8.5.0 and master (8.6.0-dev).
+- **openhealthcare-common** is now a runtime dependency (`^1.3`, for `QuestionnaireStatus`); it was a development one.
+- **Checked:** unit tests (409) on PHP 8.3 and 8.5; the label check fails with the three field titles left unnamed.
+
 ## 0.17.1 (2026-10-23)
 
 - Development: the test for translated strings with an apostrophe or quote mark uses [openhealthcare-common](https://github.com/anun333/openhealthcare-common)'s scan, the same one every openhealthcare module runs. It is a development dependency only; nothing installed changes.

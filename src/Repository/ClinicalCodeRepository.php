@@ -8,8 +8,9 @@
  *   have none), and medications given from OpenEMR's inventory (Dispense).
  * - LOINC: the screening instrument of an SDOH assessment (History, not marked
  *   declined), the code of a questionnaire answered (unless its encounter form
- *   was deleted), Observations, and lab results that weren't cancelled or
- *   entered in error.
+ *   was deleted, or it is a draft by openhealthcare-common's QuestionnaireStatus
+ *   rule), Observations, and lab results that weren't cancelled or entered in
+ *   error.
  * - SNOMED CT, CPT and HCPCS: care plan entries marked Completed, for the
  *   support services and upstream drivers of health lines (35-42), whose
  *   interventions are often recorded there rather than on the fee sheet.
@@ -35,6 +36,7 @@ use DateTimeImmutable;
 use OpenEMR\Common\Database\QueryUtils;
 use OpenEMR\Modules\UdsReport\Model\CodedEvent;
 use OpenEMR\Modules\UdsReport\ReferenceData\Table6aCode;
+use OpenHealthcare\Common\QuestionnaireStatus;
 
 final readonly class ClinicalCodeRepository
 {
@@ -93,6 +95,7 @@ final readonly class ClinicalCodeRepository
                JOIN questionnaire_repository AS q ON q.id = r.questionnaire_foreign_id
               WHERE r.create_time >= ? AND r.create_time < ? AND COALESCE(q.code, '') <> ''
                 AND COALESCE(r.status, '') NOT IN ('entered-in-error', 'stopped')
+                AND {status}
                 AND NOT EXISTS (
                     SELECT 1 FROM form_questionnaire_assessments AS a
                       JOIN forms AS f ON f.form_id = a.id AND f.formdir = 'questionnaire_assessments' AND f.deleted = 1
@@ -134,7 +137,14 @@ final readonly class ClinicalCodeRepository
             if (!in_array($system, $systems, true)) {
                 continue;
             }
-            foreach (QueryUtils::fetchRecords($sql, [$start, $end]) as $row) {
+            $binds = [$start, $end];
+            if (str_contains($sql, '{status}')) {
+                // A questionnaire saved as a draft isn't a screening done (QuestionnaireStatus has the rule).
+                [$status, $statusBinds] = QuestionnaireStatus::condition('r');
+                $sql = str_replace('{status}', $status, $sql);
+                array_push($binds, ...$statusBinds);
+            }
+            foreach (QueryUtils::fetchRecords($sql, $binds) as $row) {
                 $day = DateTimeImmutable::createFromFormat('!Y-m-d', substr(Row::text($row, 'day'), 0, 10));
                 $pid = Row::nullableInt($row, 'pid') ?? 0;
                 if ($day === false || $pid <= 0) {

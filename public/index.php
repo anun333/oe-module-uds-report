@@ -20,6 +20,7 @@ use OpenEMR\Common\Acl\AclMain;
 use OpenEMR\Core\Header;
 use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\UdsReport\Bootstrap;
+use OpenEMR\Modules\UdsReport\Http\Guide;
 use OpenEMR\Modules\UdsReport\Http\Request;
 use OpenEMR\Modules\UdsReport\Enum\DataGap;
 use OpenEMR\Modules\UdsReport\Enum\GrantReport;
@@ -113,6 +114,7 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
             <?php if ($isAdmin) { ?>
                 <a class="btn btn-sm btn-outline-secondary" href="<?php echo attr($moduleUrl . '/public/settings.php'); ?>"><?php echo xlt('Settings'); ?></a>
             <?php } ?>
+            <a class="btn btn-sm btn-outline-secondary ml-2" href="<?php echo attr(Guide::url()); ?>" target="_blank" rel="noopener"><?php echo xlt('Help'); ?><span class="sr-only"> <?php echo xlt('(opens in a new window)'); ?></span></a>
         </form>
     </div>
     <p class="text-muted small mb-3">

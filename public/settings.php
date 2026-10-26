@@ -24,6 +24,7 @@ use OpenEMR\Common\Session\SessionWrapperFactory;
 use OpenEMR\Core\Header;
 use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\UdsReport\Bootstrap;
+use OpenEMR\Modules\UdsReport\Http\Guide;
 use OpenEMR\Modules\UdsReport\Http\Request;
 use OpenEMR\Modules\UdsReport\Enum\InsuranceCategory;
 use OpenEMR\Modules\UdsReport\Enum\PovertyRegion;
@@ -156,6 +157,7 @@ $checked = static fn(bool $on): string => $on ? 'checked' : '';
 <div class="container-fluid py-3" style="max-width: 70rem">
     <a href="<?php echo attr($moduleUrl . '/public/index.php'); ?>">&larr; <?php echo xlt('UDS Report'); ?></a>
     <h1 class="h4 mt-2"><?php echo xlt('UDS Settings'); ?></h1>
+    <p class="small mb-2"><a href="<?php echo attr(Guide::url()); ?>" target="_blank" rel="noopener"><?php echo xlt('Help'); ?><span class="sr-only"> <?php echo xlt('(opens in a new window)'); ?></span></a></p>
     <p class="small"><a href="<?php echo attr($moduleUrl . '/public/valuesets.php'); ?>"><?php echo xlt('Table 6A value sets (fetched with your UMLS API key)'); ?></a></p>
     <?php if ($saved) {
         ?><div class="alert alert-success py-2"><?php echo xlt('Saved.'); ?></div><?php } ?>

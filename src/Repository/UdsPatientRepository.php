@@ -41,6 +41,18 @@ use OpenEMR\Modules\UdsReport\Report\UdsSettings;
 final readonly class UdsPatientRepository
 {
     private const CHUNK = 500;
+
+    /**
+     * Demographics columns read when they exist, NULL when they don't. OpenEMR's Layout Editor
+     * drops an empty column when its field is deleted, stock ones included
+     * (openemr/openemr#14742), and an administrator can delete this module's own three fields;
+     * a missing one leaves its line blank instead of stopping the report. pid, DOB and sex are
+     * read as they are.
+     */
+    private const OPTIONAL_COLUMNS = [
+        'race', 'ethnicity', 'language', 'interpreter_needed', 'postal_code', 'monthly_income', 'family_size', 'financial_review',
+        'uds_housing_status', 'uds_agricultural_worker', 'uds_veteran_status', 'homeless', 'migrantseasonal',
+    ];
     private const NOT_LIMITED_ENGLISH = ['', 'english', 'decline_to_specify', 'declne_to_specfy'];
 
     public function __construct(private InsuranceCategoryMap $insuranceCategories)
@@ -61,15 +73,13 @@ final readonly class UdsPatientRepository
         $siteZips = $this->facilityZips();
         $companies = $this->insuranceCompanies($settings);
 
+        $columns = $this->patientColumns();
         $patients = [];
         foreach (array_chunk(array_keys($visits), self::CHUNK) as $pids) {
             $placeholders = implode(',', array_fill(0, count($pids), '?'));
             $insurance = $this->insuranceRows($pids, $placeholders);
             $rows = QueryUtils::fetchRecords(
-                "SELECT pid, DOB, sex, race, ethnicity, language, interpreter_needed, postal_code,
-                        monthly_income, family_size, financial_review,
-                        uds_housing_status, uds_agricultural_worker, uds_veteran_status, homeless, migrantseasonal
-                   FROM patient_data WHERE pid IN ($placeholders)",
+                "SELECT pid, DOB, sex, $columns FROM patient_data WHERE pid IN ($placeholders)",
                 $pids,
             );
             foreach ($rows as $row) {
@@ -115,6 +125,21 @@ final readonly class UdsPatientRepository
         }
         usort($patients, static fn(UdsPatient $a, UdsPatient $b): int => $a->pid <=> $b->pid);
         return $patients;
+    }
+
+    /** OPTIONAL_COLUMNS for the SELECT: each by name where patient_data has it, else NULL under its name. */
+    private function patientColumns(): string
+    {
+        $present = array_map(
+            static fn(array $row): string => strtolower(Row::text($row, 'name')),
+            QueryUtils::fetchRecords(
+                "SELECT column_name AS name FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'patient_data'"
+            ),
+        );
+        return implode(', ', array_map(
+            static fn(string $column): string => in_array($column, $present, true) ? "`$column`" : "NULL AS `$column`",
+            self::OPTIONAL_COLUMNS,
+        ));
     }
 
     /**

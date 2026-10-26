@@ -26,6 +26,7 @@ use OpenEMR\Common\Session\SessionWrapperFactory;
 use OpenEMR\Core\Header;
 use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\UdsReport\Bootstrap;
+use OpenEMR\Modules\UdsReport\Http\Guide;
 use OpenEMR\Modules\UdsReport\Http\Request;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataGuard;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataLoader;
@@ -93,6 +94,7 @@ $csrf = CsrfUtils::collectCsrfToken(session: $session);
 <div class="container-fluid py-3" style="max-width: 70rem">
     <a href="<?php echo attr($moduleUrl . '/public/index.php'); ?>">&larr; <?php echo xlt('UDS Report'); ?></a>
     <h1 class="h4 mt-2"><?php echo xlt('UDS Value Sets'); ?></h1>
+    <p class="small mb-2"><a href="<?php echo attr(Guide::url()); ?>" target="_blank" rel="noopener"><?php echo xlt('Help'); ?><span class="sr-only"> <?php echo xlt('(opens in a new window)'); ?></span></a></p>
     <p><?php echo xlt('The UDS Manual defines some Table 6A lines by value sets from the Value Set Authority Center (VSAC) of the National Library of Medicine, and adds value sets to others. The module does not include their codes: the UMLS licence does not allow passing on CPT or SNOMED CT codes, so each site fetches them under its own licence. Until all the value sets of a line are fetched, it is left blank or counted from the codes the manual lists.'); ?></p>
     <p><?php echo xlt('You need a UMLS account (free; apply at uts.nlm.nih.gov, approval takes a few business days). Your API key is on your UTS profile page. It is used for this fetch only and not saved. Fetch again each year, when HRSA publishes a new manual.'); ?></p>
 

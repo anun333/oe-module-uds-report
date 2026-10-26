@@ -19,11 +19,11 @@
     ],
     "require": {
         "php": ">=8.3",
-        "openemr/oe-module-installer-plugin": "^0.1.5"
+        "openemr/oe-module-installer-plugin": "^0.1.5",
+        "anun333/openhealthcare-common": "^1.3"
     },
     "require-dev": {
-        "phpunit/phpunit": "^11.5",
-        "anun333/openhealthcare-common": "^1.1"
+        "phpunit/phpunit": "^11.5"
     },
     "autoload": {
         "psr-4": {
@@ -52,7 +52,12 @@
             "footprint-not-covered": [
                 "Whether the permission checks above behave correctly for restricted users. The end-to-end check refuses a clinician the settings page; the other pages are not yet checked with a restricted login.",
                 "Whether the counting rules match the UDS Manual. The conformance cases in `data/cases/` and `tests/` cover that, and real-world validation against a health center's filed report is still to come."
-            ]
+            ],
+            "guide-labels-elsewhere": {
+                "Housing Status (UDS)": "sql/install.sql",
+                "Agricultural Worker (UDS)": "sql/install.sql",
+                "Military Service (UDS)": "sql/install.sql"
+            }
         }
     }
 }

@@ -25,6 +25,7 @@ use OpenEMR\Common\Session\SessionWrapperFactory;
 use OpenEMR\Core\Header;
 use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\UdsReport\Bootstrap;
+use OpenEMR\Modules\UdsReport\Http\Guide;
 use OpenEMR\Modules\UdsReport\Http\Request;
 use OpenEMR\Modules\UdsReport\Enum\DataGap;
 use OpenEMR\Modules\UdsReport\Enum\GrantReport;
@@ -85,6 +86,7 @@ $moduleUrl = $webRoot . Bootstrap::MODULE_INSTALLATION_PATH;
 <div class="container-fluid py-3">
     <a href="<?php echo attr($moduleUrl . '/public/index.php?year=' . $year . ($grant === null ? '' : '&grant=' . $grant->value)); ?>">&larr; <?php echo xlt('UDS Report'); ?> <?php echo text((string)$year); ?>, <?php echo text(Labels::report($grant)); ?></a>
     <h1 class="h5 mt-2"><?php echo text(Labels::gap($gap)); ?></h1>
+    <p class="small mb-2"><a href="<?php echo attr(Guide::url()); ?>" target="_blank" rel="noopener"><?php echo xlt('Help'); ?><span class="sr-only"> <?php echo xlt('(opens in a new window)'); ?></span></a></p>
     <p class="text-muted"><?php echo text((string)count($pids)); ?> <?php echo xlt('patients with countable visits in'); ?> <?php echo text((string)$year); ?>.
         <?php echo $gap->isDemographic()
             ? xlt('Open a patient to fix the record in Demographics; the report reflects changes on reload.')

@@ -4,7 +4,7 @@ This module produces the demographic part of the HRSA **Uniform Data System (UDS
 
 It doesn't submit anything. Health centers still enter the figures in HRSA's Electronic Handbooks (EHBs), and should check them against their own records first.
 
-> **Status: 0.17.1, pre-release.** The counting rules are tested against hand-worked synthetic cases only. They have not yet been compared with a health center's real UDS submission. If your health center uses OpenEMR and would compare this module's table totals with a report you have already filed (totals only, no patient data shared), please open an issue.
+> **Status: 0.17.2, pre-release.** The counting rules are tested against hand-worked synthetic cases only. They have not yet been compared with a health center's real UDS submission. If your health center uses OpenEMR and would compare this module's table totals with a report you have already filed (totals only, no patient data shared), please open an issue.
 
 What installing it changes in your database, what it reads and writes, and what it hooks into are listed in [FOOTPRINT.md](FOOTPRINT.md), generated from the source.
 
@@ -219,7 +219,7 @@ HTTP_HOST=localhost php interface/modules/custom_modules/oe-module-uds-report/bi
 
 **What it needs.**
 - OpenEMR's PHP eCQM engine ([openemr/openemr#14469](https://github.com/openemr/openemr/pull/14469)), on OpenEMR master after 8.4.
-- The 2026 measure files, in OpenEMR master since 2026-10-13 ([openemr/openemr#14536](https://github.com/openemr/openemr/pull/14536)). On an OpenEMR without them, the page names each measure that isn't installed.
+- The 2026 measure files, in OpenEMR 8.5.0 ([openemr/openemr#14536](https://github.com/openemr/openemr/pull/14536), merged 2026-10-13; not in 8.4.1). On an OpenEMR without them, the page names each measure that isn't installed.
 - The [readiness page](#ecqm-readiness) cleared, above all [openemr/openemr#14526](https://github.com/openemr/openemr/issues/14526): until it's fixed, ongoing problems and visits with no end time don't count, and the page says so.
 
 **Not calculated.** Line 18 (CMS164v7, which the manual keeps at an old version no measure bundle has); the lines with no eCQM (prenatal care, Lines 1–9; HIV linkage to care, Line 20; dental sealants, Lines 22a and 22b); and Table 7 Section A (deliveries and birth weight). The page lists them, to be reported from the health center's records.
@@ -263,7 +263,7 @@ Viewing needs `patients/demo`; the Table 9D worksheet needs `acct/rep_a`, as Ope
 
 | OpenEMR | Tables, Grant Reports, 9D worksheet, eCQM readiness | Tables 6B and 7 | How it was checked |
 |---|---|---|---|
-| master (8.5.0-dev) | works | works: the 2026 measures are in master since 2026-10-13 ([#14536](https://github.com/openemr/openemr/pull/14536)). Ongoing problems and visits with no end time don't count until [#14526](https://github.com/openemr/openemr/issues/14526) is fixed | end to end, synthetic patients; rechecked on master 76fa2f1e88 (2026-10-13): CMS165v14 for nine synthetic patients matched each one's prediction |
+| 8.5.0 and master (8.6.0-dev) | works | works: the 2026 measures are in 8.5.0 ([#14536](https://github.com/openemr/openemr/pull/14536), merged to master 2026-10-13; 8.5.0 was cut from master on 2026-10-25). Ongoing problems and visits with no end time don't count until [#14526](https://github.com/openemr/openemr/issues/14526) is fixed | end to end, synthetic patients; rechecked on master 76fa2f1e88 (2026-10-13): CMS165v14 for nine synthetic patients matched each one's prediction |
 | 8.4.1 | works | no PHP eCQM engine; the page says so | end to end, synthetic patients |
 | 8.4.0, 8.3.0, 8.2.0, 8.1.0 | installs, every page loads | no PHP eCQM engine | official Docker images: installed through Module Manager, every page loaded as an administrator with no PHP error (no patients) |
 | 8.0.0 and older | won't run: OpenEMR classes it uses don't exist there (`AccessDeniedHelper`, `BC\ServiceContainer`, and others) | | which classes exist at each release tag |

@@ -22,6 +22,7 @@ use OpenEMR\Common\Acl\AclMain;
 use OpenEMR\Core\Header;
 use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\UdsReport\Bootstrap;
+use OpenEMR\Modules\UdsReport\Http\Guide;
 use OpenEMR\Modules\UdsReport\Http\Request;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataGuard;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataLoader;
@@ -98,6 +99,7 @@ foreach ($measures as $m) {
 <div class="container-fluid py-3">
     <div class="d-flex flex-wrap align-items-center justify-content-between">
         <h1 class="h4 mb-2"><?php echo xlt('UDS eCQM readiness'); ?>: <?php echo text((string)$year); ?> <small class="text-muted"><?php echo xlt('Tables 6B and 7'); ?></small></h1>
+        <p class="small mb-2"><a href="<?php echo attr(Guide::url()); ?>" target="_blank" rel="noopener"><?php echo xlt('Help'); ?><span class="sr-only"> <?php echo xlt('(opens in a new window)'); ?></span></a></p>
         <form method="get" class="form-inline mb-2">
             <label class="mr-2" for="uds-year"><?php echo xlt('Calendar year'); ?></label>
             <select class="form-control form-control-sm mr-2" id="uds-year" name="year" onchange="this.form.submit()">
