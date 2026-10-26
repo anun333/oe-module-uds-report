@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.17.4 (unreleased)
+## 0.17.4 (2026-10-26)
 
 - **Runs on PHP 8.2,** as OpenEMR 8.1.0 does: `composer.json` asked for 8.3, but nothing needs it. A date of birth OpenEMR can't read made the report stop on PHP 8.2 (the exception it catches only exists from 8.3); it's now skipped there as on 8.3. All 412 tests pass on PHP 8.2 and 8.5. The floor moves to 8.3 on 2027-01-01 with the other modules.
 - **Age as of December 31 is cited:** HRSA's Table 3A fact sheet, which moved the date from June 30 from the 2023 report.
