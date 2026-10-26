@@ -76,6 +76,7 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
 <head>
     <title><?php echo xlt('UDS Report'); ?></title>
     <?php Header::setupHeader(['common']); ?>
+    <?php echo \OpenEMR\Modules\UdsReport\Contrast::style(); ?>
     <style>
         .uds-table td.num, .uds-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
         .uds-table .subtotal td { font-weight: 600; background: var(--light, #f8f9fa); }

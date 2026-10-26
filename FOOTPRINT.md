@@ -101,6 +101,7 @@ As written in the source; whether they behave correctly for a given user is not 
 
 ## Settings it reads
 
+- `css_header` (`src/Contrast.php`)
 - `fileroot` (`src/Repository/EcqmReadinessRepository.php`, `src/Repository/QualityMeasureRepository.php`)
 - `webroot` (`public/ecqm.php`, `public/gaps.php`, `public/grants.php`, `public/index.php`, `public/quality.php`, `public/settings.php`, `public/table9d.php`, `public/valuesets.php`)
 
@@ -120,9 +121,9 @@ As written in the source; whether they behave correctly for a given user is not 
 
 | part | files | lines |
 |---|---|---|
-| PHP logic (`src/`) | 76 | 8658 |
-| tests (`tests/`, `phpunit.xml.dist`) | 26 | 3341 |
-| pages (`public/`) | 9 | 2348 |
+| PHP logic (`src/`) | 77 | 8708 |
+| tests (`tests/`, `phpunit.xml.dist`) | 27 | 3388 |
+| pages (`public/`) | 9 | 2357 |
 | data (`data/`, read at runtime) | 8 | 1732 |
 | expected results (`data/cases/`, for the tests) | 6 | 1450 |
 | install SQL (`sql/`) | 5 | 257 |

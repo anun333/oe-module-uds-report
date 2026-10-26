@@ -138,6 +138,7 @@ $moduleUrl = OpenEmr::webRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
 <head>
     <title><?php echo xlt('UDS grant evidence'); ?></title>
     <?php Header::setupHeader(['common']); ?>
+    <?php echo \OpenEMR\Modules\UdsReport\Contrast::style(); ?>
     <style>
         .uds-table td.num, .uds-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
         .uds-section { margin-top: 2rem; }

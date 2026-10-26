@@ -81,6 +81,7 @@ $moduleUrl = $webRoot . Bootstrap::MODULE_INSTALLATION_PATH;
 <head>
     <title><?php echo xlt('UDS record gaps'); ?></title>
     <?php Header::setupHeader(['common']); ?>
+    <?php echo \OpenEMR\Modules\UdsReport\Contrast::style(); ?>
 </head>
 <body class="body_top">
 <div class="container-fluid py-3">

@@ -89,6 +89,7 @@ $csrf = CsrfUtils::collectCsrfToken(session: $session);
 <head>
     <title><?php echo xlt('UDS Value Sets'); ?></title>
     <?php Header::setupHeader(['common']); ?>
+    <?php echo \OpenEMR\Modules\UdsReport\Contrast::style(); ?>
 </head>
 <body class="body_top">
 <div class="container-fluid py-3" style="max-width: 70rem">

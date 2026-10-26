@@ -74,6 +74,7 @@ if (!QueryUtils::existsTable('uds_quality_run') || !QueryUtils::existsTable('uds
 <head>
     <title><?php echo xlt('UDS Tables 6B and 7'); ?></title>
     <?php Header::setupHeader(['common']); ?>
+    <?php echo \OpenEMR\Modules\UdsReport\Contrast::style(); ?>
 </head>
 <body class="body_top">
 <div class="container-fluid py-3">
@@ -241,6 +242,7 @@ $openEnds = EcqmReadinessRepository::openEndsCount();
 <head>
     <title><?php echo xlt('UDS Tables 6B and 7'); ?></title>
     <?php Header::setupHeader(['common']); ?>
+    <?php echo \OpenEMR\Modules\UdsReport\Contrast::style(); ?>
     <style>
         .uds-table td.num, .uds-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
         .uds-section { margin-top: 2rem; }

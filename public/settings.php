@@ -152,6 +152,7 @@ $checked = static fn(bool $on): string => $on ? 'checked' : '';
 <head>
     <title><?php echo xlt('UDS Settings'); ?></title>
     <?php Header::setupHeader(['common']); ?>
+    <?php echo \OpenEMR\Modules\UdsReport\Contrast::style(); ?>
 </head>
 <body class="body_top">
 <div class="container-fluid py-3" style="max-width: 70rem">
