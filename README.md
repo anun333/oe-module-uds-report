@@ -257,6 +257,10 @@ That places it in `interface/modules/custom_modules/oe-module-uds-report/`. Then
 
 Viewing needs `patients/demo`; the Table 9D worksheet needs `acct/rep_a`, as OpenEMR's Collections report does; Settings and the Table 6A value sets need `admin/super`. Fetching the value sets needs the site's UMLS API key, and HTTPS from the server to cts.nlm.nih.gov.
 
+### An index on a core table
+
+Installing or upgrading adds one index to a core table: `response_id` on `form_questionnaire_assessments (response_id(64))`. The module's screening lookups join on that column, which core leaves without an index, and on years of data each lookup read every assessment form: on a test copy of a mid-size clinic (20,000 patients, 200,000 visits, 15,384 PHQ-9 responses) the 2025 report took 53 s before and 21 s after, Gaps 43 s and 11 s, Grant evidence 36 s and 5 s, with the same output. The Title X and CCBHC Report modules add the same index under the same name, so it's created once; if core adds an index named `response_id` itself, the module's step is skipped. Removing the module leaves the index in place; it changes no data.
+
 ## Compatibility
 
 **PHP security.** PHP's php2shell advisory (2026-10-21; CVE-2026-109618 and CVE-2026-109619) is remote code execution without logging in, and it is being exploited. Run OpenEMR on PHP 8.2.35, 8.3.36, 8.4.27, 8.5.12 or later, whatever the module needs. The official OpenEMR 7.0.2 and 7.0.3 Docker images can't get that fix: they carry PHP 8.2.16 and 8.3.15 on Alpine releases that no longer get updates. Run 7.0 only on a patched PHP, or upgrade OpenEMR. OpenEMR rebuilt its 8.4.1, 8.3.0, 8.2.0 and 8.0.0.3 images with the fix on 2026-10-22 (forum t/27157); a container started before then needs pulling again.
