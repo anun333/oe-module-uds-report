@@ -35,6 +35,7 @@ use OpenEMR\Services\Qdm\QdmRequestSome;
 use OpenEMR\Services\Qdm\Services\DiagnosisService;
 use OpenEMR\Services\Qdm\Services\EncounterService;
 use OpenEMR\Services\Qdm\Services\LaboratoryTestService;
+use OpenHealthcare\Common\OpenEmr;
 
 final readonly class EcqmReadinessRepository
 {
@@ -554,7 +555,7 @@ final readonly class EcqmReadinessRepository
             $globals->set('cqm_performance_period', $previous);
         }
         $relative = is_array($options) ? ($options['openemr/oe-cqm-parsers'] ?? null) : null;
-        $dir = is_string($relative) ? $globals->getProjectDir() . $relative : null;
+        $dir = is_string($relative) ? OpenEmr::projectDir() . $relative : null;
         if ($dir === null || !is_dir($dir)) {
             return null;
         }

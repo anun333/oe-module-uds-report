@@ -22,7 +22,6 @@ use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Common\Database\QueryUtils;
 use OpenEMR\Common\Session\SessionWrapperFactory;
 use OpenEMR\Core\Header;
-use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\UdsReport\Bootstrap;
 use OpenEMR\Modules\UdsReport\Http\Guide;
 use OpenEMR\Modules\UdsReport\Http\Request;
@@ -37,6 +36,7 @@ use OpenEMR\Modules\UdsReport\Report\UdsSettings;
 use OpenEMR\Modules\UdsReport\Repository\Row;
 use OpenEMR\Modules\UdsReport\Repository\SettingsRepository;
 use OpenEMR\Modules\UdsReport\Repository\UdsPatientRepository;
+use OpenHealthcare\Common\OpenEmr;
 
 if (!AclMain::aclCheckCore('admin', 'super')) {
     AccessDeniedHelper::denyWithTemplate('ACL check failed for admin/super: UDS settings', xl('UDS Settings'));
@@ -49,7 +49,7 @@ $sessionUserId = $session->get('authUserID');
 $userId = is_int($sessionUserId) ? $sessionUserId : (is_string($sessionUserId) && ctype_digit($sessionUserId) ? (int)$sessionUserId : 0);
 $repo = new SettingsRepository();
 $patientRepository = new UdsPatientRepository($reference->insuranceCategories);
-$moduleUrl = OEGlobalsBag::getInstance()->getWebRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
+$moduleUrl = OpenEmr::webRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
 
 $categories = QueryUtils::fetchRecords("SELECT pc_catid, pc_catname FROM openemr_postcalendar_categories WHERE pc_cattype = 0 ORDER BY pc_catname");
 $facilities = QueryUtils::fetchRecords("SELECT id, name, inactive FROM facility ORDER BY name");

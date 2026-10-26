@@ -266,7 +266,7 @@ Viewing needs `patients/demo`; the Table 9D worksheet needs `acct/rep_a`, as Ope
 | 8.5.0 and master (8.6.0-dev) | works | works: the 2026 measures are in 8.5.0 ([#14536](https://github.com/openemr/openemr/pull/14536), merged to master 2026-10-13; 8.5.0 was cut from master on 2026-10-25). Ongoing problems and visits with no end time don't count until [#14526](https://github.com/openemr/openemr/issues/14526) is fixed | end to end, synthetic patients; rechecked on master 76fa2f1e88 (2026-10-13): CMS165v14 for nine synthetic patients matched each one's prediction |
 | 8.4.1 | works | no PHP eCQM engine; the page says so | end to end, synthetic patients |
 | 8.4.0, 8.3.0, 8.2.0, 8.1.0 | installs, every page loads | no PHP eCQM engine | official Docker images: installed through Module Manager, every page loaded as an administrator with no PHP error (no patients) |
-| 8.0.0 and older | won't run: OpenEMR classes it uses don't exist there (`AccessDeniedHelper`, `BC\ServiceContainer`, and others) | | which classes exist at each release tag |
+| 8.0.0 and older | stays switched off (before this release, enabling it on 7.0.4 to 8.0.x stopped every page): OpenEMR classes it uses don't exist there (`AccessDeniedHelper`, `BC\ServiceContainer`, and others) | | which classes exist at each release tag |
 
 PHP 8.3 or later is needed. On 8.1.0 to 8.3.0 the module reads the request itself, because OpenEMR's `CurrentRequest` only arrived in 8.4.0.
 

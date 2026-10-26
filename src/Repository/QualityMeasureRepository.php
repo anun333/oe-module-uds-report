@@ -28,6 +28,7 @@ use OpenEMR\Services\Qdm\IndividualResult;
 use OpenEMR\Services\Qdm\QdmBuilder;
 use OpenEMR\Services\Qdm\QdmRequestSome;
 use OpenEMR\Services\Qrda\ExportCat3Service;
+use OpenHealthcare\Common\OpenEmr;
 
 final class QualityMeasureRepository
 {
@@ -126,7 +127,7 @@ final class QualityMeasureRepository
             $globals->set('cqm_performance_period', $previous);
         }
         $relative = is_array($options) ? ($options['openemr/oe-cqm-parsers'] ?? null) : null;
-        $dir = is_string($relative) ? $globals->getProjectDir() . $relative : null;
+        $dir = is_string($relative) ? OpenEmr::projectDir() . $relative : null;
         return $dir !== null && is_dir($dir) ? $dir : null;
     }
 }

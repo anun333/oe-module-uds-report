@@ -20,7 +20,6 @@ use OpenEMR\BC\ServiceContainer;
 use OpenEMR\Common\Acl\AccessDeniedHelper;
 use OpenEMR\Common\Acl\AclMain;
 use OpenEMR\Core\Header;
-use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\UdsReport\Bootstrap;
 use OpenEMR\Modules\UdsReport\Http\Guide;
 use OpenEMR\Modules\UdsReport\Http\Request;
@@ -31,6 +30,7 @@ use OpenEMR\Modules\UdsReport\Report\ReportYear;
 use OpenEMR\Modules\UdsReport\Repository\EcqmReadinessRepository;
 use OpenEMR\Modules\UdsReport\Repository\SettingsRepository;
 use OpenEMR\Modules\UdsReport\Repository\UdsPatientRepository;
+use OpenHealthcare\Common\OpenEmr;
 
 if (!AclMain::aclCheckCore('patients', 'demo')) {
     AccessDeniedHelper::denyWithTemplate('ACL check failed for patients/demo: UDS eCQM readiness', xl('UDS Report'));
@@ -77,7 +77,7 @@ $wrongRows = array_filter(
     static fn(string $kind): bool => ($leftOut[$kind] ?? null) === false && $wrong[$kind]['records'] > 0,
     ARRAY_FILTER_USE_KEY
 );
-$moduleUrl = OEGlobalsBag::getInstance()->getWebRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
+$moduleUrl = OpenEmr::webRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
 $n = static fn(int $v): string => number_format($v);
 $ready = 0;
 foreach ($measures as $m) {

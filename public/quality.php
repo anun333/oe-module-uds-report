@@ -24,7 +24,6 @@ use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Common\Database\QueryUtils;
 use OpenEMR\Common\Session\SessionWrapperFactory;
 use OpenEMR\Core\Header;
-use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\UdsReport\Bootstrap;
 use OpenEMR\Modules\UdsReport\Http\Guide;
 use OpenEMR\Modules\UdsReport\Http\Request;
@@ -41,6 +40,7 @@ use OpenEMR\Modules\UdsReport\Repository\QualityMeasureRepository;
 use OpenEMR\Modules\UdsReport\Repository\QualityResultsRepository;
 use OpenEMR\Modules\UdsReport\Repository\SettingsRepository;
 use OpenEMR\Modules\UdsReport\Repository\UdsPatientRepository;
+use OpenHealthcare\Common\OpenEmr;
 
 if (!AclMain::aclCheckCore('patients', 'demo')) {
     AccessDeniedHelper::denyWithTemplate('ACL check failed for patients/demo: UDS Tables 6B and 7', xl('UDS Report'));
@@ -229,7 +229,7 @@ if ($request->query->getString('format') === 'csv') {
     exit;
 }
 
-$moduleUrl = OEGlobalsBag::getInstance()->getWebRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
+$moduleUrl = OpenEmr::webRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
 $csrf = CsrfUtils::collectCsrfToken(session: $session);
 $n = static fn(int $v): string => number_format($v);
 $engine = EcqmReadinessRepository::phpEngine();

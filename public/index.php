@@ -18,7 +18,6 @@ use OpenEMR\BC\ServiceContainer;
 use OpenEMR\Common\Acl\AccessDeniedHelper;
 use OpenEMR\Common\Acl\AclMain;
 use OpenEMR\Core\Header;
-use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\UdsReport\Bootstrap;
 use OpenEMR\Modules\UdsReport\Http\Guide;
 use OpenEMR\Modules\UdsReport\Http\Request;
@@ -34,6 +33,7 @@ use OpenEMR\Modules\UdsReport\Report\UdsReportService;
 use OpenEMR\Modules\UdsReport\Report\ServiceArea;
 use OpenEMR\Modules\UdsReport\Repository\SettingsRepository;
 use OpenEMR\Modules\UdsReport\Repository\UdsPatientRepository;
+use OpenHealthcare\Common\OpenEmr;
 
 if (!AclMain::aclCheckCore('patients', 'demo')) {
     AccessDeniedHelper::denyWithTemplate('ACL check failed for patients/demo: UDS Report', xl('UDS Report'));
@@ -66,7 +66,7 @@ $valueSetsLatest = $fetchedSets === [] ? '' : substr(max(array_column($fetchedSe
 $gaps = $report->gaps();
 $region = $report->settings->povertyRegion;
 $onePerson = $reference->povertyGuidelines->annualThreshold($year, $region, 1);
-$moduleUrl = OEGlobalsBag::getInstance()->getWebRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
+$moduleUrl = OpenEmr::webRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
 $n = static fn(int $v): string => number_format($v);
 $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('patients');
 ?>

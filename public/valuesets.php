@@ -24,7 +24,6 @@ use OpenEMR\Common\Acl\AclMain;
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Common\Session\SessionWrapperFactory;
 use OpenEMR\Core\Header;
-use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\UdsReport\Bootstrap;
 use OpenEMR\Modules\UdsReport\Http\Guide;
 use OpenEMR\Modules\UdsReport\Http\Request;
@@ -34,6 +33,7 @@ use OpenEMR\Modules\UdsReport\Repository\ValueSetRepository;
 use OpenEMR\Modules\UdsReport\ValueSet\LicenceNotices;
 use OpenEMR\Modules\UdsReport\ValueSet\ValueSetException;
 use OpenEMR\Modules\UdsReport\ValueSet\VsacClient;
+use OpenHealthcare\Common\OpenEmr;
 
 if (!AclMain::aclCheckCore('admin', 'super')) {
     AccessDeniedHelper::denyWithTemplate('ACL check failed for admin/super: UDS value sets', xl('UDS Value Sets'));
@@ -45,7 +45,7 @@ $session = SessionWrapperFactory::getInstance()->getActiveSession();
 $sessionUserId = $session->get('authUserID');
 $userId = is_int($sessionUserId) ? $sessionUserId : (is_string($sessionUserId) && ctype_digit($sessionUserId) ? (int)$sessionUserId : 0);
 $repo = new ValueSetRepository();
-$moduleUrl = OEGlobalsBag::getInstance()->getWebRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
+$moduleUrl = OpenEmr::webRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
 
 $oids = $reference->table6a->valueSetOids();
 $linesByOid = [];

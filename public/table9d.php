@@ -19,7 +19,6 @@ use OpenEMR\BC\ServiceContainer;
 use OpenEMR\Common\Acl\AccessDeniedHelper;
 use OpenEMR\Common\Acl\AclMain;
 use OpenEMR\Core\Header;
-use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\UdsReport\Bootstrap;
 use OpenEMR\Modules\UdsReport\Http\Guide;
 use OpenEMR\Modules\UdsReport\Http\Request;
@@ -32,6 +31,7 @@ use OpenEMR\Modules\UdsReport\Report\ReportYear;
 use OpenEMR\Modules\UdsReport\Report\UdsReportService;
 use OpenEMR\Modules\UdsReport\Repository\SettingsRepository;
 use OpenEMR\Modules\UdsReport\Repository\UdsPatientRepository;
+use OpenHealthcare\Common\OpenEmr;
 
 // The permission OpenEMR's own Collections and Receipts by Payment Method reports require.
 if (!AclMain::aclCheckCore('acct', 'rep_a')) {
@@ -45,7 +45,7 @@ $year = ReportYear::fromQuery(Request::get()->query->getString('year'), $now);
 $report = new UdsReportService($year, (new SettingsRepository())->load(), $reference, new UdsPatientRepository($reference->insuranceCategories));
 $sheet = $report->table9D()->result();
 $extra = $report->table9DNotes();
-$moduleUrl = OEGlobalsBag::getInstance()->getWebRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
+$moduleUrl = OpenEmr::webRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
 
 // Rows that hold money no line can take are shown only when they hold some.
 $rows = array_filter(

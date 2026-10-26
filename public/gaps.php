@@ -23,7 +23,6 @@ use OpenEMR\Common\Database\QueryUtils;
 use OpenEMR\Common\Logging\EventAuditLogger;
 use OpenEMR\Common\Session\SessionWrapperFactory;
 use OpenEMR\Core\Header;
-use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\UdsReport\Bootstrap;
 use OpenEMR\Modules\UdsReport\Http\Guide;
 use OpenEMR\Modules\UdsReport\Http\Request;
@@ -37,6 +36,7 @@ use OpenEMR\Modules\UdsReport\Report\UdsReportService;
 use OpenEMR\Modules\UdsReport\Repository\Row;
 use OpenEMR\Modules\UdsReport\Repository\SettingsRepository;
 use OpenEMR\Modules\UdsReport\Repository\UdsPatientRepository;
+use OpenHealthcare\Common\OpenEmr;
 
 if (!AclMain::aclCheckCore('patients', 'demo')) {
     AccessDeniedHelper::denyWithTemplate('ACL check failed for patients/demo: UDS record gaps', xl('UDS Report'));
@@ -72,7 +72,7 @@ EventAuditLogger::getInstance()->newEvent(
     'UDS record gaps viewed (' . $year . ', ' . $gap->value . '), ' . count($pids) . ' patients, pids: ' . implode(',', $pids),
 );
 
-$webRoot = OEGlobalsBag::getInstance()->getWebRoot();
+$webRoot = OpenEmr::webRoot();
 $moduleUrl = $webRoot . Bootstrap::MODULE_INSTALLATION_PATH;
 ?>
 <!DOCTYPE html>

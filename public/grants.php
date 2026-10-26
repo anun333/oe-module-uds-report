@@ -21,7 +21,6 @@ use OpenEMR\BC\ServiceContainer;
 use OpenEMR\Common\Acl\AccessDeniedHelper;
 use OpenEMR\Common\Acl\AclMain;
 use OpenEMR\Core\Header;
-use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\UdsReport\Bootstrap;
 use OpenEMR\Modules\UdsReport\Enum\GrantReport;
 use OpenEMR\Modules\UdsReport\Http\Guide;
@@ -36,6 +35,7 @@ use OpenEMR\Modules\UdsReport\Report\SmallCells;
 use OpenEMR\Modules\UdsReport\Report\UdsReportService;
 use OpenEMR\Modules\UdsReport\Repository\SettingsRepository;
 use OpenEMR\Modules\UdsReport\Repository\UdsPatientRepository;
+use OpenHealthcare\Common\OpenEmr;
 
 if (!AclMain::aclCheckCore('patients', 'demo')) {
     AccessDeniedHelper::denyWithTemplate('ACL check failed for patients/demo: UDS grant evidence', xl('UDS Report'));
@@ -130,7 +130,7 @@ if (Request::get()->query->getString('format') === 'csv') {
     exit;
 }
 
-$moduleUrl = OEGlobalsBag::getInstance()->getWebRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
+$moduleUrl = OpenEmr::webRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
 ?>
 <!DOCTYPE html>
 <?php // The module's own text is written in English. ?>
