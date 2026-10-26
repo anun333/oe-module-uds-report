@@ -20,6 +20,7 @@ use OpenEMR\Common\Acl\AclMain;
 use OpenEMR\Core\Header;
 use OpenEMR\Modules\UdsReport\Bootstrap;
 use OpenEMR\Modules\UdsReport\Http\Guide;
+use OpenEMR\Modules\UdsReport\Http\Page;
 use OpenEMR\Modules\UdsReport\Http\Request;
 use OpenEMR\Modules\UdsReport\Enum\DataGap;
 use OpenEMR\Modules\UdsReport\Enum\GrantReport;
@@ -72,7 +73,7 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
 ?>
 <!DOCTYPE html>
 <?php // The module's own text is written in English. ?>
-<html lang="en">
+<html lang="<?php echo attr(Page::lang()); ?>" dir="<?php echo attr(Page::dir()); ?>">
 <head>
     <title><?php echo xlt('UDS Report'); ?></title>
     <?php Header::setupHeader(['common']); ?>
@@ -91,18 +92,19 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
         <h1 class="h4 mb-2"><?php echo xlt('UDS Report'); ?>: <?php echo text((string)$year); ?> <small class="text-muted"><?php echo text(Labels::report($grant)); ?></small></h1>
         <form method="get" class="form-inline mb-2">
             <label class="mr-2" for="uds-year"><?php echo xlt('Calendar year'); ?></label>
-            <select class="form-control form-control-sm mr-2" id="uds-year" name="year" onchange="this.form.submit()">
+            <select class="form-control form-control-sm mr-2" id="uds-year" name="year">
                 <?php for ($y = (int)$now->format('Y'); $y >= ReportYear::EARLIEST; $y--) { ?>
                     <option value="<?php echo attr((string)$y); ?>" <?php echo $y === $year ? 'selected' : ''; ?>><?php echo text((string)$y); ?></option>
                 <?php } ?>
             </select>
             <label class="mr-2" for="uds-grant"><?php echo xlt('Report'); ?></label>
-            <select class="form-control form-control-sm mr-2" id="uds-grant" name="grant" onchange="this.form.submit()">
+            <select class="form-control form-control-sm mr-2" id="uds-grant" name="grant">
                 <option value=""><?php echo text(Labels::report(null)); ?></option>
                 <?php foreach (GrantReport::cases() as $g) { ?>
                     <option value="<?php echo attr($g->value); ?>" <?php echo $g === $grant ? 'selected' : ''; ?>><?php echo text(Labels::report($g)); ?></option>
                 <?php } ?>
             </select>
+            <button type="submit" class="btn btn-sm btn-primary mr-2"><?php echo xlt('Show'); ?></button>
             <a class="btn btn-sm btn-outline-secondary mr-2" href="<?php echo attr($moduleUrl . '/public/export.php?' . $query); ?>"><?php echo xlt('Download CSV'); ?></a>
             <a class="btn btn-sm btn-outline-secondary mr-2" href="<?php echo attr($moduleUrl . '/public/grants.php?' . $query); ?>"><?php echo xlt('Grant evidence'); ?></a>
             <?php if ($grant === null) { ?>
@@ -152,6 +154,8 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
 
     <h2 class="h5 uds-section"><?php echo xlt('Records to fix before submitting'); ?></h2>
     <table class="table table-sm uds-table mb-1">
+        <caption class="sr-only"><?php echo xlt('Records to fix before submitting'); ?></caption>
+        <thead class="sr-only"><tr><th scope="col"><?php echo xlt('Kind'); ?></th><th scope="col"><?php echo xlt('Problem'); ?></th><th scope="col"><?php echo xlt('Records'); ?></th></tr></thead>
         <tbody>
         <?php foreach (DataGap::cases() as $gap) {
             $count = count($gaps[$gap->value] ?? []);
@@ -297,7 +301,7 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
                 </tbody>
             </table>
             <p class="small text-muted"><?php echo xlt('Poverty guidelines'); ?>: <?php echo text((string)$year); ?>, <?php echo text(Labels::povertyRegion($region)); ?>
-                (<?php echo $onePerson === null ? xlt('not loaded') : text($n($onePerson)) . ' ' . xlt('for one person'); ?>)</p>
+                (<?php echo $onePerson === null ? xlt('not loaded') : text(sprintf(xl('%s for one person'), $n($onePerson))); ?>)</p>
         </div>
         <div class="col-lg-7">
             <table class="table table-sm table-bordered uds-table">

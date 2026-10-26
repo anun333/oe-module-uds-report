@@ -22,6 +22,7 @@ use OpenEMR\Common\Acl\AclMain;
 use OpenEMR\Core\Header;
 use OpenEMR\Modules\UdsReport\Bootstrap;
 use OpenEMR\Modules\UdsReport\Http\Guide;
+use OpenEMR\Modules\UdsReport\Http\Page;
 use OpenEMR\Modules\UdsReport\Http\Request;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataGuard;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataLoader;
@@ -86,7 +87,7 @@ foreach ($measures as $m) {
 ?>
 <!DOCTYPE html>
 <?php // The module's own text is written in English. ?>
-<html lang="en">
+<html lang="<?php echo attr(Page::lang()); ?>" dir="<?php echo attr(Page::dir()); ?>">
 <head>
     <title><?php echo xlt('UDS eCQM readiness'); ?></title>
     <?php Header::setupHeader(['common']); ?>
@@ -103,11 +104,12 @@ foreach ($measures as $m) {
         <p class="small mb-2"><a href="<?php echo attr(Guide::url()); ?>" target="_blank" rel="noopener"><?php echo xlt('Help'); ?><span class="sr-only"> <?php echo xlt('(opens in a new window)'); ?></span></a></p>
         <form method="get" class="form-inline mb-2">
             <label class="mr-2" for="uds-year"><?php echo xlt('Calendar year'); ?></label>
-            <select class="form-control form-control-sm mr-2" id="uds-year" name="year" onchange="this.form.submit()">
+            <select class="form-control form-control-sm mr-2" id="uds-year" name="year">
                 <?php for ($y = (int)$now->format('Y'); $y >= ReportYear::EARLIEST; $y--) { ?>
                     <option value="<?php echo attr((string)$y); ?>" <?php echo $y === $year ? 'selected' : ''; ?>><?php echo text((string)$y); ?></option>
                 <?php } ?>
             </select>
+            <button type="submit" class="btn btn-sm btn-primary mr-2"><?php echo xlt('Show'); ?></button>
             <a class="btn btn-sm btn-outline-secondary mr-2" href="<?php echo attr($moduleUrl . '/public/index.php?year=' . $year); ?>"><?php echo xlt('UDS Report'); ?></a>
             <a class="btn btn-sm btn-outline-secondary" href="<?php echo attr($moduleUrl . '/public/quality.php?year=' . $year); ?>"><?php echo xlt('Tables 6B and 7'); ?></a>
         </form>
@@ -282,7 +284,7 @@ foreach ($measures as $m) {
                     <td><?php echo text($m['line']); ?></td>
                     <td><?php echo text($m['title']); ?></td>
                     <td><?php echo text($m['measure']); ?></td>
-                    <td><?php echo $status['installed'] ? xlt('Yes') : (text(xl('No')) . ($status['otherVersions'] === [] ? '' : text(' (' . xl('only') . ' ' . implode(', ', $status['otherVersions']) . ')'))); ?></td>
+                    <td><?php echo $status['installed'] ? xlt('Yes') : ($status['otherVersions'] === [] ? xlt('No') : text(sprintf(xl('No (only %s)'), implode(', ', $status['otherVersions'])))); ?></td>
                 </tr>
             <?php } ?>
             </tbody>

@@ -253,6 +253,8 @@ composer require anun333/oe-module-uds-report
 
 That places it in `interface/modules/custom_modules/oe-module-uds-report/`. Then go to Modules › Manage Modules and **Register**, **Install** and **Enable** UDS Report. Installing adds the settings tables and the three demographic fields. Uninstalling leaves them in place, because they hold data staff entered.
 
+**Installing by hand.** If you copy modules into `custom_modules/` and run `composer install` inside each one instead of using `composer require`, keep openhealthcare-common at the same version in every module's own `vendor/` folder: the first module OpenEMR loads serves its copy of the library to all of them.
+
 Viewing needs `patients/demo`; the Table 9D worksheet needs `acct/rep_a`, as OpenEMR's Collections report does; Settings and the Table 6A value sets need `admin/super`. Fetching the value sets needs the site's UMLS API key, and HTTPS from the server to cts.nlm.nih.gov.
 
 ## Compatibility
@@ -268,7 +270,7 @@ Viewing needs `patients/demo`; the Table 9D worksheet needs `acct/rep_a`, as Ope
 | 8.4.0, 8.3.0, 8.2.0, 8.1.0 | installs, every page loads | no PHP eCQM engine | official Docker images: installed through Module Manager, every page loaded as an administrator with no PHP error (no patients) |
 | 8.0.0 and older | stays switched off (before this release, enabling it on 7.0.4 to 8.0.x stopped every page): OpenEMR classes it uses don't exist there (`AccessDeniedHelper`, `BC\ServiceContainer`, and others) | | which classes exist at each release tag |
 
-PHP 8.2 or later is needed (8.3 from 2027-01-01, with the other modules). On 8.1.0 to 8.3.0 the module reads the request itself, because OpenEMR's `CurrentRequest` only arrived in 8.4.0.
+OpenEMR 8.1.0 or later is needed, and PHP 8.2 or later (8.3 from 2027-01-01, with the other modules). On 8.1.0 to 8.3.0 the module reads the request itself, because OpenEMR's `CurrentRequest` only arrived in 8.4.0.
 
 The Grant evidence page (0.15.0) passes `dev/uds_grants_check.py` in the openhealthcare repository on 8.4.1 and on master 1faefbbeb9 (2026-10-18). That covers the total matching the UDS Report, no count from 1 to 10 in the CSV, and the social-needs lines from synthetic value sets.
 
@@ -296,6 +298,7 @@ php tools/footprint.php --check    # FOOTPRINT.md must match the source
 - **CPT®** codes are copyright the American Medical Association. All rights reserved. CPT is a registered trademark of the American Medical Association.
 - **CDT** codes (Current Dental Terminology) are copyright the American Dental Association. All rights reserved. CDT is a registered trademark of the American Dental Association.
 - **SNOMED CT®** is a registered trademark of SNOMED International.
+- **LOINC®** codes (the screenings and tests on Table 6A, read from the value sets and records): This material contains content from LOINC (http://loinc.org). LOINC is copyright © Regenstrief Institute, Inc. and the Logical Observation Identifiers Names and Codes (LOINC) Committee and is available at no cost under the license at http://loinc.org/license. LOINC® is a registered United States trademark of Regenstrief Institute, Inc.
 - **ICD-10-CM** (National Center for Health Statistics) and **HCPCS Level II** (CMS) are published by the U.S. government.
 - **CVX** codes (vaccines administered) and the CPT-to-CVX crosswalk the module's CVX lists come from are published by the CDC.
 

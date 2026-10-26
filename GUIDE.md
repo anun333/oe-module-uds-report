@@ -10,7 +10,7 @@ The module builds the tables; it doesn't submit them. You enter the figures in H
 
 *Where:* the Reports menu › **UDS Report**.
 
-1. Choose the year in **Calendar year**. The page reloads.
+1. Choose the year in **Calendar year**, then **Show**. The same goes for the year on the eCQM readiness, Tables 6B and 7 and Table 9D pages.
 2. Leave **Report** on **Universal Report**, unless you are preparing a Grant Report.
 3. Read the banner. **Table totals agree** means every table counts the same patients. **The table totals do not agree yet.** means some patients are missing from a table: fix the **Blocking** records (next task) and reload.
 4. Choose **Download CSV** to save the tables.
@@ -41,7 +41,7 @@ Two fixes catch people out. Type the Financial Review Date as year-month-day (20
 
 *Where:* the **Report** list on the UDS Report.
 
-Choose 330(g), 330(h) or 330(i). The page and its CSV then cover only that population, with all their visits and services.
+Choose 330(g), 330(h) or 330(i), then **Show**. The page and its CSV then cover only that population, with all their visits and services.
 
 *What it doesn't do:* no ZIP code table, FTEs, Tables 6B and 7, or Table 9D. The **eCQM readiness**, **Tables 6B and 7** and **Table 9D worksheet** buttons show only on the Universal Report.
 
@@ -49,7 +49,7 @@ Choose 330(g), 330(h) or 330(i). The page and its CSV then cover only that popul
 
 *Where:* **Grant evidence** on the UDS Report.
 
-1. Choose the year, and the population in the second list.
+1. Choose the year, and the population in the second list, then **Show**.
 2. Read **Who we serve**, **Special populations and language**, **Social needs: screening and services** and **Quality measures**, or **Download CSV**.
 
 *What you see:* counts and shares only, no names or dates. A count from 1 to 10 shows as <11, and one more is hidden where a total would give it away.

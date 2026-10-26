@@ -24,6 +24,7 @@ use OpenEMR\Core\Header;
 use OpenEMR\Modules\UdsReport\Bootstrap;
 use OpenEMR\Modules\UdsReport\Enum\GrantReport;
 use OpenEMR\Modules\UdsReport\Http\Guide;
+use OpenEMR\Modules\UdsReport\Http\Page;
 use OpenEMR\Modules\UdsReport\Http\Request;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataGuard;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataLoader;
@@ -134,7 +135,7 @@ $moduleUrl = OpenEmr::webRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
 ?>
 <!DOCTYPE html>
 <?php // The module's own text is written in English. ?>
-<html lang="en">
+<html lang="<?php echo attr(Page::lang()); ?>" dir="<?php echo attr(Page::dir()); ?>">
 <head>
     <title><?php echo xlt('UDS grant evidence'); ?></title>
     <?php Header::setupHeader(['common']); ?>
@@ -152,17 +153,18 @@ $moduleUrl = OpenEmr::webRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
         <p class="small mb-2"><a href="<?php echo attr(Guide::url()); ?>" target="_blank" rel="noopener"><?php echo xlt('Help'); ?><span class="sr-only"> <?php echo xlt('(opens in a new window)'); ?></span></a></p>
         <form method="get" class="form-inline mb-2">
             <label class="mr-2" for="uds-year"><?php echo xlt('Calendar year'); ?></label>
-            <select class="form-control form-control-sm mr-2" id="uds-year" name="year" onchange="this.form.submit()">
+            <select class="form-control form-control-sm mr-2" id="uds-year" name="year">
                 <?php for ($y = (int)$now->format('Y'); $y >= ReportYear::EARLIEST; $y--) { ?>
                     <option value="<?php echo attr((string)$y); ?>" <?php echo $y === $year ? 'selected' : ''; ?>><?php echo text((string)$y); ?></option>
                 <?php } ?>
             </select>
-            <select class="form-control form-control-sm mr-2" name="grant" onchange="this.form.submit()" aria-label="<?php echo xla('Population'); ?>">
+            <select class="form-control form-control-sm mr-2" name="grant" aria-label="<?php echo xla('Population'); ?>">
                 <option value=""><?php echo text(Labels::report(null)); ?></option>
                 <?php foreach (GrantReport::cases() as $g) { ?>
                     <option value="<?php echo attr($g->value); ?>" <?php echo $g === $grant ? 'selected' : ''; ?>><?php echo text(Labels::report($g)); ?></option>
                 <?php } ?>
             </select>
+            <button type="submit" class="btn btn-sm btn-primary mr-2"><?php echo xlt('Show'); ?></button>
             <a class="btn btn-sm btn-outline-secondary mr-2" href="<?php echo attr($moduleUrl . '/public/grants.php?' . $query . '&format=csv'); ?>"><?php echo xlt('Download CSV'); ?></a>
             <a class="btn btn-sm btn-outline-secondary mr-2" href="<?php echo attr($moduleUrl . '/public/index.php?' . $query); ?>"><?php echo xlt('UDS Report'); ?></a>
             <a class="btn btn-sm btn-outline-secondary" href="<?php echo attr($moduleUrl . '/public/quality.php?year=' . $year); ?>"><?php echo xlt('Tables 6B and 7'); ?></a>
@@ -210,7 +212,7 @@ $moduleUrl = OpenEmr::webRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
     <?php if (!$counted) { ?>
         <div class="alert alert-warning small">
             <?php echo xlt('Not counted yet: Table 6A defines these lines by value sets, and this site has not fetched them.'); ?>
-            <a href="<?php echo attr($moduleUrl . '/public/valuesets.php'); ?>"><?php echo xlt('Fetch the value sets'); ?></a>
+            <a href="<?php echo attr($moduleUrl . '/public/valuesets.php'); ?>" style="text-decoration: underline;"><?php echo xlt('Fetch the value sets'); ?></a>
         </div>
     <?php } else { ?>
         <p class="small text-muted"><?php echo xlt('Patients screened for social needs, and patients given services for food insecurity, housing instability or financial insecurity, as Table 6A counts them, each as a share of all patients. A screening counts when it is coded: a screening code on the fee sheet, or a questionnaire answered with its LOINC code. A service counts when it is coded on the fee sheet or in a completed care plan entry. Table 6A does not count positive screens or diagnoses such as the Z59 codes on these lines.'); ?></p>

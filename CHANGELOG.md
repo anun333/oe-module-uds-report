@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.17.5 (unreleased)
+
+- **Pages say which language they're in.** Each page now declares the signed-in user's OpenEMR language and its writing direction (openhealthcare-common 1.4.0's `pageLang()`), so a screen reader reads a Spanish page as Spanish. They all said English before.
+- **Choosing a year (or a Grant Report) no longer reloads the page by itself.** Choose, then **Show**. Moving through the list with the arrow keys used to reload the page at each step (WCAG 3.2.2).
+- **Easier to read:** the Table 9D worksheet's ledger rows are now dark grey enough on white (they were 2.53:1), and the Grant evidence page's link to fetch the value sets is underlined, not told apart by colour alone.
+- **The records-to-fix table has column headers** for screen readers.
+- **Two sentences a translator couldn't reorder** are now one string each: the poverty guideline "… for one person", and eCQM readiness's "No (only …)".
+- **README:** LOINC's notice, the OpenEMR floor (8.1.0) stated with the PHP one, and a note for sites that install modules by hand.
+- Needs openhealthcare-common 1.4.0.
+
 ## 0.17.4 (2026-10-26)
 
 - **Runs on PHP 8.2,** as OpenEMR 8.1.0 does: `composer.json` asked for 8.3, but nothing needs it. A date of birth OpenEMR can't read made the report stop on PHP 8.2 (the exception it catches only exists from 8.3); it's now skipped there as on 8.3. All 412 tests pass on PHP 8.2 and 8.5. The floor moves to 8.3 on 2027-01-01 with the other modules.
