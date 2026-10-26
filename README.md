@@ -39,7 +39,7 @@ Using the module day to day, task by task for each role: see [GUIDE.md](GUIDE.md
 | Rule (2026 UDS Manual) | Implementation |
 |---|---|
 | A patient has at least one countable visit in the year | An encounter in the year with a provider, in a countable visit category (default: every patient category except No Show), at an in-scope site. Record labs, injections, screenings and outreach under categories you leave unticked. |
-| Age is as of December 31 | `DOB` |
+| Age is as of December 31 (HRSA's [Table 3A fact sheet](https://bphc.hrsa.gov/sites/default/files/bphc/data-reporting/table-3a-fact-sheet-2024.pdf): "Date to use to identify age: as of December 31"; June 30 before the 2023 report) | `DOB` |
 | Sex as listed on the birth certificate, with no unknown column (3A) | OpenEMR's `sex` field. Anyone not recorded as Male or Female is listed as a blocking problem. |
 | Race lines 1a–7, ethnicity columns A1–C (3B) | CDC codes from the race and ethnicity lists, rolled up to UDS lines ([data/race-ethnicity.json](data/race-ethnicity.json)). Several Asian subgroups go to 1g, several Pacific Islander subgroups to 2b, two or more race groups to 6. A race without an ethnicity answer is presumed not Hispanic. The stock ethnicity list has only Hispanic yes/no, so Hispanic patients go to A5 unless the list carries detailed CDC codes. |
 | Limited English proficiency (3B, Line 12) | Preferred language isn't English (or blank or declined), or an interpreter is needed |
@@ -268,7 +268,7 @@ Viewing needs `patients/demo`; the Table 9D worksheet needs `acct/rep_a`, as Ope
 | 8.4.0, 8.3.0, 8.2.0, 8.1.0 | installs, every page loads | no PHP eCQM engine | official Docker images: installed through Module Manager, every page loaded as an administrator with no PHP error (no patients) |
 | 8.0.0 and older | stays switched off (before this release, enabling it on 7.0.4 to 8.0.x stopped every page): OpenEMR classes it uses don't exist there (`AccessDeniedHelper`, `BC\ServiceContainer`, and others) | | which classes exist at each release tag |
 
-PHP 8.3 or later is needed. On 8.1.0 to 8.3.0 the module reads the request itself, because OpenEMR's `CurrentRequest` only arrived in 8.4.0.
+PHP 8.2 or later is needed (8.3 from 2027-01-01, with the other modules). On 8.1.0 to 8.3.0 the module reads the request itself, because OpenEMR's `CurrentRequest` only arrived in 8.4.0.
 
 The Grant evidence page (0.15.0) passes `dev/uds_grants_check.py` in the openhealthcare repository on 8.4.1 and on master 1faefbbeb9 (2026-10-18). That covers the total matching the UDS Report, no count from 1 to 10 in the CSV, and the social-needs lines from synthetic value sets.
 

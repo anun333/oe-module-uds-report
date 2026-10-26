@@ -406,7 +406,8 @@ final readonly class UdsPatientRepository
         }
         try {
             return new DateTimeImmutable($value);
-        } catch (\DateMalformedStringException) {
+        } catch (\Exception) {
+            // DateMalformedStringException from PHP 8.3, a plain Exception on 8.2.
             return null;
         }
     }

@@ -121,7 +121,7 @@ As written in the source; whether they behave correctly for a given user is not 
 
 | part | files | lines |
 |---|---|---|
-| PHP logic (`src/`) | 77 | 8708 |
+| PHP logic (`src/`) | 77 | 8713 |
 | tests (`tests/`, `phpunit.xml.dist`) | 27 | 3388 |
 | pages (`public/`) | 9 | 2357 |
 | data (`data/`, read at runtime) | 8 | 1732 |

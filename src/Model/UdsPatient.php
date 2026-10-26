@@ -75,7 +75,11 @@ final readonly class UdsPatient
     ) {
     }
 
-    /** Age on December 31 of the reporting year (Tables 3A and 4), or null without a date of birth. */
+    /**
+     * Age on December 31 of the reporting year (Tables 3A and 4), or null without a date of birth. HRSA's
+     * Table 3A fact sheet: "Date to use to identify age: as of December 31", which replaced June 30 from the
+     * 2023 report (https://bphc.hrsa.gov/sites/default/files/bphc/data-reporting/table-3a-fact-sheet-2024.pdf).
+     */
     public function ageAtYearEnd(int $year): ?int
     {
         if ($this->dob === null) {

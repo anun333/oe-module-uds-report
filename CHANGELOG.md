@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.17.4 (unreleased)
+
+- **Runs on PHP 8.2,** as OpenEMR 8.1.0 does: `composer.json` asked for 8.3, but nothing needs it. A date of birth OpenEMR can't read made the report stop on PHP 8.2 (the exception it catches only exists from 8.3); it's now skipped there as on 8.3. All 412 tests pass on PHP 8.2 and 8.5. The floor moves to 8.3 on 2027-01-01 with the other modules.
+- **Age as of December 31 is cited:** HRSA's Table 3A fact sheet, which moved the date from June 30 from the 2023 report.
+
 ## 0.17.3 (2026-10-26)
 
 - **Text and buttons are easier to read on this module's pages.** OpenEMR's blue (#007bff) is 3.97:1 on white, under the 4.5:1 that WCAG 2.1 AA asks of normal text and that HHS's Section 504 rule requires from 2027-05-11. Under OpenEMR's light and manila themes, the module's links and primary buttons now use #0056b3 (7.0:1), and muted and warning text darker shades that stay readable on tinted rows, and a link inside text is underlined; the dark, solar and colour themes keep their own colours, and OpenEMR's own pages are unchanged.
