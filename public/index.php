@@ -91,6 +91,7 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
 <div class="container-fluid py-3">
     <div class="d-flex flex-wrap align-items-center justify-content-between">
         <h1 class="h4 mb-2"><?php echo xlt('UDS Report'); ?>: <?php echo text((string)$year); ?> <small class="text-muted"><?php echo text(Labels::report($grant)); ?></small></h1>
+        <p class="small mb-2"><a href="<?php echo attr(Guide::url()); ?>" target="_blank" rel="noopener"><?php echo xlt('Help'); ?><span class="sr-only"> <?php echo xlt('(opens in a new window)'); ?></span></a></p>
         <form method="get" class="form-inline mb-2">
             <label class="mr-2" for="uds-year"><?php echo xlt('Calendar year'); ?></label>
             <select class="form-control form-control-sm mr-2" id="uds-year" name="year">
@@ -118,7 +119,6 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
             <?php if ($isAdmin) { ?>
                 <a class="btn btn-sm btn-outline-secondary" href="<?php echo attr($moduleUrl . '/public/settings.php'); ?>"><?php echo xlt('Settings'); ?></a>
             <?php } ?>
-            <a class="btn btn-sm btn-outline-secondary ml-2" href="<?php echo attr(Guide::url()); ?>" target="_blank" rel="noopener"><?php echo xlt('Help'); ?><span class="sr-only"> <?php echo xlt('(opens in a new window)'); ?></span></a>
         </form>
     </div>
     <p class="text-muted small mb-3">

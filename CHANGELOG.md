@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.17.7 (unreleased)
+
+- **Help is in one place on every page.** On the report page it was the last button in the year toolbar; on every other page it sits right after the heading, before the toolbar. It now sits there on the report page too, so it's found in the same place wherever you are (WCAG 2.2, 3.2.6 Consistent Help). A test keeps every page that way.
+
 ## 0.17.6 (2026-10-27)
 
 - **On OpenEMR older than 8.1.0, the module's pages say so instead of showing a blank page.** The module needs 8.1.0 or later and stays switched off below it, but a page opened from a bookmark or a typed address still ran and stopped with an empty HTTP 500. Each page now answers with a short page naming the version the module needs and the site's version (found installing every module on a fresh 7.0.2).

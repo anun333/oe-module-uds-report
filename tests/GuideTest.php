@@ -30,4 +30,29 @@ final class GuideTest extends TestCase
         self::assertSame("https://github.com/anun333/oe-module-uds-report/blob/v$v_major.$v_minor.$v_patch/GUIDE.md", Guide::url());
         self::assertSame('https://github.com/anun333/oe-module-uds-report/blob/main/GUIDE.md', Guide::url('/nonexistent/version.php'));
     }
+
+    /**
+     * WCAG 2.2's 3.2.6 Consistent Help: Help keeps one place on every page, right after the heading and before the
+     * page's first form (the year toolbar on the report pages). The report page had it last in that toolbar.
+     */
+    public function testHelpSitsAfterTheHeadingAndBeforeTheFirstFormOnEveryPage(): void
+    {
+        $pages = 0;
+        foreach (glob(dirname(__DIR__) . '/public/*.php') ?: [] as $page) {
+            $source = (string)file_get_contents($page);
+            $help = strpos($source, 'Guide::url()');
+            if ($help === false) {
+                continue;
+            }
+            $pages++;
+            $heading = strpos($source, '<h1');
+            $form = strpos($source, '<form');
+            self::assertNotFalse($heading, basename($page) . ' has a heading');
+            self::assertGreaterThan($heading, $help, basename($page) . ': Help comes after the heading');
+            if ($form !== false) {
+                self::assertLessThan($form, $help, basename($page) . ': Help comes before the first form');
+            }
+        }
+        self::assertGreaterThan(5, $pages, 'the pages with Help were read');
+    }
 }
