@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.17.6 (unreleased)
+## 0.17.6 (2026-10-27)
 
 - **On OpenEMR older than 8.1.0, the module's pages say so instead of showing a blank page.** The module needs 8.1.0 or later and stays switched off below it, but a page opened from a bookmark or a typed address still ran and stopped with an empty HTTP 500. Each page now answers with a short page naming the version the module needs and the site's version (found installing every module on a fresh 7.0.2).
 - **README:** after adding, upgrading or removing a module copied in by hand, restart OpenEMR's container: the official 8.0.0 to 8.5.0 images cache where each class lives, "not found" included.
