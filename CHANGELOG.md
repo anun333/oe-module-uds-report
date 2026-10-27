@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.17.6 (unreleased)
+
+- **On OpenEMR older than 8.1.0, the module's pages say so instead of showing a blank page.** The module needs 8.1.0 or later and stays switched off below it, but a page opened from a bookmark or a typed address still ran and stopped with an empty HTTP 500. Each page now answers with a short page naming the version the module needs and the site's version (found installing every module on a fresh 7.0.2).
+- **README:** after adding, upgrading or removing a module copied in by hand, restart OpenEMR's container: the official 8.0.0 to 8.5.0 images cache where each class lives, "not found" included.
+
 ## 0.17.5 (2026-10-26)
 
 - **Faster on years of data: an index on core's `form_questionnaire_assessments.response_id`.** The screening lookups join on that column, which core leaves unindexed, so each one read every assessment form. On a test copy of a mid-size clinic (20,000 patients, 200,000 visits, 15,384 PHQ-9 responses, MariaDB 12.3.3), the 2025 report page went from 53 s to 21 s, Gaps from 43 s to 11 s, and Grant evidence from 36 s to 5 s, with the same output. The index is added on install and on upgrade (`sql/0_17_4-to-0_17_5_upgrade.sql`), shared by name with the Title X and CCBHC Report modules, so it's made once.
