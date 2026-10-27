@@ -255,6 +255,8 @@ That places it in `interface/modules/custom_modules/oe-module-uds-report/`. Then
 
 **Installing by hand.** If you copy modules into `custom_modules/` and run `composer install` inside each one instead of using `composer require`, keep openhealthcare-common at the same version in every module's own `vendor/` folder: the first module OpenEMR loads serves its copy of the library to all of them.
 
+**After adding, upgrading or removing a module copied in by hand, restart the container (or Apache).** OpenEMR's official Docker images (8.0.0 to 8.5.0) keep in APCu which file holds each class, and each class they didn't find, across requests: until a restart, a class once not found stays not found, and a removed module's classes still point at its folder. An OpenEMR built from source without Composer's `--apcu-autoloader` has no such cache.
+
 Viewing needs `patients/demo`; the Table 9D worksheet needs `acct/rep_a`, as OpenEMR's Collections report does; Settings and the Table 6A value sets need `admin/super`. Fetching the value sets needs the site's UMLS API key, and HTTPS from the server to cts.nlm.nih.gov.
 
 ### An index on a core table
