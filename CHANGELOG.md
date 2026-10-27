@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.17.5 (unreleased)
+## 0.17.5 (2026-10-26)
 
 - **Faster on years of data: an index on core's `form_questionnaire_assessments.response_id`.** The screening lookups join on that column, which core leaves unindexed, so each one read every assessment form. On a test copy of a mid-size clinic (20,000 patients, 200,000 visits, 15,384 PHQ-9 responses, MariaDB 12.3.3), the 2025 report page went from 53 s to 21 s, Gaps from 43 s to 11 s, and Grant evidence from 36 s to 5 s, with the same output. The index is added on install and on upgrade (`sql/0_17_4-to-0_17_5_upgrade.sql`), shared by name with the Title X and CCBHC Report modules, so it's made once.
 - **Pages say which language they're in.** Each page now declares the signed-in user's OpenEMR language and its writing direction (openhealthcare-common 1.4.0's `pageLang()`), so a screen reader reads a Spanish page as Spanish. They all said English before.
