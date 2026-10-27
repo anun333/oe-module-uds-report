@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.17.7 (unreleased)
+## 0.17.7 (2026-10-27)
 
 - **Help is in one place on every page.** On the report page it was the last button in the year toolbar; on every other page it sits right after the heading, before the toolbar. It now sits there on the report page too, so it's found in the same place wherever you are (WCAG 2.2, 3.2.6 Consistent Help). A test keeps every page that way.
 
