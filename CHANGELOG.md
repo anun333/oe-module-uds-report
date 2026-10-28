@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.18.1 (unreleased)
+## 0.18.1 (2026-10-27)
 
 - **Last year's report no longer shows a withheld Table 5 as zeros.** HRSA's published 2025 file withholds all of Table 5 for 645 health centers and 101 look-alikes (each cell reads `---`, not the `--` of a hidden small count). 0.18.0 read those cells as zero, so for those health centers the comparison with last year listed every Table 5 line as changed "from 0". The table is now left out for them, and the page compares only the tables HRSA published. Found checking Pohnpei Community Health Center's own report, whose Table 5 is withheld.
 - **8 more of HRSA's checks**, 63 in all: the changes from last year in medical, dental, mental health, substance use disorder, other professional and vision patients (Table 5, Column C), and Table 6A dental and fluoride patients or visits where Table 5 has no dental patients. The withheld Table 5 had made the change checks look unreliable when they were fitted; refitted on the tables HRSA published, they agree with HRSA 91–100% of the time. 56 of the 84 report-checks now agree 95% or more.
