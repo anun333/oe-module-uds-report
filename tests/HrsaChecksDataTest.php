@@ -105,7 +105,7 @@ final class HrsaChecksDataTest extends TestCase
         self::assertGreaterThan(1000, $pohnpei->values['T4_L6_Ca'], 'total patients');
         self::assertSame($pohnpei->values['T4_L6_Ca'], $pohnpei->values['T3a_L39_Ca'] + $pohnpei->values['T3a_L39_Cb'], 'Table 3A and Table 4 agree');
         self::assertContains(null, $pohnpei->values, 'small counts are hidden, not zero');
-        self::assertArrayNotHasKey('T5_L1_Ca', $pohnpei->values, 'FTEs are not kept');
+        self::assertArrayNotHasKey('T5_L20_Cc', $pohnpei->values, 'HRSA withheld its Table 5 (---): left out, not zeros');
     }
 
     public function testALookAlikeAndAMissingNumber(): void

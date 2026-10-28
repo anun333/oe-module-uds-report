@@ -12,7 +12,7 @@
  *
  * Kinds:
  * - zero: `a` is 0 though `when` is at least the threshold
- * - greater: `a` is more than `b` (or equal, with orEqual, when `a` isn't 0)
+ * - greater: `a` is more than `b` (or equal, with orEqual, when `a` isn't 0); with bZero, only when `b` is 0
  * - share_above, share_below, share_outside: `a` as a share of `b` against the threshold
  *   (share_outside takes [low, high]); minA skips a check when `a` is smaller
  * - change: `a` against last year's published `a`: [share of last year, smallest difference]
@@ -146,6 +146,9 @@ final readonly class HrsaChecks
                 $vals['when'] = $when;
                 return ($a == 0 && $when >= max((float)($t ?? 1), 1.0)) ? $vals : null;
             case 'greater':
+                if (($check['bZero'] ?? false) && $b != 0) {
+                    return null;
+                }
                 return ($a > $b || (($check['orEqual'] ?? false) && $a > 0 && $a == $b)) ? $vals : null;
             case 'share_above':
             case 'share_below':

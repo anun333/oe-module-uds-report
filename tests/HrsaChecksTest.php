@@ -58,6 +58,13 @@ final class HrsaChecksTest extends TestCase
         self::assertFalse(self::raised($orEqual, ['A' => 0, 'B' => 0]), 'no virtual visits and no clinic visits is not a question');
     }
 
+    public function testGreaterOnlyWhenTheOtherIsZero(): void
+    {
+        $check = ['kind' => 'greater', 'bZero' => true, 'a' => ['A'], 'b' => ['B'], 'reports' => ['universal' => []]];
+        self::assertTrue(self::raised($check, ['A' => 89, 'B' => 0]), 'dental patients on Table 6A, none on Table 5');
+        self::assertFalse(self::raised($check, ['A' => 89, 'B' => 40]));
+    }
+
     public function testSharesAgainstALimitOrARange(): void
     {
         $above = ['kind' => 'share_above', 'a' => ['A'], 'b' => ['B'], 'reports' => ['universal' => ['threshold' => 0.5]]];

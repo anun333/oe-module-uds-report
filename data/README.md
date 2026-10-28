@@ -17,7 +17,7 @@ These files hold the published figures and code mappings the UDS Report uses. Th
 
 Each file begins with an `about` that explains its fields (the published figures file has it on its first line).
 
-The last two are generated from HRSA's yearly UDS data download (data.hrsa.gov, the H80 and LAL workbooks) by the scripts in the openhealthcare workspace (`dev/uds_edits/`), which record each workbook's SHA-256. HRSA hides counts from 1 to 15 in that download (it prints `--`), so a small count from last year is unknown here, never zero.
+The last two are generated from HRSA's yearly UDS data download (data.hrsa.gov, the H80 and LAL workbooks) by the scripts in the openhealthcare workspace (`dev/uds_edits/`), which record each workbook's SHA-256. HRSA hides counts from 1 to 15 in that download (it prints `--`), so a small count from last year is unknown here, never zero. It also withholds whole tables for some organizations (it prints `---`; in 2025, Table 5 for 746 of 1,526), which are left out rather than read as zeros.
 
 ## What to check
 

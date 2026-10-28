@@ -126,9 +126,9 @@
      "threshold": null,
      "fit": {
       "hrsaRaised": 297,
-      "stillInFinalFigures": 158,
+      "stillInFinalFigures": 146,
       "precision": 1.0,
-      "recall": 0.92
+      "recall": 1.0
      }
     }
    }
@@ -152,9 +152,9 @@
      "threshold": null,
      "fit": {
       "hrsaRaised": 197,
-      "stillInFinalFigures": 113,
+      "stillInFinalFigures": 99,
       "precision": 1.0,
-      "recall": 0.88
+      "recall": 1.0
      }
     }
    }
@@ -178,9 +178,9 @@
      "threshold": null,
      "fit": {
       "hrsaRaised": 105,
-      "stillInFinalFigures": 53,
+      "stillInFinalFigures": 46,
       "precision": 1.0,
-      "recall": 0.87
+      "recall": 1.0
      }
     }
    }
@@ -204,9 +204,9 @@
      "threshold": null,
      "fit": {
       "hrsaRaised": 53,
-      "stillInFinalFigures": 26,
+      "stillInFinalFigures": 20,
       "precision": 1.0,
-      "recall": 0.77
+      "recall": 1.0
      }
     }
    }
@@ -232,6 +232,59 @@
       "stillInFinalFigures": 346,
       "precision": 1.0,
       "recall": 1.0
+     }
+    }
+   }
+  },
+  {
+   "id": "dental-6a-patients-over-table5",
+   "kind": "greater",
+   "a": [
+    "T6a_L31_Cb"
+   ],
+   "b": [
+    "T5_L19_Cc"
+   ],
+   "bZero": true,
+   "text": "Dental patients on Table 6A, Line 31, Column B ({a}) are more than dental patients on Table 5, Line 19, Column C ({b}).",
+   "reports": {
+    "universal": {
+     "edits": [
+      "2892"
+     ],
+     "threshold": null,
+     "fit": {
+      "hrsaRaised": 50,
+      "stillInFinalFigures": 21,
+      "precision": 1.0,
+      "recall": 0.71
+     }
+    }
+   }
+  },
+  {
+   "id": "dental-fluoride-over-visits",
+   "kind": "greater",
+   "a": [
+    "T6a_L31_Ca"
+   ],
+   "b": [
+    "T5_L19_Cb",
+    "T5_L19_Cb2"
+   ],
+   "bZero": true,
+   "text": "Fluoride treatment visits on Table 6A, Line 31, Column A ({a}) are more than dental visits on Table 5, Line 19, Columns B and B2 ({b}).",
+   "reports": {
+    "universal": {
+     "edits": [
+      "3539"
+     ],
+     "threshold": null,
+     "fit": {
+      "hrsaRaised": 45,
+      "stillInFinalFigures": 18,
+      "precision": 1.0,
+      "recall": 0.83
      }
     }
    }
@@ -1800,6 +1853,306 @@
    }
   },
   {
+   "id": "patients-change-medical",
+   "kind": "change",
+   "a": [
+    "T5_L15_Cc"
+   ],
+   "text": "Medical patients on Table 5, Line 15, Column C changed from {prior} last year to {a} ({change}).",
+   "reports": {
+    "universal": {
+     "edits": [
+      "4139"
+     ],
+     "threshold": [
+      0.25,
+      0
+     ],
+     "fit": {
+      "hrsaRaised": 81,
+      "stillInFinalFigures": 38,
+      "precision": 1.0,
+      "recall": 1.0
+     }
+    },
+    "hch": {
+     "edits": [
+      "4140"
+     ],
+     "threshold": [
+      0.25,
+      50
+     ],
+     "fit": {
+      "hrsaRaised": 79,
+      "stillInFinalFigures": 25,
+      "precision": 1.0,
+      "recall": 1.0
+     }
+    },
+    "msaw": {
+     "edits": [
+      "4692"
+     ],
+     "threshold": [
+      0.25,
+      50
+     ],
+     "fit": {
+      "hrsaRaised": 35,
+      "stillInFinalFigures": 9,
+      "precision": 1.0,
+      "recall": 1.0
+     }
+    }
+   }
+  },
+  {
+   "id": "patients-change-dental",
+   "kind": "change",
+   "a": [
+    "T5_L19_Cc"
+   ],
+   "text": "Dental patients on Table 5, Line 19, Column C changed from {prior} last year to {a} ({change}).",
+   "reports": {
+    "universal": {
+     "edits": [
+      "4141"
+     ],
+     "threshold": [
+      0.25,
+      20
+     ],
+     "fit": {
+      "hrsaRaised": 260,
+      "stillInFinalFigures": 114,
+      "precision": 0.98,
+      "recall": 1.0
+     }
+    },
+    "hch": {
+     "edits": [
+      "4142"
+     ],
+     "threshold": [
+      0.25,
+      20
+     ],
+     "fit": {
+      "hrsaRaised": 72,
+      "stillInFinalFigures": 28,
+      "precision": 0.82,
+      "recall": 1.0
+     }
+    },
+    "msaw": {
+     "edits": [
+      "4690"
+     ],
+     "threshold": [
+      0.15,
+      50
+     ],
+     "fit": {
+      "hrsaRaised": 31,
+      "stillInFinalFigures": 7,
+      "precision": 1.0,
+      "recall": 0.86
+     }
+    }
+   }
+  },
+  {
+   "id": "patients-change-mental",
+   "kind": "change",
+   "a": [
+    "T5_L20_Cc"
+   ],
+   "text": "Mental Health patients on Table 5, Line 20, Column C changed from {prior} last year to {a} ({change}).",
+   "reports": {
+    "universal": {
+     "edits": [
+      "4143"
+     ],
+     "threshold": [
+      0.25,
+      50
+     ],
+     "fit": {
+      "hrsaRaised": 427,
+      "stillInFinalFigures": 192,
+      "precision": 0.98,
+      "recall": 0.98
+     }
+    },
+    "hch": {
+     "edits": [
+      "4144"
+     ],
+     "threshold": [
+      0.25,
+      25
+     ],
+     "fit": {
+      "hrsaRaised": 86,
+      "stillInFinalFigures": 32,
+      "precision": 0.91,
+      "recall": 0.97
+     }
+    },
+    "msaw": {
+     "edits": [
+      "4688"
+     ],
+     "threshold": [
+      0.25,
+      25
+     ],
+     "fit": {
+      "hrsaRaised": 25,
+      "stillInFinalFigures": 5,
+      "precision": 0.83,
+      "recall": 1.0
+     }
+    }
+   }
+  },
+  {
+   "id": "patients-change-sud",
+   "kind": "change",
+   "a": [
+    "T5_L21_Cc"
+   ],
+   "text": "Substance Use Disorder patients on Table 5, Line 21, Column C changed from {prior} last year to {a} ({change}).",
+   "reports": {
+    "universal": {
+     "edits": [
+      "4145"
+     ],
+     "threshold": [
+      0.25,
+      50
+     ],
+     "fit": {
+      "hrsaRaised": 279,
+      "stillInFinalFigures": 104,
+      "precision": 0.91,
+      "recall": 0.88
+     }
+    },
+    "hch": {
+     "edits": [
+      "4146"
+     ],
+     "threshold": [
+      0.25,
+      20
+     ],
+     "fit": {
+      "hrsaRaised": 34,
+      "stillInFinalFigures": 10,
+      "precision": 0.77,
+      "recall": 1.0
+     }
+    }
+   }
+  },
+  {
+   "id": "patients-change-other",
+   "kind": "change",
+   "a": [
+    "T5_L22_Cc"
+   ],
+   "text": "Other Professional patients on Table 5, Line 22, Column C changed from {prior} last year to {a} ({change}).",
+   "reports": {
+    "universal": {
+     "edits": [
+      "4147"
+     ],
+     "threshold": [
+      0.25,
+      25
+     ],
+     "fit": {
+      "hrsaRaised": 275,
+      "stillInFinalFigures": 106,
+      "precision": 0.93,
+      "recall": 1.0
+     }
+    },
+    "hch": {
+     "edits": [
+      "4148"
+     ],
+     "threshold": [
+      0.25,
+      50
+     ],
+     "fit": {
+      "hrsaRaised": 31,
+      "stillInFinalFigures": 13,
+      "precision": 1.0,
+      "recall": 0.92
+     }
+    },
+    "msaw": {
+     "edits": [
+      "4684"
+     ],
+     "threshold": [
+      0.2,
+      25
+     ],
+     "fit": {
+      "hrsaRaised": 18,
+      "stillInFinalFigures": 5,
+      "precision": 1.0,
+      "recall": 1.0
+     }
+    }
+   }
+  },
+  {
+   "id": "patients-change-vision",
+   "kind": "change",
+   "a": [
+    "T5_L22d_Cc"
+   ],
+   "text": "Vision patients on Table 5, Line 22d, Column C changed from {prior} last year to {a} ({change}).",
+   "reports": {
+    "universal": {
+     "edits": [
+      "5138"
+     ],
+     "threshold": [
+      0.25,
+      50
+     ],
+     "fit": {
+      "hrsaRaised": 127,
+      "stillInFinalFigures": 45,
+      "precision": 0.94,
+      "recall": 1.0
+     }
+    },
+    "hch": {
+     "edits": [
+      "5141"
+     ],
+     "threshold": [
+      0.25,
+      25
+     ],
+     "fit": {
+      "hrsaRaised": 22,
+      "stillInFinalFigures": 8,
+      "precision": 0.89,
+      "recall": 1.0
+     }
+    }
+   }
+  },
+  {
    "id": "patients-change-enabling",
    "kind": "change",
    "a": [
@@ -1813,13 +2166,28 @@
      ],
      "threshold": [
       0.25,
+      25
+     ],
+     "fit": {
+      "hrsaRaised": 425,
+      "stillInFinalFigures": 170,
+      "precision": 0.97,
+      "recall": 0.99
+     }
+    },
+    "hch": {
+     "edits": [
+      "4150"
+     ],
+     "threshold": [
+      0.25,
       50
      ],
      "fit": {
-      "hrsaRaised": 385,
-      "stillInFinalFigures": 173,
-      "precision": 0.77,
-      "recall": 0.98
+      "hrsaRaised": 64,
+      "stillInFinalFigures": 28,
+      "precision": 0.97,
+      "recall": 1.0
      }
     },
     "msaw": {
@@ -1831,9 +2199,9 @@
       50
      ],
      "fit": {
-      "hrsaRaised": 30,
+      "hrsaRaised": 32,
       "stillInFinalFigures": 15,
-      "precision": 0.83,
+      "precision": 0.94,
       "recall": 1.0
      }
     }
@@ -2295,21 +2663,7 @@
    "report": "universal",
    "reason": "agreed with HRSA too seldom",
    "precision": 1.0,
-   "stable": 4
-  },
-  {
-   "id": "dental-6a-patients-over-table5",
-   "report": "universal",
-   "reason": "agreed with HRSA too seldom",
-   "precision": 0.05,
-   "stable": 35
-  },
-  {
-   "id": "dental-fluoride-over-visits",
-   "report": "universal",
-   "reason": "agreed with HRSA too seldom",
-   "precision": 0.05,
-   "stable": 32
+   "stable": 3
   },
   {
    "id": "pap-test-low",
@@ -2332,52 +2686,10 @@
   },
   {
    "id": "patients-change-medical",
-   "report": "universal",
-   "reason": "agreed with HRSA too seldom",
-   "precision": 0.2,
-   "stable": 38
-  },
-  {
-   "id": "patients-change-medical",
-   "report": "hch",
-   "reason": "agreed with HRSA too seldom",
-   "precision": 0.62,
-   "stable": 25
-  },
-  {
-   "id": "patients-change-medical",
-   "report": "msaw",
-   "reason": "agreed with HRSA too seldom",
-   "precision": 0.45,
-   "stable": 9
-  },
-  {
-   "id": "patients-change-medical",
    "report": "phpc",
    "reason": "agreed with HRSA too seldom",
    "precision": 0.0,
    "stable": 0
-  },
-  {
-   "id": "patients-change-dental",
-   "report": "universal",
-   "reason": "agreed with HRSA too seldom",
-   "precision": 0.51,
-   "stable": 115
-  },
-  {
-   "id": "patients-change-dental",
-   "report": "hch",
-   "reason": "agreed with HRSA too seldom",
-   "precision": 0.64,
-   "stable": 28
-  },
-  {
-   "id": "patients-change-dental",
-   "report": "msaw",
-   "reason": "agreed with HRSA too seldom",
-   "precision": 0.4,
-   "stable": 7
   },
   {
    "id": "patients-change-dental",
@@ -2388,45 +2700,10 @@
   },
   {
    "id": "patients-change-mental",
-   "report": "universal",
-   "reason": "agreed with HRSA too seldom",
-   "precision": 0.64,
-   "stable": 193
-  },
-  {
-   "id": "patients-change-mental",
-   "report": "hch",
-   "reason": "agreed with HRSA too seldom",
-   "precision": 0.65,
-   "stable": 32
-  },
-  {
-   "id": "patients-change-mental",
-   "report": "msaw",
-   "reason": "agreed with HRSA too seldom",
-   "precision": 0.36,
-   "stable": 5
-  },
-  {
-   "id": "patients-change-mental",
    "report": "phpc",
    "reason": "agreed with HRSA too seldom",
    "precision": 0.0,
    "stable": 0
-  },
-  {
-   "id": "patients-change-sud",
-   "report": "universal",
-   "reason": "agreed with HRSA too seldom",
-   "precision": 0.66,
-   "stable": 104
-  },
-  {
-   "id": "patients-change-sud",
-   "report": "hch",
-   "reason": "agreed with HRSA too seldom",
-   "precision": 0.5,
-   "stable": 10
   },
   {
    "id": "patients-change-sud",
@@ -2441,27 +2718,6 @@
    "reason": "agreed with HRSA too seldom",
    "precision": 0.0,
    "stable": 0
-  },
-  {
-   "id": "patients-change-other",
-   "report": "universal",
-   "reason": "agreed with HRSA too seldom",
-   "precision": 0.6,
-   "stable": 107
-  },
-  {
-   "id": "patients-change-other",
-   "report": "hch",
-   "reason": "agreed with HRSA too seldom",
-   "precision": 0.73,
-   "stable": 13
-  },
-  {
-   "id": "patients-change-other",
-   "report": "msaw",
-   "reason": "agreed with HRSA too seldom",
-   "precision": 0.5,
-   "stable": 5
   },
   {
    "id": "patients-change-other",
@@ -2472,23 +2728,9 @@
   },
   {
    "id": "patients-change-vision",
-   "report": "universal",
-   "reason": "agreed with HRSA too seldom",
-   "precision": 0.54,
-   "stable": 45
-  },
-  {
-   "id": "patients-change-vision",
-   "report": "hch",
-   "reason": "agreed with HRSA too seldom",
-   "precision": 0.53,
-   "stable": 8
-  },
-  {
-   "id": "patients-change-vision",
    "report": "msaw",
    "reason": "agreed with HRSA too seldom",
-   "precision": 0.43,
+   "precision": 1.0,
    "stable": 3
   },
   {
@@ -2497,13 +2739,6 @@
    "reason": "agreed with HRSA too seldom",
    "precision": 0.0,
    "stable": 0
-  },
-  {
-   "id": "patients-change-enabling",
-   "report": "hch",
-   "reason": "agreed with HRSA too seldom",
-   "precision": 0.74,
-   "stable": 28
   },
   {
    "id": "patients-change-enabling",
