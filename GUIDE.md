@@ -37,6 +37,19 @@ Two fixes catch people out. Type the Financial Review Date as year-month-day (20
 
 *What it doesn't do:* it never changes a record. Opening a list is written to OpenEMR's audit log. Housing and farmworker status are read as they are now, with no history, so the manual's look-back periods aren't applied.
 
+### Answer HRSA's checks before you submit
+
+*Where:* **HRSA checks** on the UDS Report.
+
+1. Choose the year and the report, then **Show**.
+2. Read each line under **What HRSA is likely to ask about**: the figures it quotes, HRSA's edit number, how many health centers HRSA raised it for in 2025, and how often the check agreed with HRSA.
+3. For each one, correct the records behind it, or write down why the figure is right. HRSA asks for that explanation in EHBs.
+4. Look down the comparison with the year before, under its own heading: the cells that changed by more than a quarter and by at least 50 since the report HRSA published. Reviewers ask about changes that size.
+
+*What you see:* counts only, never patients. Checks that need last year's report run only once an administrator has entered the HRSA grant or look-alike number in Settings.
+
+*What it doesn't do:* HRSA runs many more checks than these, on tables the module doesn't compute (staffing, costs, revenue, births). A check not raised here can still be raised in EHBs. HRSA doesn't publish its checks; these are rebuilt from the messages it published with the 2025 data. A count from 1 to 15 is hidden in HRSA's published file, so those cells aren't compared.
+
 ### Run a Grant Report
 
 *Where:* the **Report** list on the UDS Report.
@@ -117,6 +130,7 @@ If the patient won't say, choose "Chose not to answer"; an empty field lands on 
 - **Sites**: tick **In scope of project**, **School-based site** and **In or next to public housing**.
 - **Poverty guidelines**: the region where the health center is.
 - **Service area ZIP codes (Form 5B)**: from your Form 5B.
+- **HRSA grant or look-alike number**: H80CS followed by five digits, or LALCS for a look-alike. The page says whether it's found in the data HRSA published.
 - **Insurance companies**: override **UDS category used** where it's wrong, such as a CHIP plan.
 - **Table 5 lines**: check each person's **Line used**; anyone still on OpenEMR's default Family Medicine code is highlighted. Choose **Not a provider (encounters not counted)** for medical assistants and LPNs.
 

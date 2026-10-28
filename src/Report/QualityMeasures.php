@@ -153,6 +153,32 @@ final class QualityMeasures
     }
 
     /**
+     * Table 6B's lines from the year's measure list, in the manual's order, with the population
+     * sets each reports. CMS137 fills two lines: 23a (initiation) and 23b (engagement), named in `part`.
+     *
+     * @param list<array{table: string, line: string, title: string, measure: string}> $entries
+     * @return list<array{line: string, title: string, measure: string, sets: list<string>, part: ?string}>
+     */
+    public static function lines6B(array $entries): array
+    {
+        $lines = [];
+        foreach ($entries as $e) {
+            if ($e['table'] !== '6B') {
+                continue;
+            }
+            if ($e['measure'] === self::LINE_SETS['23a'][0]) {
+                $lines[] = ['line' => '23a', 'title' => $e['title'], 'measure' => $e['measure'], 'sets' => self::LINE_SETS['23a'][1], 'part' => 'initiation'];
+                $lines[] = ['line' => '23b', 'title' => $e['title'], 'measure' => $e['measure'], 'sets' => self::LINE_SETS['23b'][1], 'part' => 'engagement'];
+                continue;
+            }
+            $sets = (isset(self::LINE_SETS[$e['line']]) && self::LINE_SETS[$e['line']][0] === $e['measure'])
+                ? self::LINE_SETS[$e['line']][1] : ['PopulationSet_1'];
+            $lines[] = ['line' => $e['line'], 'title' => $e['title'], 'measure' => $e['measure'], 'sets' => $sets, 'part' => null];
+        }
+        return $lines;
+    }
+
+    /**
      * The Table 7 line for a patient's Table 3B cell (2026 UDS Manual, Appendix B):
      * "1" for Hispanic, "2" for not, then the race (a1-a7 for the Asian lines 1a-1g,
      * b1-b4 for the Native Hawaiian and Pacific Islander lines 2a-2d, then c-g for

@@ -33,6 +33,7 @@ use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataGuard;
 use OpenEMR\Modules\UdsReport\ReferenceData\ReferenceDataLoader;
 use OpenEMR\Modules\UdsReport\ReferenceData\Table5Line;
 use OpenEMR\Modules\UdsReport\Report\Labels;
+use OpenEMR\Modules\UdsReport\Report\PublishedUds;
 use OpenEMR\Modules\UdsReport\Report\ServiceArea;
 use OpenEMR\Modules\UdsReport\Report\UdsSettings;
 use OpenEMR\Modules\UdsReport\Repository\Row;
@@ -92,6 +93,7 @@ $postedIds = static function (string $field, array $known) use ($request): array
 
 $saved = false;
 $rejectedZips = [];
+$rejectedGrant = null;
 if ($request->getMethod() === 'POST') {
     if (!CsrfUtils::verifyCsrfToken($request->request->getString('csrf_token_form'), $session)) {
         CsrfUtils::csrfNotVerified();
@@ -116,6 +118,14 @@ if ($request->getMethod() === 'POST') {
     $zips = ServiceArea::parse($request->request->getString('service_area_zips'));
     $repo->saveServiceAreaZips($zips['zips'], $userId);
     $rejectedZips = $zips['rejected'];
+    // A number that can't be a grant or look-alike number is reported and the saved one kept.
+    $typedGrant = trim($request->request->getString('hrsa_grant_number'));
+    $grantNumber = $typedGrant === '' ? null : PublishedUds::normalizeGrant($typedGrant);
+    if ($typedGrant !== '' && $grantNumber === null) {
+        $rejectedGrant = $typedGrant;
+    } else {
+        $repo->saveGrantNumber($grantNumber, $userId);
+    }
     $providerLines = [];
     $postedProviderLines = $request->request->all('provider_line');
     foreach ($allPeopleIds as $personId) {
@@ -143,6 +153,11 @@ if ($request->getMethod() === 'POST') {
 }
 
 $settings = $repo->load();
+$publishedFiles = PublishedUds::files();
+$publishedYear = array_key_first($publishedFiles);
+$published = ($settings->hrsaGrantNumber !== null && $publishedYear !== null)
+    ? PublishedUds::find($publishedFiles[$publishedYear], $settings->hrsaGrantNumber)
+    : null;
 $countable = $settings->countableCategoryIds ?? $patientRepository->defaultCountableCategories();
 $virtualIds = $settings->virtualCategoryIds ?? $patientRepository->categoriesByConstant($reference->table5->virtualCategories);
 $csrf = CsrfUtils::collectCsrfToken(session: $session);
@@ -166,6 +181,8 @@ $checked = static fn(bool $on): string => $on ? 'checked' : '';
         ?><div class="alert alert-success py-2"><?php echo xlt('Saved.'); ?></div><?php } ?>
     <?php if ($rejectedZips !== []) {
         ?><div class="alert alert-warning py-2" data-rejected-zips><?php echo text(xl('Not five-digit ZIP codes, so left out of the service area') . ': ' . implode(', ', $rejectedZips)); ?></div><?php } ?>
+    <?php if ($rejectedGrant !== null) {
+        ?><div class="alert alert-warning py-2" data-rejected-grant><?php echo text(xl('Not a grant or look-alike number, so not saved') . ': ' . $rejectedGrant); ?></div><?php } ?>
 
     <form method="post">
         <input type="hidden" name="csrf_token_form" value="<?php echo attr($csrf); ?>">
@@ -219,6 +236,15 @@ $checked = static fn(bool $on): string => $on ? 'checked' : '';
         <h2 class="h6 mt-4"><label for="service_area_zips"><?php echo xlt('Service area ZIP codes (Form 5B)'); ?></label></h2>
         <textarea class="form-control form-control-sm" id="service_area_zips" name="service_area_zips" rows="3" style="max-width: 40rem" aria-describedby="service-area-help"><?php echo text(implode(' ', $settings->serviceAreaZips)); ?></textarea>
         <p class="small text-muted" id="service-area-help"><?php echo xlt('The service area ZIP codes on your Form 5B, separated by spaces, commas or lines. The report compares them with the ZIP codes where 75% of the patients seen in the year live, which the service area has to include (HRSA Scope of Project Policy Manual, Chapter 2).'); ?></p>
+
+        <h2 class="h6 mt-4"><label for="hrsa_grant_number"><?php echo xlt('HRSA grant or look-alike number'); ?></label></h2>
+        <input type="text" class="form-control form-control-sm" id="hrsa_grant_number" name="hrsa_grant_number" style="max-width: 16rem" autocomplete="off" aria-describedby="grant-help" value="<?php echo attr($settings->hrsaGrantNumber ?? ''); ?>">
+        <p class="small text-muted" id="grant-help"><?php echo xlt('For example H80CS00000, or LALCS00000 for a look-alike. HRSA Checks uses it to find your report as HRSA published it last year, to compare with this year and to run the checks that look at changes from last year.'); ?>
+            <?php if ($settings->hrsaGrantNumber !== null && $publishedYear !== null) {
+                echo $published === null
+                    ? text(sprintf(xl('Not in the %1$s data HRSA published. A health center that started reporting after %1$s has no published report yet.'), (string)$publishedYear))
+                    : text(sprintf(xl('Found in the %1$s data HRSA published: %2$s, %3$s.'), (string)$publishedYear, $published->displayName(), $published->state));
+            } ?></p>
 
         <h2 class="h6 mt-4"><?php echo xlt('Insurance companies'); ?></h2>
         <p class="small text-muted"><?php echo xlt('The automatic category comes from the payer typology or claim type set on the insurance company. Override it where it is wrong, for example a Medicaid managed care plan run by a private insurer, or a CHIP plan.'); ?></p>

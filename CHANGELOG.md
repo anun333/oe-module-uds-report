@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.18.0 (unreleased)
+
+- **HRSA checks:** a new page, **HRSA checks** on the UDS Report, runs 55 of HRSA's UDS edit checks on the report's own figures before anything goes into EHBs, and lists the questions HRSA is likely to ask, with HRSA's edit number. HRSA doesn't publish its checks. It publishes every edit message it raised on every health center's report with each year's UDS data (32,538 messages from 622 checks in 2025). The module keeps the checks that read only figures it computes. Each threshold is the one the message states, or the one that best separates the 2025 reports HRSA raised the check on from those it didn't. A check ships only where it agreed with HRSA at least three times in four; most agree 95% or more of the time. The page shows that agreement and how many health centers HRSA raised each check for. Checks on a Table 6A line the module counts only in part say so.
+- **Compared with last year's published report:** with the health center's HRSA grant or look-alike number in Settings, the same page sets this year's figures beside the 2025 report as HRSA published it, and lists the cells that changed by more than a quarter and by at least 50. The checks that compare with last year run from it too (patients by service, homeless, agricultural worker, school-based, public housing and veteran patients, insurance shares, and visits per patient against the national average). Every health center's and look-alike's published 2025 figures ship with the module (data/hrsa-published-2025.jsonl.gz, 1.5 MB, public domain), so nothing is fetched. HRSA hides counts from 1 to 15 in that file; those cells are left out, never read as zero.
+- **Settings:** a new field, **HRSA grant or look-alike number**, says whether the number is found in HRSA's 2025 data.
+- **Download CSV** on the new page lists the checks raised, the checks not run and why, and the changes from last year.
+
 ## 0.17.7 (2026-10-27)
 
 - **Help is in one place on every page.** On the report page it was the last button in the year toolbar; on every other page it sits right after the heading, before the toolbar. It now sits there on the report page too, so it's found in the same place wherever you are (WCAG 2.2, 3.2.6 Consistent Help). A test keeps every page that way.

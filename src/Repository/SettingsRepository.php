@@ -17,6 +17,7 @@ namespace OpenEMR\Modules\UdsReport\Repository;
 use OpenEMR\Common\Database\QueryUtils;
 use OpenEMR\Modules\UdsReport\Enum\InsuranceCategory;
 use OpenEMR\Modules\UdsReport\Enum\PovertyRegion;
+use OpenEMR\Modules\UdsReport\Report\PublishedUds;
 use OpenEMR\Modules\UdsReport\Report\UdsSettings;
 
 final class SettingsRepository
@@ -27,6 +28,7 @@ final class SettingsRepository
     public const PUBLIC_HOUSING_FACILITIES = 'public_housing_facility_ids';
     public const VIRTUAL_CATEGORIES = 'virtual_category_ids';
     public const SERVICE_AREA_ZIPS = 'service_area_zips';
+    public const HRSA_GRANT = 'hrsa_grant_number';
     private const LIST_SETTINGS = [
         self::COUNTABLE_CATEGORIES, self::IN_SCOPE_FACILITIES, self::SCHOOL_BASED_FACILITIES, self::PUBLIC_HOUSING_FACILITIES,
         self::VIRTUAL_CATEGORIES,
@@ -64,6 +66,7 @@ final class SettingsRepository
             categoryLines: self::lineMap($values[self::CATEGORY_LINES] ?? null),
             virtualCategoryIds: self::intListOrNull($values[self::VIRTUAL_CATEGORIES] ?? null),
             serviceAreaZips: self::zipList($values[self::SERVICE_AREA_ZIPS] ?? null),
+            hrsaGrantNumber: is_string($values[self::HRSA_GRANT] ?? null) ? PublishedUds::normalizeGrant($values[self::HRSA_GRANT]) : null,
         );
     }
 
@@ -96,6 +99,12 @@ final class SettingsRepository
     public function saveServiceAreaZips(array $zips, int $userId): void
     {
         $this->save(self::SERVICE_AREA_ZIPS, $zips === [] ? null : array_values($zips), $userId);
+    }
+
+    /** The health center's HRSA grant or look-alike number, as PublishedUds::normalizeGrant() gives it; null clears it. */
+    public function saveGrantNumber(?string $grant, int $userId): void
+    {
+        $this->save(self::HRSA_GRANT, $grant, $userId);
     }
 
     public function savePovertyRegion(PovertyRegion $region, int $userId): void

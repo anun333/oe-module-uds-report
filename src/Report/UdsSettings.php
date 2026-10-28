@@ -33,6 +33,8 @@ final readonly class UdsSettings
      * @param ?list<int> $virtualCategoryIds       visit categories whose visits are virtual (Table 5 Column B2); null: the
      *                                             reference data's by constant id (Comlink's telehealth categories)
      * @param list<string> $serviceAreaZips        the service area's ZIP codes on the health center's Form 5B, as entered
+     * @param ?string      $hrsaGrantNumber        the health center's HRSA grant or look-alike number (H80CS00000, LALCS00000),
+     *                                             to find its published report from last year
      */
     public function __construct(
         public ?array $countableCategoryIds = null,
@@ -45,6 +47,7 @@ final readonly class UdsSettings
         public array $categoryLines = [],
         public ?array $virtualCategoryIds = null,
         public array $serviceAreaZips = [],
+        public ?string $hrsaGrantNumber = null,
     ) {
     }
 }

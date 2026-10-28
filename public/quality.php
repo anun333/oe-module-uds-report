@@ -144,19 +144,10 @@ if ($refusedByReason !== []) {
 $udsPids = $run['patients'] ?? [];
 
 /** Table 6B lines, in the manual's order, with the population sets each reports. */
+$parts = ['initiation' => xl('initiation'), 'engagement' => xl('engagement')];
 $lines6B = [];
-foreach ($entries as $e) {
-    if ($e['table'] !== '6B') {
-        continue;
-    }
-    if ($e['measure'] === 'CMS137v14') {
-        $lines6B[] = ['line' => '23a', 'title' => $e['title'] . ': ' . xl('initiation'), 'measure' => $e['measure'], 'sets' => QualityMeasures::LINE_SETS['23a'][1]];
-        $lines6B[] = ['line' => '23b', 'title' => $e['title'] . ': ' . xl('engagement'), 'measure' => $e['measure'], 'sets' => QualityMeasures::LINE_SETS['23b'][1]];
-        continue;
-    }
-    $sets = (isset(QualityMeasures::LINE_SETS[$e['line']]) && QualityMeasures::LINE_SETS[$e['line']][0] === $e['measure'])
-        ? QualityMeasures::LINE_SETS[$e['line']][1] : ['PopulationSet_1'];
-    $lines6B[] = ['line' => $e['line'], 'title' => $e['title'], 'measure' => $e['measure'], 'sets' => $sets];
+foreach (QualityMeasures::lines6B($entries) as $l) {
+    $lines6B[] = ['title' => $l['part'] === null ? $l['title'] : $l['title'] . ': ' . $parts[$l['part']]] + $l;
 }
 $byMeasure = [];
 $measuresFor = static function (string $measure) use (&$byMeasure, $store, $year, $udsPids): QualityMeasures {

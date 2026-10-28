@@ -108,6 +108,7 @@ $patients = static fn(int $count): string => $count === 1 ? xl('patient') : xl('
             </select>
             <button type="submit" class="btn btn-sm btn-primary mr-2"><?php echo xlt('Show'); ?></button>
             <a class="btn btn-sm btn-outline-secondary mr-2" href="<?php echo attr($moduleUrl . '/public/export.php?' . $query); ?>"><?php echo xlt('Download CSV'); ?></a>
+            <a class="btn btn-sm btn-outline-secondary mr-2" href="<?php echo attr($moduleUrl . '/public/checks.php?' . $query); ?>"><?php echo xlt('HRSA checks'); ?></a>
             <a class="btn btn-sm btn-outline-secondary mr-2" href="<?php echo attr($moduleUrl . '/public/grants.php?' . $query); ?>"><?php echo xlt('Grant evidence'); ?></a>
             <?php if ($grant === null) { ?>
                 <a class="btn btn-sm btn-outline-secondary mr-2" href="<?php echo attr($moduleUrl . '/public/ecqm.php?year=' . $year); ?>"><?php echo xlt('eCQM readiness'); ?></a>

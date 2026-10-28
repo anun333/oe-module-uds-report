@@ -16,6 +16,7 @@ Using the module day to day, task by task for each role: see [GUIDE.md](GUIDE.md
   - a cross-table check (the manual requires the same patient total on every table),
   - a CSV download, and
   - a "Records to fix" list. **Blocking** problems keep a patient off a table entirely. **Quality** problems push a patient into an "unknown" line.
+- **HRSA checks:** HRSA's edit checks run on the report's own figures before submission, and the cells that changed most from last year's report as HRSA published it. See [HRSA checks](#hrsa-checks).
 - **Grant Reports:** choose 330(g), 330(h) or 330(i) instead of the Universal Report, on the page and in the CSV. See [Grant Reports](#grant-reports).
 - **Grant evidence:** de-identified counts for grant applications: who the health center serves, and social-needs screening by ZIP, age and insurance. See [Grant evidence](#grant-evidence).
 - **Table 9D worksheet:** charges, collections and adjustments by payer line, reclassified as the manual asks, with each adjustment reason and where it suggests it goes. For staff who can open OpenEMR's Collections report. See [Table 9D worksheet](#table-9d-worksheet).
@@ -121,6 +122,22 @@ What it can't count yet (each line is marked on the report, with the reason):
 - **Interventions not marked Completed (Lines 35–42).** A care plan entry still Active or Draft isn't counted, since the manual counts services provided; one written only in a note isn't seen.
 - **Codes outside the fee sheet on other lines.** For example, a test recorded only in a note or a scanned document isn't seen. The manual's preferred fix is to put the code on the encounter with a zero charge.
 - **Dental codes** are recognised by their shape (D plus four digits) under any code type except ICD, since OpenEMR has no CDT code type.
+
+## HRSA checks
+
+HRSA runs edit checks on every UDS report in EHBs and asks the health center to correct or explain each one it raises. It doesn't publish the checks, but it does publish every edit message it raised on every report with each year's UDS data download (data.hrsa.gov): in 2025, 32,538 messages from 622 checks on 1,526 health centers and look-alikes. **HRSA checks** runs the ones whose figures this module computes:
+
+| Rebuilt how | Detail |
+|---|---|
+| Which checks | The edit numbers whose messages name only cells of Tables 3A, 3B, 4, 5 (visits and patients), 6A, and the eCQM lines of 6B and 7 the module calculates: 55 checks, plus their Grant Report versions where those fit. They cover unknown income, unreported race, PrEP, virtual against clinic visits, quality measure denominators against the patients of the measure's ages, hypertension and diabetes prevalence, changes from last year, and visits per patient against the national average. |
+| Thresholds | The one the message states where it states one ("more than 50% of total patients"). Otherwise the one that best separates the 2025 reports HRSA raised the check on, among those whose final published figures still equal the ones the message quotes, from the reports it didn't raise it on. |
+| Kept only if | It agreed with HRSA on at least 75% of the reports it raises on, with at least 10 such reports (5 for a Grant Report). 54 report-checks didn't, and aren't shipped; `notShipped` in [data/hrsa-checks.json](data/hrsa-checks.json) lists them with the reason. |
+| National averages | HRSA compares visits per patient with the national average of the year before. The module computes 2025's from the published data, so these checks run on the 2026 report. |
+| Last year | The health center's 2025 report as HRSA published it, found by grant or look-alike number ([data/hrsa-published-2025.jsonl.gz](data/hrsa-published-2025.jsonl.gz)). HRSA hides counts from 1 to 15 there, so those cells are left out. |
+
+The page shows, for each check raised, the figures behind it, HRSA's edit number, how many health centers HRSA raised it for in 2025, and how often the check agreed with HRSA. Below, it lists every cell that changed from last year by more than a quarter and by at least 50, the size of change HRSA's patient-count checks raised.
+
+The data are rebuilt each year from HRSA's workbooks by scripts in the openhealthcare workspace (`dev/uds_edits/`), which record each workbook's SHA-256. The PHP checks were compared with the scripts on all 1,526 published 2025 reports, with 2024 as last year: they raise on exactly the same reports.
 
 ## Grant Reports
 
