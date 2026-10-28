@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.19.0 (unreleased)
+## 0.19.0 (2026-10-28)
 
 - **HRSA's Table 9D checks, 70 checks in all.** Seven more of HRSA's checks run on the Table 9D worksheet: for Medicaid, Medicare, other public and private insurance, collections plus adjustments against charges (HRSA raises a gap of more than about a quarter either way); for self-pay, collections, discounts and bad debt against charges, and more of them than charges; and charges per medical, dental, mental health, substance use disorder, vision and other professional visit against last year's national average. Fitted on HRSA's 2025 flags as before, they agree with HRSA 92-100% of the time.
 - They read revenue, so they run only for staff who can see the Collections report, as the worksheet does; for others the page says why they didn't run. The page notes that the worksheet leaves out capitation, settlements, wrap payments and other revenue kept in the general ledger, so what they raise is checked against the Table 9D that will be filed.
