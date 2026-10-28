@@ -28,6 +28,9 @@ final readonly class UdsFigures
     /** Table 3B's columns as HRSA codes them: the Hispanic subgroups A1-A5 are a1-a5. */
     private const T3B_COLUMN = ['A1' => 'a1', 'A2' => 'a2', 'A3' => 'a3', 'A4' => 'a4', 'A5' => 'a5', 'A' => 'a', 'B' => 'b', 'C' => 'c', 'D' => 'd'];
 
+    /** Table 9D's payer lines the worksheet fills. */
+    private const T9D_LINES = ['3' => 'Medicaid', '6' => 'Medicare', '9' => 'Other public', '12' => 'Private', '13' => 'Self-pay'];
+
     /** Table 7's eCQMs and the column group each fills on the total line (Line i). */
     private const T7_COLUMNS = ['CMS165' => '2', 'CMS122' => '3'];
 
@@ -50,6 +53,8 @@ final readonly class UdsFigures
      * @param list<array{line: object, visits: ?int, patients: ?int}> $t6aRows Table 6A rows; line has ->line, ->label and ->computed
      * @param array<string, array{A: int, B: int, C: int}> $t6b Table 6B line => cells, for the lines calculated
      * @param array<string, array{A: int, B: int, C: int}> $t7  measure (CMS165v14, CMS122v14) => its total line's cells
+     * @param ?array{lines: array<string, array{charges: int, collections: int, adjustments: int}>, total: array{charges: int}, badDebt: int} $t9d
+     *        the Table 9D worksheet's result (Table9DWorksheet::result(), cents), or null for staff who can't see revenue
      */
     public static function from(
         array $t3a,
@@ -61,6 +66,7 @@ final readonly class UdsFigures
         array $t6aRows = [],
         array $t6b = [],
         array $t7 = [],
+        ?array $t9d = null,
     ): self {
         $v = [];
         $labels = [];
@@ -138,6 +144,25 @@ final readonly class UdsFigures
                 $v['T7_Li_C2c'] = $c['C'];
             }
         }
+        if ($t9d !== null) {
+            // The worksheet in HRSA's columns, in whole dollars. Self-pay's discounts stand for Column E and
+            // the worksheet's bad debt write-offs (Line 15 in the 2026 manual) for Column F, as HRSA's checks read them.
+            $dollars = static fn(int $cents): int => (int)round($cents / 100);
+            foreach (self::T9D_LINES as $line => $label) {
+                $line = (string)$line;
+                $amounts = $t9d['lines'][$line] ?? null;
+                if ($amounts === null) {
+                    continue;
+                }
+                $v["T9d_L{$line}_Ca"] = $dollars($amounts['charges']);
+                $v["T9d_L{$line}_Cb"] = $dollars($amounts['collections']);
+                $v[$line === '13' ? 'T9d_L13_Ce' : "T9d_L{$line}_Cd"] = $dollars($amounts['adjustments']);
+                $labels["9D|$line"] = $label;
+            }
+            $v['T9d_L13_Cf'] = $dollars($t9d['badDebt']);
+            $v['T9d_L14_Ca'] = $dollars($t9d['total']['charges']);
+            $labels['9D|14'] = 'Total';
+        }
         return new self($v, $labels, $partial);
     }
 
@@ -146,7 +171,7 @@ final readonly class UdsFigures
      */
     public function describe(string $code): string
     {
-        if (preg_match('/^T(3a|3b|4|5|6a|6b|7)_L([0-9a-z]+)_C([0-9a-z]+)$/D', $code, $m) !== 1) {
+        if (preg_match('/^T(3a|3b|4|5|6a|6b|7|9d)_L([0-9a-z]+)_C([0-9a-z]+)$/D', $code, $m) !== 1) {
             return $code;
         }
         $table = strtoupper($m[1]);

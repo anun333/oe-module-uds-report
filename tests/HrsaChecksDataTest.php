@@ -48,7 +48,9 @@ final class HrsaChecksDataTest extends TestCase
                 $t7[$e['measure']] = ['A' => 0, 'B' => 0, 'C' => 0];
             }
         }
-        return UdsFigures::from($tables->table3A(), $tables->table3B(), $tables->table4(), Labels::raceLines(), [], $t5, $t6a, $t6b, $t7)->values;
+        $amounts = ['charges' => 0, 'collections' => 0, 'adjustments' => 0];
+        $t9d = ['lines' => ['3' => $amounts, '6' => $amounts, '9' => $amounts, '12' => $amounts, '13' => $amounts], 'total' => ['charges' => 0], 'badDebt' => 0];
+        return UdsFigures::from($tables->table3A(), $tables->table3B(), $tables->table4(), Labels::raceLines(), [], $t5, $t6a, $t6b, $t7, $t9d)->values;
     }
 
     public function testEveryCellACheckReadsIsOneTheModuleComputes(): void

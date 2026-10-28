@@ -81,6 +81,36 @@ final class UdsFiguresTest extends TestCase
         self::assertSame('Table 7, Line i, Column 2A', $f->describe('T7_Li_C2a'));
     }
 
+    public function testTheTable9DWorksheetInHrsasColumnsInDollars(): void
+    {
+        $t3a = ['lines' => [], 'totalMale' => 0, 'totalFemale' => 0];
+        $t3b = ['cells' => [], 'line12' => 0];
+        $t4 = ['income' => [], 'insurance' => [], 'special' => []];
+        $line = static fn(int $charges, int $collections, int $adjustments): array => ['charges' => $charges, 'collections' => $collections, 'adjustments' => $adjustments, 'net' => 0];
+        $t9d = [
+            'lines' => ['3' => $line(1000050, 600000, 300049), '13' => $line(200000, 50000, 120000), 'uninsured' => $line(9, 9, 9)],
+            'total' => ['charges' => 1200050],
+            'badDebt' => 10050,
+        ];
+        $v = UdsFigures::from($t3a, $t3b, $t4, t9d: $t9d)->values;
+        self::assertSame(10001, $v['T9d_L3_Ca'], 'cents to whole dollars, rounded');
+        self::assertSame(6000, $v['T9d_L3_Cb']);
+        self::assertSame(3000, $v['T9d_L3_Cd']);
+        self::assertSame(1200, $v['T9d_L13_Ce'], "self-pay's discounts are HRSA's Column E");
+        self::assertSame(101, $v['T9d_L13_Cf'], 'bad debt write-offs are Column F');
+        self::assertArrayNotHasKey('T9d_L13_Cd', $v);
+        self::assertSame(12001, $v['T9d_L14_Ca']);
+        self::assertArrayNotHasKey('T9d_L6_Ca', $v, 'a line the worksheet has no amounts for is left out');
+        self::assertArrayNotHasKey('T9d_L3_Ca', UdsFigures::from($t3a, $t3b, $t4)->values, 'no worksheet for staff who cannot see revenue');
+    }
+
+    public function testTheTable9DWorksheetIsNotComparedWithTheFiledTable(): void
+    {
+        $c = PriorYearComparison::compare(['T9d_L3_Ca' => 900000, 'T4_L6_Ca' => 200], ['T9d_L3_Ca' => 100, 'T4_L6_Ca' => 100]);
+        self::assertSame(['T4_L6_Ca'], array_column($c['changed'], 'code'));
+        self::assertSame(1, $c['compared']);
+    }
+
     public function testLastYearsBigChangesInTableOrder(): void
     {
         $current = ['T5_L20_Cc' => 314, 'T3a_L1_Ca' => 200, 'T4_L23_Ca' => 120, 'T4_L24_Ca' => 70, 'T4_L25_Ca' => 10, 'T6a_L26f_Cb' => 80];

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.19.0 (unreleased)
+
+- **HRSA's Table 9D checks, 70 checks in all.** Seven more of HRSA's checks run on the Table 9D worksheet: for Medicaid, Medicare, other public and private insurance, collections plus adjustments against charges (HRSA raises a gap of more than about a quarter either way); for self-pay, collections, discounts and bad debt against charges, and more of them than charges; and charges per medical, dental, mental health, substance use disorder, vision and other professional visit against last year's national average. Fitted on HRSA's 2025 flags as before, they agree with HRSA 92-100% of the time.
+- They read revenue, so they run only for staff who can see the Collections report, as the worksheet does; for others the page says why they didn't run. The page notes that the worksheet leaves out capitation, settlements, wrap payments and other revenue kept in the general ledger, so what they raise is checked against the Table 9D that will be filed.
+- The worksheet is not compared with last year's filed Table 9D: the two aren't the same thing.
+- data/hrsa-published-2025.jsonl.gz now carries each organization's published Table 9D as well.
+
 ## 0.18.1 (2026-10-27)
 
 - **Last year's report no longer shows a withheld Table 5 as zeros.** HRSA's published 2025 file withholds all of Table 5 for 645 health centers and 101 look-alikes (each cell reads `---`, not the `--` of a hidden small count). 0.18.0 read those cells as zero, so for those health centers the comparison with last year listed every Table 5 line as changed "from 0". The table is now left out for them, and the page compares only the tables HRSA published. Found checking Pohnpei Community Health Center's own report, whose Table 5 is withheld.

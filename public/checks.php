@@ -48,6 +48,8 @@ if (!AclMain::aclCheckCore('patients', 'demo')) {
     AccessDeniedHelper::denyWithTemplate('ACL check failed for patients/demo: UDS HRSA checks', xl('UDS Report'));
 }
 $isAdmin = AclMain::aclCheckCore('admin', 'super');
+// Revenue is shown to those who can see the core Collections report, as on the report page.
+$canSeeRevenue = AclMain::aclCheckCore('acct', 'rep_a');
 $reference = (new ReferenceDataGuard(new ReferenceDataLoader(), ServiceContainer::getLogger()))->loadOrStop($isAdmin);
 
 $request = Request::get();
@@ -103,6 +105,8 @@ $figures = UdsFigures::from(
     $report->table6A()->rows(),
     $t6b,
     $t7,
+    // The Table 9D worksheet, for its checks; the Grant Reports have no Table 9D.
+    $grant === null && $canSeeRevenue ? $report->table9D()->result() : null,
 );
 
 // Last year's report as HRSA published it, when the module has that year and the grant number is set.
@@ -122,6 +126,13 @@ $reasons = [
     HrsaChecks::HIDDEN => xl('need a figure from last year that HRSA hides because it is 1 to 15'),
     HrsaChecks::NOT_THIS_YEAR => sprintf(xl('compare with a national average, which the module has for %1$s, so they run on the %2$s report'), (string)$checks->nationalYear, (string)($checks->nationalYear + 1)),
 ];
+// Table 9D's checks read revenue; for staff who can't see it, say that rather than "not computed".
+$reasons['no-revenue'] = xl('read revenue figures, shown only to staff who can see the Collections report');
+foreach ($result['notRun'] as $i => $r) {
+    if (!$canSeeRevenue && str_starts_with($r['id'], 't9d-')) {
+        $result['notRun'][$i]['reason'] = 'no-revenue';
+    }
+}
 $notRunByReason = [];
 foreach ($result['notRun'] as $r) {
     $notRunByReason[$r['reason']] = ($notRunByReason[$r['reason']] ?? 0) + 1;
@@ -214,6 +225,9 @@ $moduleUrl = OpenEmr::webRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
         <div class="alert alert-warning py-2" data-not-published>
             <?php echo text(sprintf(xl('%1$s has no %2$s in the %3$s data HRSA published, so the checks that compare with last year are not run.'), $settings->hrsaGrantNumber, Labels::report($grant), (string)$publishedYear)); ?>
         </div>
+    <?php } ?>
+    <?php if ($grant === null && $canSeeRevenue) { ?>
+        <p class="small text-muted"><?php echo xlt('The Table 9D checks read the module worksheet from the accounts receivable, which leaves out capitation, settlements, wrap payments and other revenue kept in the general ledger. Check what they raise against the Table 9D you will file.'); ?></p>
     <?php } ?>
     <?php if ($grant === null && !$qualityDone) { ?>
         <p class="small text-muted"><?php echo xlt('Tables 6B and 7 are not calculated for this year yet, so their checks are not run.'); ?>

@@ -13,7 +13,7 @@ These files hold the published figures and code mappings the UDS Report uses. Th
 | [table-9d-adjustments.json](table-9d-adjustments.json) | Where the Table 9D worksheet suggests each adjustment reason goes: Column D, Line 15 (bad debt), or review | A clinic adds its own adjustment reasons, or a suggestion turns out to be wrong |
 | [ecqm-measures.json](ecqm-measures.json) | The eCQMs UDS Tables 6B and 7 use each year, with the line and the version the manual names | HRSA publishes a new manual (measure versions change every year) |
 | [hrsa-checks.json](hrsa-checks.json) | HRSA's edit checks that read only figures this module computes, rebuilt from the edit messages HRSA publishes with each year's UDS data: what each compares, its threshold, HRSA's edit numbers, and how often it agreed with HRSA in 2025 | HRSA publishes a new year of UDS data (each summer): regenerate, don't edit by hand |
-| [hrsa-published-2025.jsonl.gz](hrsa-published-2025.jsonl.gz) | Every health center's and look-alike's 2025 UDS figures as HRSA published them, for the tables this module computes, by grant or look-alike number: last year, for the HRSA checks page. Public domain | HRSA publishes a new year of UDS data: add the new year's file |
+| [hrsa-published-2025.jsonl.gz](hrsa-published-2025.jsonl.gz) | Every health center's and look-alike's 2025 UDS figures as HRSA published them, for the tables this module computes (and Table 9D, for its checks), by grant or look-alike number: last year, for the HRSA checks page. Public domain | HRSA publishes a new year of UDS data: add the new year's file |
 
 Each file begins with an `about` that explains its fields (the published figures file has it on its first line).
 

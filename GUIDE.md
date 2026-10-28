@@ -48,7 +48,9 @@ Two fixes catch people out. Type the Financial Review Date as year-month-day (20
 
 *What you see:* counts only, never patients. Checks that need last year's report run only once an administrator has entered the HRSA grant or look-alike number in Settings.
 
-*What it doesn't do:* HRSA runs many more checks than these, on tables the module doesn't compute (staffing, costs, revenue, births). A check not raised here can still be raised in EHBs. HRSA doesn't publish its checks; these are rebuilt from the messages it published with the 2025 data. A count from 1 to 15 is hidden in HRSA's published file, so those cells aren't compared.
+*Who sees what:* the Table 9D checks (revenue by payer, charges per visit) appear only for staff who can see the Collections report. They read the Table 9D worksheet, so check what they raise against the Table 9D you'll file.
+
+*What it doesn't do:* HRSA runs many more checks than these, on tables the module doesn't compute (staffing, costs, grants, births). A check not raised here can still be raised in EHBs. HRSA doesn't publish its checks; these are rebuilt from the messages it published with the 2025 data. A count from 1 to 15 is hidden in HRSA's published file, so those cells aren't compared.
 
 ### Run a Grant Report
 

@@ -26,7 +26,7 @@ final readonly class PriorYearComparison
     public const DIFFERENCE = 50;
 
     /** Tables in the manual's order, for sorting. */
-    private const TABLE_ORDER = ['3a' => 1, '3b' => 2, '4' => 3, '5' => 4, '6a' => 5, '6b' => 6, '7' => 7];
+    private const TABLE_ORDER = ['3a' => 1, '3b' => 2, '4' => 3, '5' => 4, '6a' => 5, '6b' => 6, '7' => 7, '9d' => 8];
 
     /**
      * @param array<string, int|float>      $current this year's figures
@@ -40,7 +40,8 @@ final readonly class PriorYearComparison
         $compared = 0;
         $hidden = 0;
         foreach ($current as $code => $value) {
-            if (!array_key_exists($code, $prior)) {
+            // The Table 9D worksheet isn't the audited Table 9D: comparing it with the filed one would mislead.
+            if (str_starts_with($code, 'T9d_') || !array_key_exists($code, $prior)) {
                 continue;
             }
             $before = $prior[$code];

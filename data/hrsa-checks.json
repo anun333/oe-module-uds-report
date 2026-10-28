@@ -2402,6 +2402,217 @@
    }
   },
   {
+   "id": "t9d-settled-medicaid",
+   "kind": "share_outside",
+   "a": [
+    "T9d_L3_Cb",
+    "T9d_L3_Cd"
+   ],
+   "b": [
+    "T9d_L3_Ca"
+   ],
+   "text": "Table 9D, Line 3 (Medicaid): collections and adjustments ({a}) are {share} of charges ({b}). HRSA expects them close to charges, not equal; a gap this size is unusual.",
+   "reports": {
+    "universal": {
+     "edits": [
+      "2019"
+     ],
+     "threshold": [
+      0.76,
+      1.26
+     ],
+     "fit": {
+      "hrsaRaised": 199,
+      "stillInFinalFigures": 94,
+      "precision": 0.99,
+      "recall": 0.99
+     }
+    }
+   }
+  },
+  {
+   "id": "t9d-settled-medicare",
+   "kind": "share_outside",
+   "a": [
+    "T9d_L6_Cb",
+    "T9d_L6_Cd"
+   ],
+   "b": [
+    "T9d_L6_Ca"
+   ],
+   "text": "Table 9D, Line 6 (Medicare): collections and adjustments ({a}) are {share} of charges ({b}). HRSA expects them close to charges, not equal; a gap this size is unusual.",
+   "reports": {
+    "universal": {
+     "edits": [
+      "2016"
+     ],
+     "threshold": [
+      0.74,
+      1.26
+     ],
+     "fit": {
+      "hrsaRaised": 184,
+      "stillInFinalFigures": 91,
+      "precision": 1.0,
+      "recall": 0.98
+     }
+    }
+   }
+  },
+  {
+   "id": "t9d-settled-other-public",
+   "kind": "share_outside",
+   "a": [
+    "T9d_L9_Cb",
+    "T9d_L9_Cd"
+   ],
+   "b": [
+    "T9d_L9_Ca"
+   ],
+   "text": "Table 9D, Line 9 (Other Public): collections and adjustments ({a}) are {share} of charges ({b}). HRSA expects them close to charges, not equal; a gap this size is unusual.",
+   "reports": {
+    "universal": {
+     "edits": [
+      "1965"
+     ],
+     "threshold": [
+      0.74,
+      1.26
+     ],
+     "fit": {
+      "hrsaRaised": 131,
+      "stillInFinalFigures": 58,
+      "precision": 1.0,
+      "recall": 0.98
+     }
+    }
+   }
+  },
+  {
+   "id": "t9d-settled-private",
+   "kind": "share_outside",
+   "a": [
+    "T9d_L12_Cb",
+    "T9d_L12_Cd"
+   ],
+   "b": [
+    "T9d_L12_Ca"
+   ],
+   "text": "Table 9D, Line 12 (Private): collections and adjustments ({a}) are {share} of charges ({b}). HRSA expects them close to charges, not equal; a gap this size is unusual.",
+   "reports": {
+    "universal": {
+     "edits": [
+      "2028"
+     ],
+     "threshold": [
+      0.74,
+      1.22
+     ],
+     "fit": {
+      "hrsaRaised": 134,
+      "stillInFinalFigures": 71,
+      "precision": 0.99,
+      "recall": 0.97
+     }
+    }
+   }
+  },
+  {
+   "id": "t9d-settled-self-pay",
+   "kind": "share_outside",
+   "a": [
+    "T9d_L13_Cb",
+    "T9d_L13_Ce",
+    "T9d_L13_Cf"
+   ],
+   "b": [
+    "T9d_L13_Ca"
+   ],
+   "text": "Table 9D, Line 13 (self-pay): collections, discounts and bad debt ({a}) are {share} of self-pay charges ({b}). HRSA expects them close to charges; a gap this size is unusual.",
+   "reports": {
+    "universal": {
+     "edits": [
+      "2021"
+     ],
+     "threshold": [
+      0.74,
+      1.26
+     ],
+     "fit": {
+      "hrsaRaised": 287,
+      "stillInFinalFigures": 130,
+      "precision": 1.0,
+      "recall": 0.95
+     }
+    }
+   }
+  },
+  {
+   "id": "t9d-self-pay-over-charges",
+   "kind": "greater",
+   "a": [
+    "T9d_L13_Cb",
+    "T9d_L13_Ce",
+    "T9d_L13_Cf"
+   ],
+   "b": [
+    "T9d_L13_Ca"
+   ],
+   "text": "Table 9D, Line 13 (self-pay): collections, discounts and bad debt ({a}) are more than self-pay charges ({b}). Check that deductibles and co-payments are moved to self-pay with their charges.",
+   "reports": {
+    "universal": {
+     "edits": [
+      "3989"
+     ],
+     "threshold": null,
+     "fit": {
+      "hrsaRaised": 362,
+      "stillInFinalFigures": 186,
+      "precision": 1.0,
+      "recall": 1.0
+     }
+    }
+   }
+  },
+  {
+   "id": "t9d-charge-per-visit",
+   "kind": "national",
+   "a": [
+    "T9d_L14_Ca"
+   ],
+   "b": [
+    "T5_L15_Cb",
+    "T5_L15_Cb2",
+    "T5_L19_Cb",
+    "T5_L19_Cb2",
+    "T5_L20_Cb",
+    "T5_L20_Cb2",
+    "T5_L21_Cb",
+    "T5_L21_Cb2",
+    "T5_L22_Cb",
+    "T5_L22_Cb2"
+   ],
+   "text": "Charges per medical, dental, mental health, substance use disorder, vision and other professional visit ({ratio}) differ substantially from last year's national average ({national}).",
+   "reports": {
+    "universal": {
+     "edits": [
+      "4064"
+     ],
+     "threshold": [
+      0.5,
+      1.5
+     ],
+     "fit": {
+      "hrsaRaised": 257,
+      "stillInFinalFigures": 68,
+      "precision": 0.92,
+      "recall": 1.0
+     },
+     "national": 481.183
+    }
+   }
+  },
+  {
    "id": "visits-per-patient-medical",
    "kind": "national",
    "a": [
@@ -2823,6 +3034,13 @@
    "reason": "agreed with HRSA too seldom",
    "precision": 0.14,
    "stable": 63
+  },
+  {
+   "id": "t9d-sliding-over-charges",
+   "report": "universal",
+   "reason": "agreed with HRSA too seldom",
+   "precision": 1.0,
+   "stable": 3
   },
   {
    "id": "visits-per-patient-medical",
