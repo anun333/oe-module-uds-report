@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.19.1 (unreleased)
+
+- **A line the payer pended for review is no longer suggested as a Column D adjustment.** "Adjust code 133" means the insurer pended the line for further review, not that it adjusted it. The Table 9D worksheet suggested it as contractual, like every other "Adjust code". It is now left for review, with a note: the payer's final remittance posts the real adjustment, so counting this one as well would count it twice. OpenEMR before 8.6 posts pended lines; from 8.6 it doesn't (openemr/openemr#14859).
+
 ## 0.19.0 (2026-10-28)
 
 - **HRSA's Table 9D checks, 70 checks in all.** Seven more of HRSA's checks run on the Table 9D worksheet: for Medicaid, Medicare, other public and private insurance, collections plus adjustments against charges (HRSA raises a gap of more than about a quarter either way); for self-pay, collections, discounts and bad debt against charges, and more of them than charges; and charges per medical, dental, mental health, substance use disorder, vision and other professional visit against last year's national average. Fitted on HRSA's 2025 flags as before, they agree with HRSA 92-100% of the time.

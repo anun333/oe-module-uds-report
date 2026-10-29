@@ -9,6 +9,12 @@
             "note": "ERA: the time limit for filing expired (CARC 29). The manual names delayed or improper billing as a cause of bad debt."
         },
         {
+            "match": "exact",
+            "label": "Adjust code 133",
+            "class": "review",
+            "note": "ERA: the payer pended the line for further review (CARC 133); not its decision. OpenEMR before 8.6 posts it as an adjustment (from 8.4.1 only on a line the payer also paid something on), and from 8.6 (openemr/openemr#14859) doesn't post it. The payer's final remittance posts the real adjustment, so counting this one in Column D as well would count it twice."
+        },
+        {
             "match": "prefix",
             "label": "Adjust code",
             "class": "contractual",

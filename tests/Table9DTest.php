@@ -169,6 +169,7 @@ final class Table9DTest extends TestCase
         self::assertSame('contractual', $class('Ins adjust Ins1'), 'Ins1 is removed before matching');
         self::assertSame('bad_debt', $class('  BAD   debt '), 'case and spacing are ignored');
         self::assertSame('bad_debt', $class('Adjust code 29'), 'an exact rule before the prefix rule');
+        self::assertSame('review', $class('Adjust code 133'), 'a pended line is not an adjustment yet (openemr/openemr#14859)');
         self::assertSame('contractual', $class('Adjust code 45'));
         self::assertSame('contractual', $class('Adjust code 253'));
         self::assertSame('discount', $class('Hardship w/o'));
