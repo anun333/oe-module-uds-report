@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.19.1 (unreleased)
+## 0.19.1 (2026-10-28)
 
 - **A line the payer pended for review is no longer suggested as a Column D adjustment.** "Adjust code 133" means the insurer pended the line for further review, not that it adjusted it. The Table 9D worksheet suggested it as contractual, like every other "Adjust code". It is now left for review, with a note: the payer's final remittance posts the real adjustment, so counting this one as well would count it twice. OpenEMR before 8.6 posts pended lines; from 8.6 it doesn't (openemr/openemr#14859).
 
