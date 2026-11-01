@@ -119,6 +119,14 @@ if ($settings->hrsaGrantNumber !== null && $publishedYear === $year - 1) {
 $checks = HrsaChecks::load();
 $result = $checks->run($reportKey, $year, $figures->values, $published?->values, $figures->partial);
 $comparison = $published === null ? null : PriorYearComparison::compare($figures->values, $published->values);
+// The year HRSA last published, beside the report the health center filed for it: for a health center trying
+// the module on a year it already reported (on a rehearsal copy, say). HRSA's checks still compare with the year before.
+$filed = null;
+$sameYear = null;
+if ($settings->hrsaGrantNumber !== null && $publishedYear === $year) {
+    $filed = PublishedUds::find($publishedFiles[$publishedYear], $settings->hrsaGrantNumber, $reportKey);
+    $sameYear = $filed === null ? null : PriorYearComparison::sameYear($figures->values, $filed->values);
+}
 
 $reasons = [
     HrsaChecks::NOT_COMPUTED => xl('need a figure the module does not compute'),
@@ -139,6 +147,7 @@ foreach ($result['notRun'] as $r) {
 }
 $changeText = static fn(?float $c): string => $c === null ? xl('from 0') : ($c >= 0 ? '+' : '') . number_format(100 * $c, 0) . '%';
 $number = static fn(int|float $v): string => number_format((float)$v, is_float($v) && floor($v) != $v ? 2 : 0);
+$difference = static fn(int|float $current, int|float $filed): string => ($current > $filed ? '+' : '') . $number($current - $filed);
 
 // ------------------------------------------------------------ CSV
 if ($request->query->getString('format') === 'csv') {
@@ -167,6 +176,14 @@ if ($request->query->getString('format') === 'csv') {
         foreach ($comparison['changed'] as $c) {
             CsvRow::write($out, ['', $figures->describe($c['code']), $number($c['prior']), $number($c['current']), $changeText($c['change'])]);
         }
+    }
+    if ($sameYear !== null && $filed !== null) {
+        CsvRow::write($out, []);
+        CsvRow::write($out, ['Differs from the report filed for ' . $filed->year, 'Cell', 'As HRSA published it', 'This report', 'Difference']);
+        foreach ($sameYear['changed'] as $c) {
+            CsvRow::write($out, ['', $figures->describe($c['code']), $number($c['prior']), $number($c['current']), $difference($c['current'], $c['prior'])]);
+        }
+        CsvRow::write($out, ['Cells that match', (string)($sameYear['compared'] - count($sameYear['changed'])), 'of ' . $sameYear['compared'] . ' compared', $sameYear['hidden'] . ' hidden by HRSA (1 to 15)']);
     }
     fclose($out);
     exit;
@@ -292,6 +309,38 @@ $moduleUrl = OpenEmr::webRoot() . Bootstrap::MODULE_INSTALLATION_PATH;
                         <td class="num"><?php echo text($number($c['prior'])); ?></td>
                         <td class="num"><?php echo text($number($c['current'])); ?></td>
                         <td class="num"><?php echo text($changeText($c['change'])); ?></td>
+                    </tr>
+                <?php } ?>
+                </tbody>
+            </table>
+        <?php } ?>
+    <?php } ?>
+
+    <?php if ($sameYear !== null && $filed !== null) { ?>
+        <h2 class="h5 mt-4" data-filed><?php echo text(sprintf(xl('Compared with the report filed for %1$s, as HRSA published it'), (string)$filed->year)); ?></h2>
+        <p class="small text-muted"><?php echo text($filed->displayName() . ', ' . $filed->state . ' (' . $filed->grant . ')'); ?>.
+            <?php echo text(sprintf(xl('The same year, to judge these figures against a report already filed: %1$s of %2$s cells match.'), number_format($sameYear['compared'] - count($sameYear['changed'])), number_format($sameYear['compared']))); ?>
+            <?php if ($sameYear['hidden'] > 0) {
+                echo text(sprintf(xl('%1$s cells were 1 to 15, which HRSA hides in its public file, so they are not compared.'), number_format($sameYear['hidden'])));
+            } ?>
+            <?php echo xlt('Tables HRSA withholds, and the Table 9D worksheet, are not compared.'); ?></p>
+        <?php if ($sameYear['changed'] === []) { ?>
+            <p><?php echo xlt('Every cell compared matches.'); ?></p>
+        <?php } else { ?>
+            <table class="table table-sm">
+                <thead class="thead-light"><tr>
+                    <th><?php echo xlt('Cell'); ?></th>
+                    <th class="num"><?php echo xlt('As HRSA published it'); ?></th>
+                    <th class="num"><?php echo xlt('This report'); ?></th>
+                    <th class="num"><?php echo xlt('Difference'); ?></th>
+                </tr></thead>
+                <tbody>
+                <?php foreach ($sameYear['changed'] as $c) { ?>
+                    <tr>
+                        <td><?php echo text($figures->describe($c['code'])); ?></td>
+                        <td class="num"><?php echo text($number($c['prior'])); ?></td>
+                        <td class="num"><?php echo text($number($c['current'])); ?></td>
+                        <td class="num"><?php echo text($difference($c['current'], $c['prior'])); ?></td>
                     </tr>
                 <?php } ?>
                 </tbody>

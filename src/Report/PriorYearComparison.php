@@ -62,6 +62,21 @@ final readonly class PriorYearComparison
         return ['changed' => $changed, 'compared' => $compared, 'hidden' => $hidden];
     }
 
+    /**
+     * The same year as HRSA published it, for a health center trying the module on a year it has already
+     * filed: every cell that differs, by any amount, so the module can be judged against figures the health
+     * center knows. Cells HRSA hides (1 to 15), tables it withholds and the Table 9D worksheet are left out,
+     * as in compare().
+     *
+     * @param array<string, int|float>      $current this report's figures
+     * @param array<string, int|float|null> $filed   the same year's published figures
+     * @return array{changed: list<array{code: string, current: int|float, prior: int|float, change: ?float}>, compared: int, hidden: int}
+     */
+    public static function sameYear(array $current, array $filed): array
+    {
+        return self::compare($current, $filed, 0.0, 1);
+    }
+
     /** @return array{int, int, string, string} table, line number, line, column */
     private static function sortKey(string $code): array
     {

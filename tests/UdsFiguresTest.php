@@ -122,4 +122,15 @@ final class UdsFiguresTest extends TestCase
         self::assertSame(1, $c['hidden']);
         self::assertSame(4, $c['compared'], 'a cell last year did not have is not compared');
     }
+    public function testTheSameYearListsEveryCellThatDiffersFromTheFiledReport(): void
+    {
+        // A health center trying the module on the year it already filed: any difference counts, not only HRSA's big changes.
+        $current = ['T3a_L1_Ca' => 200, 'T4_L23_Ca' => 61, 'T4_L24_Ca' => 1, 'T4_L25_Ca' => 10, 'T4_L6_Ca' => 8931, 'T9d_L3_Ca' => 5, 'T5_L20_Cc' => 4];
+        $filed = ['T3a_L1_Ca' => 200, 'T4_L23_Ca' => 60, 'T4_L24_Ca' => 0, 'T4_L25_Ca' => null, 'T4_L6_Ca' => 8931, 'T9d_L3_Ca' => 9];
+        $c = PriorYearComparison::sameYear($current, $filed);
+        self::assertSame(['T4_L23_Ca', 'T4_L24_Ca'], array_column($c['changed'], 'code'), 'a difference of one counts, from zero too');
+        self::assertSame(4, $c['compared'], 'not the hidden cell, the withheld Table 5 or the Table 9D worksheet');
+        self::assertSame(1, $c['hidden']);
+        self::assertSame([], PriorYearComparison::compare($current, $filed)['changed'], 'the year-to-year rule would list none of them');
+    }
 }
