@@ -76,7 +76,8 @@ ALTER TABLE `patient_data` ADD `uds_veteran_status` VARCHAR(31) NOT NULL DEFAULT
 #EndIf
 
 -- Demographics layout, "Stats" group (5), after the stock fields, which end with Religion (15) and
--- Tribal Affiliations (16) in OpenEMR 7.0 to 8.5.
+-- Tribal Affiliations (16) on a fresh install of OpenEMR 7.0 to 8.5. On a site upgraded from 7.0.3 or earlier
+-- they are numbered in tens; the 0.19.2 blocks below move ours after them there.
 #IfNotRow2D layout_options form_id DEM field_id uds_housing_status
 INSERT INTO `layout_options` (`form_id`, `field_id`, `group_id`, `title`, `seq`, `data_type`, `uor`, `fld_length`, `max_length`, `list_id`, `titlecols`, `datacols`, `default_value`, `edit_options`, `description`, `fld_rows`)
 VALUES ('DEM', 'uds_housing_status', '5', 'Housing Status (UDS)', 17, 1, 1, 0, 0, 'uds_housing_status', 1, 1, '', '', 'Where the patient stayed last night; homeless arrangements are reported on UDS Table 4, Lines 17-23. The UDS report reads this field, not the free-text Homeless field.', 0);
@@ -105,6 +106,23 @@ UPDATE `layout_options` SET `seq` = 18 WHERE `form_id` = 'DEM' AND `field_id` = 
 
 #IfRow3D layout_options form_id DEM field_id uds_housing_status seq 15
 UPDATE `layout_options` SET `seq` = 17 WHERE `form_id` = 'DEM' AND `field_id` = 'uds_housing_status' AND `seq` = 15;
+#EndIf
+
+-- 0.19.2: on a site upgraded from OpenEMR 7.0.3 or earlier, 7.0.4's upgrade renumbered the stock Stats fields in
+-- tens (Language 10, Ethnicity 20 ... Tribal Affiliations 150), so fields at 17 to 19 sit between Language and
+-- Ethnicity. Move them after the last stock field, only where they are still at those positions and a stock field
+-- comes after them; on a fresh install they stay. The last stock position is read in a derived table (`stock`),
+-- which MySQL and MariaDB allow in an UPDATE of the same table.
+#IfRow3D layout_options form_id DEM field_id uds_housing_status seq 17
+UPDATE `layout_options` SET `seq` = (SELECT `after` FROM (SELECT GREATEST(16, COALESCE(MAX(`seq`), 16)) AS `after` FROM `layout_options` WHERE `form_id` = 'DEM' AND `group_id` = '5' AND `field_id` IN ('language', 'ethnicity', 'race', 'nationality_country', 'financial_review', 'family_size', 'monthly_income', 'homeless', 'interpreter_needed', 'interpreter', 'interpretter', 'migrantseasonal', 'contrastart', 'referral_source', 'vfc', 'religion', 'tribal_affiliations')) AS `stock`) + 1 WHERE `form_id` = 'DEM' AND `field_id` = 'uds_housing_status' AND `seq` = 17 AND (SELECT `after` FROM (SELECT GREATEST(16, COALESCE(MAX(`seq`), 16)) AS `after` FROM `layout_options` WHERE `form_id` = 'DEM' AND `group_id` = '5' AND `field_id` IN ('language', 'ethnicity', 'race', 'nationality_country', 'financial_review', 'family_size', 'monthly_income', 'homeless', 'interpreter_needed', 'interpreter', 'interpretter', 'migrantseasonal', 'contrastart', 'referral_source', 'vfc', 'religion', 'tribal_affiliations')) AS `stock`) > 19;
+#EndIf
+
+#IfRow3D layout_options form_id DEM field_id uds_agricultural_worker seq 18
+UPDATE `layout_options` SET `seq` = (SELECT `after` FROM (SELECT GREATEST(16, COALESCE(MAX(`seq`), 16)) AS `after` FROM `layout_options` WHERE `form_id` = 'DEM' AND `group_id` = '5' AND `field_id` IN ('language', 'ethnicity', 'race', 'nationality_country', 'financial_review', 'family_size', 'monthly_income', 'homeless', 'interpreter_needed', 'interpreter', 'interpretter', 'migrantseasonal', 'contrastart', 'referral_source', 'vfc', 'religion', 'tribal_affiliations')) AS `stock`) + 2 WHERE `form_id` = 'DEM' AND `field_id` = 'uds_agricultural_worker' AND `seq` = 18 AND (SELECT `after` FROM (SELECT GREATEST(16, COALESCE(MAX(`seq`), 16)) AS `after` FROM `layout_options` WHERE `form_id` = 'DEM' AND `group_id` = '5' AND `field_id` IN ('language', 'ethnicity', 'race', 'nationality_country', 'financial_review', 'family_size', 'monthly_income', 'homeless', 'interpreter_needed', 'interpreter', 'interpretter', 'migrantseasonal', 'contrastart', 'referral_source', 'vfc', 'religion', 'tribal_affiliations')) AS `stock`) > 19;
+#EndIf
+
+#IfRow3D layout_options form_id DEM field_id uds_veteran_status seq 19
+UPDATE `layout_options` SET `seq` = (SELECT `after` FROM (SELECT GREATEST(16, COALESCE(MAX(`seq`), 16)) AS `after` FROM `layout_options` WHERE `form_id` = 'DEM' AND `group_id` = '5' AND `field_id` IN ('language', 'ethnicity', 'race', 'nationality_country', 'financial_review', 'family_size', 'monthly_income', 'homeless', 'interpreter_needed', 'interpreter', 'interpretter', 'migrantseasonal', 'contrastart', 'referral_source', 'vfc', 'religion', 'tribal_affiliations')) AS `stock`) + 3 WHERE `form_id` = 'DEM' AND `field_id` = 'uds_veteran_status' AND `seq` = 19 AND (SELECT `after` FROM (SELECT GREATEST(16, COALESCE(MAX(`seq`), 16)) AS `after` FROM `layout_options` WHERE `form_id` = 'DEM' AND `group_id` = '5' AND `field_id` IN ('language', 'ethnicity', 'race', 'nationality_country', 'financial_review', 'family_size', 'monthly_income', 'homeless', 'interpreter_needed', 'interpreter', 'interpretter', 'migrantseasonal', 'contrastart', 'referral_source', 'vfc', 'religion', 'tribal_affiliations')) AS `stock`) > 19;
 #EndIf
 
 #IfNotTable uds_quality_run
