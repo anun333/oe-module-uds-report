@@ -10,6 +10,8 @@ What installing it changes in your database, what it reads and writes, and what 
 
 Using the module day to day, task by task for each role: see [GUIDE.md](GUIDE.md).
 
+On OpenEMR 7.0 or 8.0, which the module doesn't run on, try it first on a copy of your system upgraded to 8.5, with your live system untouched: [Run your UDS report on a rehearsal copy of an older OpenEMR](docs/rehearsal-copy.md).
+
 ## What it gives you
 
 - **Reports › UDS Report:** the tables for a chosen year, in the manual's layout and line numbering. Also:
@@ -134,6 +136,7 @@ HRSA runs edit checks on every UDS report in EHBs and asks the health center to 
 | Kept only if | It agreed with HRSA on at least 75% of the reports it raises on, with at least 10 such reports (5 for a Grant Report). 36 report-checks didn't, and aren't shipped; `notShipped` in [data/hrsa-checks.json](data/hrsa-checks.json) lists them with the reason. |
 | National averages | HRSA compares visits per patient with the national average of the year before. The module computes 2025's from the published data, so these checks run on the 2026 report. |
 | Last year | The health center's 2025 report as HRSA published it, found by grant or look-alike number ([data/hrsa-published-2025.jsonl.gz](data/hrsa-published-2025.jsonl.gz)). HRSA hides counts from 1 to 15 there, so those cells are left out, and it withholds all of Table 5 for 746 of the 1,526 organizations, so Table 5 isn't compared for them. |
+| The year already filed (0.19.2) | For 2025 itself, the page sets the report beside the one the health center filed, as HRSA published it, and lists every cell that differs, by any amount. It is for judging the module on a year already reported, on a [rehearsal copy](docs/rehearsal-copy.md) say; HRSA's checks still compare with the year before, so they don't use it. |
 
 The page shows, for each check raised, the figures behind it, HRSA's edit number, how many health centers HRSA raised it for in 2025, and how often the check agreed with HRSA. Below, it lists every cell that changed from last year by more than a quarter and by at least 50, the size of change HRSA's patient-count checks raised.
 
@@ -199,7 +202,7 @@ It lists the 16 measures UDS 2026 uses ([data/ecqm-measures.json](data/ecqm-meas
 | Tobacco use only in History | Tobacco screening (CMS138) is read only from Observations of type Assessment coded 72166-2 (or 39240-7, 68535-4, 68536-2). The Tobacco field in History isn't read |
 | PHQ-9 forms with no depression screening the measure reads | Depression screening (CMS2) is read only from Assessment Observations coded 73832-8 (adults) or 73831-0 (adolescents), not from the PHQ-9 form. Shown when the PHQ-9 form is installed |
 | A measure's screening or exam code recorded where the measure doesn't read it | The codes above, and falls screening's (CMS139), count only as an Observation of the type named. The page names each kind found only as a lab result or as an Observation of another type |
-| Ongoing problems, and visits with no end time | OpenEMR treats a missing end date as unknown, so these never count ([openemr/openemr#14526](https://github.com/openemr/openemr/issues/14526)). The page asks OpenEMR's own builder, so the row goes away once OpenEMR is fixed. Adding end dates to ongoing problems isn't a fix: an end date marks a problem resolved |
+| Ongoing problems, and visits with no end time | Before OpenEMR 8.5.0, OpenEMR treated a missing end date as unknown, so these never counted ([openemr/openemr#14526](https://github.com/openemr/openemr/issues/14526), fixed in 8.5.0 by [#14621](https://github.com/openemr/openemr/pull/14621)). The page asks OpenEMR's own builder, so the row shows only on an OpenEMR without the fix; on 8.5.0 it doesn't. Adding end dates to ongoing problems isn't a fix: an end date marks a problem resolved |
 
 A second list covers records the calculation still counts that the rest of OpenEMR treats as deleted or wrong. Each row shows only while the installed OpenEMR's eCQM builder reads them, judged from its own query, and says how to fix the records where there's a way:
 
@@ -237,7 +240,7 @@ HTTP_HOST=localhost php interface/modules/custom_modules/oe-module-uds-report/bi
 **What it needs.**
 - OpenEMR's PHP eCQM engine ([openemr/openemr#14469](https://github.com/openemr/openemr/pull/14469)), on OpenEMR master after 8.4.
 - The 2026 measure files, in OpenEMR 8.5.0 ([openemr/openemr#14536](https://github.com/openemr/openemr/pull/14536), merged 2026-10-13; not in 8.4.1). On an OpenEMR without them, the page names each measure that isn't installed.
-- The [readiness page](#ecqm-readiness) cleared, above all [openemr/openemr#14526](https://github.com/openemr/openemr/issues/14526): until it's fixed, ongoing problems and visits with no end time don't count, and the page says so.
+- The [readiness page](#ecqm-readiness) cleared. Before 8.5.0, ongoing problems and visits with no end time didn't count ([openemr/openemr#14526](https://github.com/openemr/openemr/issues/14526), fixed in 8.5.0 by [#14621](https://github.com/openemr/openemr/pull/14621), merged 2026-10-17); on an OpenEMR without the fix, the page says so.
 
 **Not calculated.** Line 18 (CMS164v7, which the manual keeps at an old version no measure bundle has); the lines with no eCQM (prenatal care, Lines 1–9; HIV linkage to care, Line 20; dental sealants, Lines 22a and 22b); and Table 7 Section A (deliveries and birth weight). The page lists them, to be reported from the health center's records.
 
@@ -284,11 +287,11 @@ Installing or upgrading adds one index to a core table: `response_id` on `form_q
 
 **PHP security.** PHP's php2shell advisory (2026-10-21; CVE-2026-109618 and CVE-2026-109619) is remote code execution without logging in, and it is being exploited. Run OpenEMR on PHP 8.2.35, 8.3.36, 8.4.27, 8.5.12 or later, whatever the module needs. The official OpenEMR 7.0.2 and 7.0.3 Docker images can't get that fix: they carry PHP 8.2.16 and 8.3.15 on Alpine releases that no longer get updates. Run 7.0 only on a patched PHP, or upgrade OpenEMR. OpenEMR rebuilt its 8.4.1, 8.3.0, 8.2.0 and 8.0.0.3 images with the fix on 2026-10-22 (forum t/27157); a container started before then needs pulling again.
 
-**Older OpenEMR:** on 7.0.3 and older (no `OEGlobalsBag`), the module stays switched off rather than stop OpenEMR's pages; checked on fresh 7.0.2 and 7.0.3 installs with every module enabled. On fresh official 8.1.0, 8.3.0 and 8.5.0 images (2026-10-23) it installs through Module Manager and its pages that need no patient load, with every module enabled and with it alone (`dev/module_compat_check.sh`). 7.0.4 to 8.0 haven't been tried.
+**Older OpenEMR:** on 7.0.3 and older (no `OEGlobalsBag`), the module stays switched off rather than stop OpenEMR's pages; checked on fresh 7.0.2 and 7.0.3 installs with every module enabled. Such a site can still run it on a copy upgraded to 8.5 ([docs/rehearsal-copy.md](docs/rehearsal-copy.md)): checked on 2026-11-01 from the official 7.0.3 (patch 4) image with synthetic patients, rehearsed to 8.5.0 with openemr-reference's `openemr-rehearse.sh`, the module installed there with `composer require`, and the 2025 report, Records to fix, HRSA checks with the filed report beside it, eCQM readiness and both CSV downloads used in a browser. On fresh official 8.1.0, 8.3.0 and 8.5.0 images (2026-10-23) it installs through Module Manager and its pages that need no patient load, with every module enabled and with it alone (`dev/module_compat_check.sh`). 7.0.4 to 8.0 haven't been tried.
 
 | OpenEMR | Tables, Grant Reports, 9D worksheet, eCQM readiness | Tables 6B and 7 | How it was checked |
 |---|---|---|---|
-| 8.5.0 and master (8.6.0-dev) | works | works: the 2026 measures are in 8.5.0 ([#14536](https://github.com/openemr/openemr/pull/14536), merged to master 2026-10-13; 8.5.0 was cut from master on 2026-10-25). Ongoing problems and visits with no end time don't count until [#14526](https://github.com/openemr/openemr/issues/14526) is fixed | end to end, synthetic patients; rechecked on master 76fa2f1e88 (2026-10-13): CMS165v14 for nine synthetic patients matched each one's prediction |
+| 8.5.0 and master (8.6.0-dev) | works | works: the 2026 measures are in 8.5.0 ([#14536](https://github.com/openemr/openemr/pull/14536), merged to master 2026-10-13; 8.5.0 was cut from master on 2026-10-25). Ongoing problems and visits with no end time count: [#14526](https://github.com/openemr/openemr/issues/14526) is fixed in 8.5.0 ([#14621](https://github.com/openemr/openemr/pull/14621)) | end to end, synthetic patients; rechecked on master 76fa2f1e88 (2026-10-13): CMS165v14 for nine synthetic patients matched each one's prediction |
 | 8.4.1 | works | no PHP eCQM engine; the page says so | end to end, synthetic patients |
 | 8.4.0, 8.3.0, 8.2.0, 8.1.0 | installs, every page loads | no PHP eCQM engine | official Docker images: installed through Module Manager, every page loaded as an administrator with no PHP error (no patients) |
 | 8.0.0 and older | stays switched off (before this release, enabling it on 7.0.4 to 8.0.x stopped every page): OpenEMR classes it uses don't exist there (`AccessDeniedHelper`, `BC\ServiceContainer`, and others) | | which classes exist at each release tag |
@@ -312,6 +315,7 @@ The package declares no Composer constraint on `openemr/openemr`: OpenEMR report
 composer install
 vendor/bin/phpunit                 # the counting rules and data/cases/; no database needed
 php tools/footprint.php --check    # FOOTPRINT.md must match the source
+php tools/setup-check.php FILE     # a site's layouts and lists against what the module reads (docs/rehearsal-copy.md)
 ```
 
 ## Code systems

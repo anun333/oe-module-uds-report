@@ -45,6 +45,7 @@ Two fixes catch people out. Type the Financial Review Date as year-month-day (20
 2. Read each line under **What HRSA is likely to ask about**: the figures it quotes, HRSA's edit number, how many health centers HRSA raised it for in 2025, and how often the check agreed with HRSA.
 3. For each one, correct the records behind it, or write down why the figure is right. HRSA asks for that explanation in EHBs.
 4. Look down the comparison with the year before, under its own heading: the cells that changed by more than a quarter and by at least 50 since the report HRSA published. Reviewers ask about changes that size.
+5. Trying the module on 2025, the year you last filed? Choose 2025: the page then sets your figures beside the report you filed, as HRSA published it, and lists every cell that differs. See [the rehearsal copy guide](docs/rehearsal-copy.md).
 
 *What you see:* counts only, never patients. Checks that need last year's report run only once an administrator has entered the HRSA grant or look-alike number in Settings.
 
