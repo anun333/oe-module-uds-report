@@ -39,19 +39,25 @@ The file can't show your insurance companies, sites or visit categories. Those a
 
 ## 2. Rehearse the upgrade on a copy
 
-Use [openemr-reference](https://github.com/anun333/openemr-reference)'s rehearsal (`openemr-rehearse.sh`). It runs the upgrade on a copy of your database in Docker, compares the result with a fresh install, and never touches your live system.
+Use [openemr-reference](https://github.com/anun333/openemr-reference)'s rehearsal (`openemr-rehearse.sh`). It runs the upgrade on a copy of your whole site in Docker and never touches your live system. It checks the copy three ways: receipts of the copy before and after the upgrade must match (counts and money totals, no patient data), the install doctor must find nothing, and OpenEMR itself must read every patient and document back. Its guide, [Upgrading OpenEMR without losing anything](https://github.com/anun333/openemr-reference/blob/main/UPGRADE-GUIDE.md), has every step, and the live upgrade after it.
 
-1. On your server, back up the database as you would before any upgrade: `mysqldump --single-transaction openemr > site.sql`.
-2. On a machine with Docker, inside your network, with room for the database four times over:
+1. On your server, copy the database and the `sites/` folder (documents and the keys that unlock them):
 
    ```
-   openemr-rehearse.sh --dump=site.sql --from=7.0.3 --to=8.5.0 --keep
+   mysqldump --single-transaction --routines --triggers openemr > site.sql
+   tar -czf sites.tar.gz -C /var/www/html/openemr sites
    ```
 
-   Use your own version for `--from` (Administration › About). It takes a few minutes and ends with a verdict. `--keep` leaves the upgraded copy running and prints two commands: one that gives its address (`127.0.0.1` and a port), and one that deletes it.
+2. On a machine with Docker, inside your network (the rehearsal says how much room it needs):
+
+   ```
+   openemr-rehearse.sh --dump=site.sql --sites=sites.tar.gz --from=7.0.3 --to=8.5.0 --keep
+   ```
+
+   Use your own version for `--from` (Administration › About). It takes from ten minutes to an hour and ends with a verdict. `--keep` leaves the upgraded copy running and prints two commands: one that gives its address (`127.0.0.1` and a port), and one that deletes it.
 3. Open the address and log in with your live system's own username and password.
 
-The copy holds your patients' records. It answers only on that machine (`127.0.0.1`); delete it when you're done. If the container restarts, its port changes: run the first printed command again.
+The copy holds your patients' records, and so do `site.sql` and `sites.tar.gz`. The copy answers only on that machine (`127.0.0.1`); delete all three when you're done. If the container restarts, its port changes: run the first printed command again.
 
 ## 3. Install the module on the copy
 
@@ -85,4 +91,4 @@ Expect differences. Records change after a report is filed, HRSA's reviewers may
 
 After December 31, repeat steps 2 to 5 with a new dump: a new copy, the module installed, your settings entered again (they live in the copy's database), and calendar year 2026. HRSA checks then compares 2026 with your published 2025 report and runs HRSA's year-to-year checks. The 2026 report is due February 15, 2027.
 
-When you upgrade your live system, install the module there the same way and enter the settings once more.
+When you upgrade your live system (the guide's step 4: it takes a receipt before and after, and puts everything back by itself if they differ), install the module there the same way and enter the settings once more.
